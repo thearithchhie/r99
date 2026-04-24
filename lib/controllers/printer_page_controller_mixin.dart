@@ -20,11 +20,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
   final TextEditingController customerNameController = TextEditingController(text: 'Ka Ren');
   final TextEditingController pageNameController = TextEditingController(text: 'លក់អនឡាញ');
-  final TextEditingController phoneNumberController = TextEditingController(text: '097 71 56 486');
-  final TextEditingController extraPhoneController = TextEditingController(text: '081 234 567');
-  final TextEditingController location1Controller = TextEditingController(text: 'ភ្នំពេញ');
-  final TextEditingController location2Controller = TextEditingController(text: 'សាខាទី 1');
-  final TextEditingController location3Controller = TextEditingController(text: 'សាខាទី 2');
+  late final Signal<List<TextEditingController>> phoneControllers;
+  late final Signal<List<TextEditingController>> locationControllers;
 
   final devices = signal<List<PrinterDevice>>([]);
   final state = signal<PrinterConnectionState>(PrinterConnectionState.disconnected);
@@ -56,8 +53,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     return PrintTemplateData(
       customerName: customerNameController.text.trim(),
       pageName: pageNameController.text.trim(),
-      phoneLines: collectLines([phoneNumberController, extraPhoneController]),
-      locationLines: collectLines([location1Controller, location2Controller, location3Controller]),
+      phoneLines: collectLines(phoneControllers.value),
+      locationLines: collectLines(locationControllers.value),
       virakChecked: virakChecked.value,
       jtChecked: jtChecked.value,
       otherChecked: otherChecked.value,
@@ -68,22 +65,20 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   void initState() {
     super.initState();
 
+    phoneControllers = signal<List<TextEditingController>>([
+      _createTemplateController('097 71 56 486'),
+    ]);
+    locationControllers = signal<List<TextEditingController>>([
+      _createTemplateController('ភ្នំពេញ'),
+    ]);
+
     stateSub = manager.stateStream.listen((nextState) {
       if (!mounted) return;
       state.value = nextState;
     });
 
-    for (final controller in [
-      customerNameController,
-      pageNameController,
-      phoneNumberController,
-      extraPhoneController,
-      location1Controller,
-      location2Controller,
-      location3Controller,
-    ]) {
-      controller.addListener(refreshTemplate);
-    }
+    customerNameController.addListener(refreshTemplate);
+    pageNameController.addListener(refreshTemplate);
   }
 
   Future<bool> requestBluetoothPermissions() async {
@@ -232,8 +227,50 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   void toggleJt() => jtChecked.value = !jtChecked.value;
   void toggleOther() => otherChecked.value = !otherChecked.value;
 
+  void addPhoneField() {
+    phoneControllers.value = [
+      ...phoneControllers.value,
+      _createTemplateController(''),
+    ];
+    refreshTemplate();
+  }
+
+  void addLocationField() {
+    locationControllers.value = [
+      ...locationControllers.value,
+      _createTemplateController(''),
+    ];
+    refreshTemplate();
+  }
+
+  void removePhoneField(int index) {
+    if (phoneControllers.value.length <= 1) return;
+
+    final next = [...phoneControllers.value];
+    final controller = next.removeAt(index);
+    controller.dispose();
+    phoneControllers.value = next;
+    refreshTemplate();
+  }
+
+  void removeLocationField(int index) {
+    if (locationControllers.value.length <= 1) return;
+
+    final next = [...locationControllers.value];
+    final controller = next.removeAt(index);
+    controller.dispose();
+    locationControllers.value = next;
+    refreshTemplate();
+  }
+
   List<String> collectLines(List<TextEditingController> controllers) {
     return controllers.map((controller) => controller.text.trim()).where((value) => value.isNotEmpty).toList();
+  }
+
+  TextEditingController _createTemplateController(String text) {
+    final controller = TextEditingController(text: text);
+    controller.addListener(refreshTemplate);
+    return controller;
   }
 
   void refreshTemplate() {
@@ -250,11 +287,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     for (final controller in [
       customerNameController,
       pageNameController,
-      phoneNumberController,
-      extraPhoneController,
-      location1Controller,
-      location2Controller,
-      location3Controller,
+      ...phoneControllers.value,
+      ...locationControllers.value,
     ]) {
       controller.dispose();
     }
@@ -269,6 +303,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     jtChecked.dispose();
     otherChecked.dispose();
     templateTick.dispose();
+    phoneControllers.dispose();
+    locationControllers.dispose();
     manager.disconnect();
     manager.dispose();
     super.dispose();

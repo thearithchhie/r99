@@ -61,7 +61,7 @@ class PrintTemplateCard extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.facebook_rounded, size: 18),
+                            const Icon(Icons.facebook_rounded, size: 20, fontWeight: FontWeight.w500),
                             const SizedBox(width: 6),
                             Text(
                               data.customerName.isEmpty ? 'Name' : data.customerName,
@@ -71,8 +71,8 @@ class PrintTemplateCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         _InfoBox(
-                          icon: Icons.facebook_rounded,
-                          title: 'ផេកហ្វេសប៊ុក',
+                          icon: Icons.person,
+                          title: 'ឈ្មោះអតិថិជន',
                           lines: [data.pageName.isEmpty ? '-' : data.pageName],
                           titleStyle: _khmerTitleStyle,
                           bodyStyle: _khmerBodyStyle,

@@ -6,14 +6,15 @@ class PrintTemplateEditor extends StatelessWidget {
     super.key,
     required this.customerNameController,
     required this.pageNameController,
-    required this.phoneNumberController,
-    required this.extraPhoneController,
-    required this.location1Controller,
-    required this.location2Controller,
-    required this.location3Controller,
+    required this.phoneControllers,
+    required this.locationControllers,
     required this.virakChecked,
     required this.jtChecked,
     required this.otherChecked,
+    required this.onAddPhone,
+    required this.onAddLocation,
+    required this.onRemovePhone,
+    required this.onRemoveLocation,
     required this.onToggleVirak,
     required this.onToggleJt,
     required this.onToggleOther,
@@ -21,14 +22,15 @@ class PrintTemplateEditor extends StatelessWidget {
 
   final TextEditingController customerNameController;
   final TextEditingController pageNameController;
-  final TextEditingController phoneNumberController;
-  final TextEditingController extraPhoneController;
-  final TextEditingController location1Controller;
-  final TextEditingController location2Controller;
-  final TextEditingController location3Controller;
+  final List<TextEditingController> phoneControllers;
+  final List<TextEditingController> locationControllers;
   final bool virakChecked;
   final bool jtChecked;
   final bool otherChecked;
+  final VoidCallback onAddPhone;
+  final VoidCallback onAddLocation;
+  final void Function(int index) onRemovePhone;
+  final void Function(int index) onRemoveLocation;
   final VoidCallback onToggleVirak;
   final VoidCallback onToggleJt;
   final VoidCallback onToggleOther;
@@ -49,23 +51,23 @@ class PrintTemplateEditor extends StatelessWidget {
                 const SizedBox(height: 10),
                 _InputField(controller: pageNameController, label: 'Facebook / Page Name'),
                 const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _InputField(controller: phoneNumberController, label: 'Phone 1'),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _InputField(controller: extraPhoneController, label: 'Phone 2'),
-                    ),
-                  ],
+                _DynamicFieldGroup(
+                  title: 'Phone',
+                  icon: Icons.add,
+                  onAdd: onAddPhone,
+                  controllers: phoneControllers,
+                  labelBuilder: (index) => 'Phone ${index + 1}',
+                  onRemove: onRemovePhone,
                 ),
                 const SizedBox(height: 10),
-                _InputField(controller: location1Controller, label: 'ទីតាំង 1'),
-                const SizedBox(height: 10),
-                _InputField(controller: location2Controller, label: 'ទីតាំង 2'),
-                const SizedBox(height: 10),
-                _InputField(controller: location3Controller, label: 'ទីតាំង 3'),
+                _DynamicFieldGroup(
+                  title: 'ទីតាំង',
+                  icon: Icons.add,
+                  onAdd: onAddLocation,
+                  controllers: locationControllers,
+                  labelBuilder: (index) => 'ទីតាំង ${index + 1}',
+                  onRemove: onRemoveLocation,
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -103,6 +105,56 @@ class _InputField extends StatelessWidget {
         filled: true,
         fillColor: Colors.white,
       ),
+    );
+  }
+}
+
+class _DynamicFieldGroup extends StatelessWidget {
+  const _DynamicFieldGroup({
+    required this.title,
+    required this.icon,
+    required this.onAdd,
+    required this.controllers,
+    required this.labelBuilder,
+    required this.onRemove,
+  });
+
+  final String title;
+  final IconData icon;
+  final VoidCallback onAdd;
+  final List<TextEditingController> controllers;
+  final String Function(int index) labelBuilder;
+  final void Function(int index) onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            ),
+            IconButton(onPressed: onAdd, icon: Icon(icon), tooltip: 'Add $title'),
+          ],
+        ),
+        for (int index = 0; index < controllers.length; index++) ...[
+          Row(
+            children: [
+              Expanded(
+                child: _InputField(controller: controllers[index], label: labelBuilder(index)),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: controllers.length > 1 ? () => onRemove(index) : null,
+                icon: const Icon(Icons.remove_circle_outline),
+                tooltip: 'Remove ${labelBuilder(index)}',
+              ),
+            ],
+          ),
+          if (index != controllers.length - 1) const SizedBox(height: 10),
+        ],
+      ],
     );
   }
 }
