@@ -1,0 +1,34 @@
+PODS:
+  - Flutter (1.0.0)
+  - network_info_plus (0.0.1):
+    - Flutter
+  - permission_handler_apple (9.3.0):
+    - Flutter
+  - unified_esc_pos_printer (1.0.0):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - unified_esc_pos_printer (from `.symlinks/plugins/unified_esc_pos_printer/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  network_info_plus:
+    :path: ".symlinks/plugins/network_info_plus/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+  unified_esc_pos_printer:
+    :path: ".symlinks/plugins/unified_esc_pos_printer/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  network_info_plus: 6613d9d7cdeb0e6f366ed4dbe4b3c51c52d567a9
+  permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  unified_esc_pos_printer: ec763b844eba04ddab83a77149bd184e60b717b6
+
+PODFILE CHECKSUM: 3c63482e143d1b91d2d2560aee9fb04ecc74ac7e
+
+COCOAPODS: 1.16.2
