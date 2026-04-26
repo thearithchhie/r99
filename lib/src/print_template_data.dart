@@ -4,6 +4,7 @@ class PrintTemplateData {
     required this.pageName,
     required this.phoneLines,
     required this.locationLines,
+    required this.selectedOption,
     required this.totalPrice,
     required this.currency,
     required this.guestServiceChecked,
@@ -16,6 +17,7 @@ class PrintTemplateData {
   final String pageName;
   final List<String> phoneLines;
   final List<String> locationLines;
+  final String selectedOption;
   final String totalPrice;
   final String currency;
   final bool guestServiceChecked;

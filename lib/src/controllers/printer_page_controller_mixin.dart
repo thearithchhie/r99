@@ -16,22 +16,32 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   final PermissionWrapper permissionWrapper = PermissionWrapper.instance;
   final GlobalKey cardPreviewKey = GlobalKey();
 
-  static const Set<PrinterConnectionType> scanTypes = {PrinterConnectionType.bluetooth, PrinterConnectionType.ble};
+  static const Set<PrinterConnectionType> scanTypes = {
+    PrinterConnectionType.bluetooth,
+    PrinterConnectionType.ble,
+  };
 
-  final TextEditingController customerNameController = TextEditingController(text: 'Ka Ren');
-  final TextEditingController pageNameController = TextEditingController(text: 'លក់អនឡាញ');
+  final TextEditingController customerNameController = TextEditingController(
+    text: 'Ka Ren',
+  );
+  final TextEditingController pageNameController = TextEditingController(
+    text: 'លក់អនឡាញ',
+  );
   final TextEditingController totalPriceController = TextEditingController();
   late final Signal<List<TextEditingController>> phoneControllers;
   late final Signal<List<TextEditingController>> locationControllers;
 
   final devices = signal<List<PrinterDevice>>([]);
-  final state = signal<PrinterConnectionState>(PrinterConnectionState.disconnected);
+  final state = signal<PrinterConnectionState>(
+    PrinterConnectionState.disconnected,
+  );
   final connectedDevice = signal<PrinterDevice?>(null);
   final isScanning = signal<bool>(false);
   final guestServiceChecked = signal<bool>(false);
   final virakChecked = signal<bool>(false);
-  final jtChecked = signal<bool>(true);
+  final jtChecked = signal<bool>(false);
   final otherChecked = signal<bool>(false);
+  final selectedOption = signal<String>('0');
   final currency = signal<String>('\$');
   final templateTick = signal<int>(0);
 
@@ -58,6 +68,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       pageName: pageNameController.text.trim(),
       phoneLines: collectLines(phoneControllers.value),
       locationLines: collectLines(locationControllers.value),
+      selectedOption: selectedOption.value,
       totalPrice: totalPriceController.text.trim(),
       currency: currency.value,
       guestServiceChecked: guestServiceChecked.value,
@@ -71,8 +82,12 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   void initState() {
     super.initState();
 
-    phoneControllers = signal<List<TextEditingController>>([_createTemplateController('097 71 56 486')]);
-    locationControllers = signal<List<TextEditingController>>([_createTemplateController('ភ្នំពេញ')]);
+    phoneControllers = signal<List<TextEditingController>>([
+      _createTemplateController('097 71 56 486'),
+    ]);
+    locationControllers = signal<List<TextEditingController>>([
+      _createTemplateController('ភ្នំពេញ'),
+    ]);
 
     stateSub = manager.stateStream.listen((nextState) {
       if (!mounted) return;
@@ -189,13 +204,17 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   Future<img.Image> captureCardPreview() async {
     await Future<void>.delayed(const Duration(milliseconds: 60));
 
-    final boundary = cardPreviewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    final boundary =
+        cardPreviewKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
     if (boundary == null) {
       throw Exception('Card preview is not ready');
     }
 
     final ui.Image image = await boundary.toImage(pixelRatio: 3.5);
-    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    final ByteData? byteData = await image.toByteData(
+      format: ui.ImageByteFormat.png,
+    );
     if (byteData == null) {
       throw Exception('Unable to capture card preview');
     }
@@ -234,22 +253,34 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     return text.contains('.') ? text.split('.').last : text;
   }
 
-  void toggleGuestService() => guestServiceChecked.value = !guestServiceChecked.value;
+  void toggleGuestService() =>
+      guestServiceChecked.value = !guestServiceChecked.value;
   void toggleVirak() => virakChecked.value = !virakChecked.value;
   void toggleJt() => jtChecked.value = !jtChecked.value;
   void toggleOther() => otherChecked.value = !otherChecked.value;
+  void setSelectedOption(String value) {
+    selectedOption.value = value;
+    refreshTemplate();
+  }
+
   void setCurrency(String value) {
     currency.value = value;
     refreshTemplate();
   }
 
   void addPhoneField() {
-    phoneControllers.value = [...phoneControllers.value, _createTemplateController('')];
+    phoneControllers.value = [
+      ...phoneControllers.value,
+      _createTemplateController(''),
+    ];
     refreshTemplate();
   }
 
   void addLocationField() {
-    locationControllers.value = [...locationControllers.value, _createTemplateController('')];
+    locationControllers.value = [
+      ...locationControllers.value,
+      _createTemplateController(''),
+    ];
     refreshTemplate();
   }
 
@@ -274,7 +305,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   List<String> collectLines(List<TextEditingController> controllers) {
-    return controllers.map((controller) => controller.text.trim()).where((value) => value.isNotEmpty).toList();
+    return controllers
+        .map((controller) => controller.text.trim())
+        .where((value) => value.isNotEmpty)
+        .toList();
   }
 
   TextEditingController _createTemplateController(String text) {
@@ -288,8 +322,13 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     templateTick.value++;
   }
 
-  void showMessage(String message, {Duration duration = const Duration(seconds: 4)}) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
+  void showMessage(
+    String message, {
+    Duration duration = const Duration(seconds: 4),
+  }) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   @override
@@ -314,6 +353,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     virakChecked.dispose();
     jtChecked.dispose();
     otherChecked.dispose();
+    selectedOption.dispose();
     currency.dispose();
     templateTick.dispose();
     phoneControllers.dispose();

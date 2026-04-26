@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/print_template_data.dart';
+import 'package:r99/src/utilities/extensions/string_extension.dart';
 import 'package:r99/src/widgets/template_checkbox_chip.dart';
 
 class PrintTemplateCard extends StatelessWidget {
@@ -26,142 +27,132 @@ class PrintTemplateCard extends StatelessWidget {
   TextStyle get _khmerSmallStyle =>
       const TextStyle(fontFamily: 'Siemreap', fontSize: 22, fontWeight: FontWeight.w800, height: 1.4);
 
-  String _formatPhonePreview(String value) {
-    final digits = value.replaceAll(RegExp(r'\D'), '');
-    if (digits.length != 10 || !digits.startsWith('0')) return value;
-
-    return '${digits.substring(0, 3)} ${digits.substring(3, 5)} ${digits.substring(5, 7)} ${digits.substring(7, 10)}';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: const Border(
-            top: BorderSide(color: Colors.black, width: 4),
-            bottom: BorderSide(color: Colors.black, width: 4),
-            left: BorderSide(color: Colors.black, width: 2),
-            right: BorderSide(color: Colors.black, width: 2),
-          ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: const Border(
+          top: BorderSide(color: Colors.black, width: 4),
+          bottom: BorderSide(color: Colors.black, width: 4),
+          left: BorderSide(color: Colors.black, width: 2),
+          right: BorderSide(color: Colors.black, width: 2),
         ),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.facebook_rounded, size: 20, fontWeight: FontWeight.w500),
-                            const SizedBox(width: 5),
-                            Text('ឈ្មោះផេក៖', style: khmerBodyStyle),
-                            const SizedBox(width: 5),
-                            Text('R99', style: khmerBodyStyle),
-                          ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.facebook_rounded, size: 20, fontWeight: FontWeight.w500),
+                          const SizedBox(width: 5),
+                          Text('ឈ្មោះផេក៖', style: khmerBodyStyle),
+                          const SizedBox(width: 5),
+                          Text('R99', style: khmerBodyStyle),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 5,
+                        runSpacing: 5,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          const Icon(Icons.phone, size: 20, fontWeight: FontWeight.w500),
+                          Text('លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ', style: khmerBodyStyle),
+                          Text(
+                            '097 71 56 486',
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                      _InfoBox(
+                        icon: Icons.person,
+                        title: 'ឈ្មោះអតិថិជន',
+                        lines: [data.pageName.isEmpty ? '-' : data.pageName],
+                        titleStyle: khmerTitleStyle,
+                        bodyStyle: khmerBodyStyle,
+                      ),
+                      const SizedBox(height: 10),
+                      _InfoBox(
+                        icon: Icons.call,
+                        title: 'លេខទូរស័ព្ទអ្នកទទួល',
+                        lines: data.phoneLines.isEmpty
+                            ? const ['-']
+                            : data.phoneLines.map((value) => value.formatPhonePreview()).toList(),
+                        titleStyle: khmerTitleStyle,
+                        bodyStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                      ),
+                      const SizedBox(height: 10),
+                      _InfoBox(
+                        icon: Icons.location_on,
+                        title: 'ទីតាំង',
+                        lines: data.locationLines.isEmpty ? const ['-'] : data.locationLines,
+                        titleStyle: khmerTitleStyle,
+                        bodyStyle: khmerBodyStyle,
+                        tall: true,
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9F9F9),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: const Color(0xFFBDBDBD)),
                         ),
-                        const SizedBox(height: 10),
-                        Wrap(
-                          spacing: 5,
-                          runSpacing: 5,
-                          alignment: WrapAlignment.center,
+                        child: Row(
                           children: [
-                            const Icon(Icons.phone, size: 20, fontWeight: FontWeight.w500),
-                            Text('លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ', style: khmerBodyStyle),
+                            const Icon(Icons.local_shipping_outlined, size: 22, fontWeight: FontWeight.w500),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text('សេវាដឹក', style: khmerTitleStyle)),
                             Text(
-                              '097 71 56 486',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+                              data.totalPrice.isEmpty
+                                  ? 'តម្លៃសរុប៖ ${data.currency}${data.selectedOption}'
+                                  : 'តម្លៃសរុប៖ ${data.currency}${data.totalPrice}',
+                              style: khmerTitleStyle,
                             ),
                           ],
                         ),
-                        const SizedBox(height: 15),
-                        _InfoBox(
-                          icon: Icons.person,
-                          title: 'ឈ្មោះអតិថិជន',
-                          lines: [data.pageName.isEmpty ? '-' : data.pageName],
-                          titleStyle: khmerTitleStyle,
-                          bodyStyle: khmerBodyStyle,
-                        ),
-                        const SizedBox(height: 10),
-                        _InfoBox(
-                          icon: Icons.call,
-                          title: 'លេខទូរស័ព្ទអ្នកទទួល',
-                          lines: data.phoneLines.isEmpty
-                              ? const ['-']
-                              : data.phoneLines.map(_formatPhonePreview).toList(),
-                          titleStyle: khmerTitleStyle,
-                          bodyStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
-                        ),
-                        const SizedBox(height: 10),
-                        _InfoBox(
-                          icon: Icons.location_on,
-                          title: 'ទីតាំង',
-                          lines: data.locationLines.isEmpty ? const ['-'] : data.locationLines,
-                          titleStyle: khmerTitleStyle,
-                          bodyStyle: khmerBodyStyle,
-                          tall: true,
-                        ),
-                        const SizedBox(height: 10),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF9F9F9),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: const Color(0xFFBDBDBD)),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TemplateCheckboxChip(label: 'សេវាខាងភ្ញៀវ', selected: data.guestServiceChecked),
                           ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.local_shipping_outlined, size: 22, fontWeight: FontWeight.w500),
-                              const SizedBox(width: 8),
-                              Expanded(child: Text('សេវាដឹក', style: khmerTitleStyle)),
-                              Text(
-                                data.totalPrice.isEmpty
-                                    ? 'តម្លៃសរុប៖ ${data.currency}0'
-                                    : 'តម្លៃសរុប៖ ${data.currency}${data.totalPrice}',
-                                style: khmerTitleStyle,
-                              ),
-                            ],
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: data.virakChecked),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TemplateCheckboxChip(label: 'សេវាខាងភ្ញៀវ', selected: data.guestServiceChecked),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: data.virakChecked),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TemplateCheckboxChip(label: 'J&T', selected: data.jtChecked),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'សូមអរគុណសម្រាប់ការគាំទ្រ និងជួយចែករំលែកផង',
-                          textAlign: TextAlign.center,
-                          style: _khmerSmallStyle,
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TemplateCheckboxChip(label: 'J&T', selected: data.jtChecked),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'សូមអរគុណសម្រាប់ការគាំទ្រ និងជួយចែករំលែកផង',
+                        textAlign: TextAlign.center,
+                        style: _khmerSmallStyle,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -188,10 +179,9 @@ class _InfoBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-      // padding: const EdgeInsets.only(left: 8, right: 8, top: 0, bottom: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFF9F9F9),
-        // borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFBDBDBD)),
       ),
       child: Column(

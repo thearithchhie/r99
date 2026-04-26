@@ -1,5 +1,5 @@
 # Command-only targets.
-.PHONY: get clean clean_cache macos m fix_gradle c
+.PHONY: get clean clean_cache macos m android_release ar fix_gradle c
 
 # Flutter commands
 get: 
@@ -19,6 +19,12 @@ macos:
 
 m:
 	flutter run -d macos
+
+android_release:
+	flutter build apk --release
+
+ar:
+	flutter build apk --release
 
 # Fix Gradle lock issues
 fix_gradle:

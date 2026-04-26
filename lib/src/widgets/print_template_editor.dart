@@ -7,6 +7,8 @@ class PrintTemplateEditor extends StatelessWidget {
     required this.customerNameController,
     required this.pageNameController,
     required this.totalPriceController,
+    required this.selectedOption,
+    required this.onSelectedOptionChanged,
     required this.currency,
     required this.onCurrencyChanged,
     required this.phoneControllers,
@@ -28,6 +30,8 @@ class PrintTemplateEditor extends StatelessWidget {
   final TextEditingController customerNameController;
   final TextEditingController pageNameController;
   final TextEditingController totalPriceController;
+  final String selectedOption;
+  final ValueChanged<String> onSelectedOptionChanged;
   final String currency;
   final ValueChanged<String> onCurrencyChanged;
   final List<TextEditingController> phoneControllers;
@@ -57,16 +61,16 @@ class PrintTemplateEditor extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             child: Column(
               children: [
-                _InputField(controller: customerNameController, label: 'Name'),
+                _InputField(controller: customerNameController, label: 'ឈ្នោះផេក', readOnly: true),
                 const SizedBox(height: 10),
-                _InputField(controller: pageNameController, label: 'Facebook / Page Name'),
+                _InputField(controller: pageNameController, label: 'ឈ្នោះអតិថិជន'),
                 const SizedBox(height: 10),
                 _DynamicFieldGroup(
-                  title: 'Phone',
+                  title: 'លេខទូរស័ព្ទ',
                   icon: Icons.add,
                   onAdd: onAddPhone,
                   controllers: phoneControllers,
-                  labelBuilder: (index) => 'Phone ${index + 1}',
+                  labelBuilder: (index) => 'លេខទូរស័ព្ទ ${index + 1}',
                   onRemove: onRemovePhone,
                 ),
                 const SizedBox(height: 10),
@@ -87,7 +91,34 @@ class PrintTemplateEditor extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _InputField(controller: totalPriceController, label: 'Total Price'),
+                      child: _InputField(controller: totalPriceController, label: 'តម្លៃសរុប'),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 92,
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedOption,
+                        decoration: InputDecoration(
+                          labelText: 'ជម្រើស',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: '0', child: Text('0')),
+                          DropdownMenuItem(value: '2', child: Text('2')),
+                          DropdownMenuItem(value: '10', child: Text('10')),
+                          DropdownMenuItem(value: '11', child: Text('11')),
+                          DropdownMenuItem(value: '12', child: Text('12')),
+                          DropdownMenuItem(value: '18', child: Text('18')),
+                          DropdownMenuItem(value: '19', child: Text('19')),
+                          DropdownMenuItem(value: '20', child: Text('20')),
+                          DropdownMenuItem(value: '23', child: Text('23')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) onSelectedOptionChanged(value);
+                        },
+                      ),
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
@@ -95,7 +126,7 @@ class PrintTemplateEditor extends StatelessWidget {
                       child: DropdownButtonFormField<String>(
                         initialValue: currency,
                         decoration: InputDecoration(
-                          labelText: 'Currency',
+                          labelText: 'រូបិយប័ណ្ណ',
                           border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                           filled: true,
                           fillColor: Colors.white,
@@ -141,15 +172,17 @@ class PrintTemplateEditor extends StatelessWidget {
 }
 
 class _InputField extends StatelessWidget {
-  const _InputField({required this.controller, required this.label});
+  const _InputField({required this.controller, required this.label, this.readOnly = false});
 
   final TextEditingController controller;
   final String label;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
