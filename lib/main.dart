@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:r99/printer_page.dart';
+import 'package:r99/src/printer_page.dart';
 
 void main() {
   runApp(const MyApp());

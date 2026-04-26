@@ -5,9 +5,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
-import 'package:r99/core/helper/permissions/permission_wrapper.dart';
-import 'package:r99/print_template_data.dart';
-import 'package:r99/printer_page.dart';
+import 'package:r99/src/core/helper/permissions/permission_wrapper.dart';
+import 'package:r99/src/print_template_data.dart';
+import 'package:r99/src/printer_page.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
@@ -20,6 +20,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
   final TextEditingController customerNameController = TextEditingController(text: 'Ka Ren');
   final TextEditingController pageNameController = TextEditingController(text: 'លក់អនឡាញ');
+  final TextEditingController totalPriceController = TextEditingController();
   late final Signal<List<TextEditingController>> phoneControllers;
   late final Signal<List<TextEditingController>> locationControllers;
 
@@ -27,9 +28,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   final state = signal<PrinterConnectionState>(PrinterConnectionState.disconnected);
   final connectedDevice = signal<PrinterDevice?>(null);
   final isScanning = signal<bool>(false);
+  final guestServiceChecked = signal<bool>(false);
   final virakChecked = signal<bool>(false);
   final jtChecked = signal<bool>(true);
   final otherChecked = signal<bool>(false);
+  final currency = signal<String>('\$');
   final templateTick = signal<int>(0);
 
   StreamSubscription<List<PrinterDevice>>? scanSub;
@@ -55,6 +58,9 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       pageName: pageNameController.text.trim(),
       phoneLines: collectLines(phoneControllers.value),
       locationLines: collectLines(locationControllers.value),
+      totalPrice: totalPriceController.text.trim(),
+      currency: currency.value,
+      guestServiceChecked: guestServiceChecked.value,
       virakChecked: virakChecked.value,
       jtChecked: jtChecked.value,
       otherChecked: otherChecked.value,
@@ -65,12 +71,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   void initState() {
     super.initState();
 
-    phoneControllers = signal<List<TextEditingController>>([
-      _createTemplateController('097 71 56 486'),
-    ]);
-    locationControllers = signal<List<TextEditingController>>([
-      _createTemplateController('ភ្នំពេញ'),
-    ]);
+    phoneControllers = signal<List<TextEditingController>>([_createTemplateController('097 71 56 486')]);
+    locationControllers = signal<List<TextEditingController>>([_createTemplateController('ភ្នំពេញ')]);
 
     stateSub = manager.stateStream.listen((nextState) {
       if (!mounted) return;
@@ -79,18 +81,27 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
     customerNameController.addListener(refreshTemplate);
     pageNameController.addListener(refreshTemplate);
+    totalPriceController.addListener(refreshTemplate);
   }
 
-  Future<bool> requestBluetoothPermissions() async {
+  Future<BluetoothPermissionResult> requestBluetoothPermissions() async {
     return permissionWrapper.requestBluetoothScanPermissions();
   }
 
   Future<void> startScan() async {
-    final granted = await requestBluetoothPermissions();
+    final permissionResult = await requestBluetoothPermissions();
 
-    if (!granted) {
+    if (permissionResult != BluetoothPermissionResult.granted) {
+      if (permissionResult == BluetoothPermissionResult.permanentlyDenied) {
+        await permissionWrapper.openSettings();
+      }
+
       if (!mounted) return;
-      showMessage('Please allow Bluetooth permissions first');
+      showMessage(
+        permissionResult == BluetoothPermissionResult.permanentlyDenied
+            ? 'Bluetooth permission is permanently denied. App settings opened for you.'
+            : 'Please allow Bluetooth permissions first',
+      );
       return;
     }
 
@@ -223,23 +234,22 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     return text.contains('.') ? text.split('.').last : text;
   }
 
+  void toggleGuestService() => guestServiceChecked.value = !guestServiceChecked.value;
   void toggleVirak() => virakChecked.value = !virakChecked.value;
   void toggleJt() => jtChecked.value = !jtChecked.value;
   void toggleOther() => otherChecked.value = !otherChecked.value;
+  void setCurrency(String value) {
+    currency.value = value;
+    refreshTemplate();
+  }
 
   void addPhoneField() {
-    phoneControllers.value = [
-      ...phoneControllers.value,
-      _createTemplateController(''),
-    ];
+    phoneControllers.value = [...phoneControllers.value, _createTemplateController('')];
     refreshTemplate();
   }
 
   void addLocationField() {
-    locationControllers.value = [
-      ...locationControllers.value,
-      _createTemplateController(''),
-    ];
+    locationControllers.value = [...locationControllers.value, _createTemplateController('')];
     refreshTemplate();
   }
 
@@ -287,6 +297,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     for (final controller in [
       customerNameController,
       pageNameController,
+      totalPriceController,
       ...phoneControllers.value,
       ...locationControllers.value,
     ]) {
@@ -299,9 +310,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     state.dispose();
     connectedDevice.dispose();
     isScanning.dispose();
+    guestServiceChecked.dispose();
     virakChecked.dispose();
     jtChecked.dispose();
     otherChecked.dispose();
+    currency.dispose();
     templateTick.dispose();
     phoneControllers.dispose();
     locationControllers.dispose();

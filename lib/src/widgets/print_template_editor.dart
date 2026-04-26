@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:r99/widgets/template_checkbox_chip.dart';
+import 'package:r99/src/widgets/template_checkbox_chip.dart';
 
 class PrintTemplateEditor extends StatelessWidget {
   const PrintTemplateEditor({
     super.key,
     required this.customerNameController,
     required this.pageNameController,
+    required this.totalPriceController,
+    required this.currency,
+    required this.onCurrencyChanged,
     required this.phoneControllers,
     required this.locationControllers,
+    required this.guestServiceChecked,
     required this.virakChecked,
     required this.jtChecked,
     required this.otherChecked,
@@ -15,6 +19,7 @@ class PrintTemplateEditor extends StatelessWidget {
     required this.onAddLocation,
     required this.onRemovePhone,
     required this.onRemoveLocation,
+    required this.onToggleGuestService,
     required this.onToggleVirak,
     required this.onToggleJt,
     required this.onToggleOther,
@@ -22,8 +27,12 @@ class PrintTemplateEditor extends StatelessWidget {
 
   final TextEditingController customerNameController;
   final TextEditingController pageNameController;
+  final TextEditingController totalPriceController;
+  final String currency;
+  final ValueChanged<String> onCurrencyChanged;
   final List<TextEditingController> phoneControllers;
   final List<TextEditingController> locationControllers;
+  final bool guestServiceChecked;
   final bool virakChecked;
   final bool jtChecked;
   final bool otherChecked;
@@ -31,6 +40,7 @@ class PrintTemplateEditor extends StatelessWidget {
   final VoidCallback onAddLocation;
   final void Function(int index) onRemovePhone;
   final void Function(int index) onRemoveLocation;
+  final VoidCallback onToggleGuestService;
   final VoidCallback onToggleVirak;
   final VoidCallback onToggleJt;
   final VoidCallback onToggleOther;
@@ -68,9 +78,50 @@ class PrintTemplateEditor extends StatelessWidget {
                   labelBuilder: (index) => 'ទីតាំង ${index + 1}',
                   onRemove: onRemoveLocation,
                 ),
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("តម្លៃសរុប៖ ", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _InputField(controller: totalPriceController, label: 'Total Price'),
+                    ),
+                    const SizedBox(width: 10),
+                    SizedBox(
+                      width: 92,
+                      child: DropdownButtonFormField<String>(
+                        initialValue: currency,
+                        decoration: InputDecoration(
+                          labelText: 'Currency',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                          filled: true,
+                          fillColor: Colors.white,
+                        ),
+                        items: const [
+                          DropdownMenuItem(value: '\$', child: Text('\$')),
+                          DropdownMenuItem(value: '៛', child: Text('៛')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) onCurrencyChanged(value);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
+                    Expanded(
+                      child: TemplateCheckboxChip(
+                        label: 'សេវាខាងភ្ញៀវ',
+                        selected: guestServiceChecked,
+                        onTap: onToggleGuestService,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: virakChecked, onTap: onToggleVirak),
                     ),

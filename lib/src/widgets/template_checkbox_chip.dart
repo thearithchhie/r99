@@ -12,11 +12,9 @@ class TemplateCheckboxChip extends StatelessWidget {
     final child = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
-        color: selected ? const Color(0xFFE8F4EA) : const Color(0xFFF9F9F9),
+        color: const Color(0xFFF9F9F9),
         borderRadius: BorderRadius.circular(14),
-
-        // border: Border.all(color: selected ? const Color(0xFF2E7D32) : const Color(0xFFBDBDBD)),
-        // border: Border.all(color: selected ? const Color(0xFF2E7D32) : const Color.fromARGB(255, 0, 0, 0)),
+        border: Border.all(color: const Color(0xFFBDBDBD)),
       ),
       child: Row(
         children: [
@@ -24,11 +22,11 @@ class TemplateCheckboxChip extends StatelessWidget {
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFF2E7D32) : Colors.transparent,
-              border: Border.all(color: selected ? const Color.fromARGB(255, 3, 243, 15) : const Color(0xFF666666)),
+              color: Colors.transparent,
+              border: Border.all(color: Colors.black),
               borderRadius: BorderRadius.circular(3),
             ),
-            child: selected ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
+            child: selected ? const Icon(Icons.check, size: 19, color: Colors.black) : null,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -49,6 +47,6 @@ class TemplateCheckboxChip extends StatelessWidget {
 
     if (onTap == null) return child;
 
-    return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(14), child: child);
+    return GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: child);
   }
 }

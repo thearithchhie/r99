@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:r99/controllers/printer_page_controller_mixin.dart';
-import 'package:r99/widgets/print_template_card.dart';
-import 'package:r99/widgets/print_template_editor.dart';
+import 'package:r99/src/controllers/printer_page_controller_mixin.dart';
+import 'package:r99/src/widgets/print_template_card.dart';
+import 'package:r99/src/widgets/print_template_editor.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
@@ -59,23 +59,28 @@ class _PrinterPageState extends State<PrinterPage> with PrinterPageControllerMix
             PrintTemplateEditor(
               customerNameController: customerNameController,
               pageNameController: pageNameController,
+              totalPriceController: totalPriceController,
+              currency: currency.value,
+              onCurrencyChanged: setCurrency,
               phoneControllers: phoneControllers.value,
               locationControllers: locationControllers.value,
+              guestServiceChecked: guestServiceChecked.value,
               virakChecked: virakChecked.value,
               jtChecked: jtChecked.value,
-            otherChecked: otherChecked.value,
-            onAddPhone: addPhoneField,
-            onAddLocation: addLocationField,
-            onRemovePhone: removePhoneField,
-            onRemoveLocation: removeLocationField,
-            onToggleVirak: toggleVirak,
-            onToggleJt: toggleJt,
-            onToggleOther: toggleOther,
+              otherChecked: otherChecked.value,
+              onAddPhone: addPhoneField,
+              onAddLocation: addLocationField,
+              onRemovePhone: removePhoneField,
+              onRemoveLocation: removeLocationField,
+              onToggleGuestService: toggleGuestService,
+              onToggleVirak: toggleVirak,
+              onToggleJt: toggleJt,
+              onToggleOther: toggleOther,
             ),
             const SizedBox(height: 16),
             const Text('Card Preview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 10),
-            // PrintTemplateCard(data: templateData),
+
             Center(
               child: RepaintBoundary(
                 key: cardPreviewKey,
