@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:r99/src/utilities/app_colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.onLoginSuccess});
@@ -40,11 +41,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF5F2E8), Color(0xFFE0ECE8)],
-          ),
+          gradient: AppColor.loginBackgroundGradient,
         ),
         child: SafeArea(
           child: Center(
@@ -54,10 +51,10 @@ class _LoginPageState extends State<LoginPage> {
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Card(
                   elevation: 0,
-                  color: Colors.white,
+                  color: AppColor.pureWhite,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
-                    side: const BorderSide(color: Color(0xFFD7D2C8)),
+                    side: const BorderSide(color: AppColor.cardBorder),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(24),
@@ -70,7 +67,10 @@ class _LoginPageState extends State<LoginPage> {
                             radius: 80,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(100),
-                              child: Image.asset('assets/logo/logo.jpg', fit: BoxFit.contain),
+                              child: Image.asset(
+                                'assets/logo/logo.jpg',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -78,7 +78,9 @@ class _LoginPageState extends State<LoginPage> {
                             alignment: Alignment.center,
                             child: Text(
                               'Welcome Back',
-                              style: theme.textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.w700),
+                              style: theme.textTheme.headlineSmall!.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -88,9 +90,11 @@ class _LoginPageState extends State<LoginPage> {
                             decoration: InputDecoration(
                               labelText: 'Username',
                               prefixIcon: const Icon(Icons.person_outline),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                               filled: true,
-                              fillColor: const Color(0xFFFAF8F3),
+                              fillColor: AppColor.loginInputFill,
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
@@ -113,11 +117,17 @@ class _LoginPageState extends State<LoginPage> {
                                     obscurePassword = !obscurePassword;
                                   });
                                 },
-                                icon: Icon(obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined),
+                                icon: Icon(
+                                  obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
                               ),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
                               filled: true,
-                              fillColor: const Color(0xFFFAF8F3),
+                              fillColor: AppColor.loginInputFill,
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -132,10 +142,18 @@ class _LoginPageState extends State<LoginPage> {
                             child: FilledButton(
                               onPressed: submit,
                               style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF1F5E5B),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                backgroundColor: AppColor.themeSeed,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
-                              child: const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                              child: const Text(
+                                'Sign In',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                             ),
                           ),
                         ],

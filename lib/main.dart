@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/core/view/auth/login_page.dart';
 import 'package:r99/src/printer_page.dart';
+import 'package:r99/src/utilities/app_colors.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,8 +16,8 @@ class MyApp extends StatelessWidget {
       title: 'R99 Printer',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1F5E5B)),
-        scaffoldBackgroundColor: const Color(0xFFF5F2E8),
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColor.themeSeed),
+        scaffoldBackgroundColor: AppColor.appScaffoldBackground,
         useMaterial3: true,
       ),
       home: const AppGate(),

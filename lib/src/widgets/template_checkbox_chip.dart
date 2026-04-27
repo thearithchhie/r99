@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:r99/src/utilities/app_colors.dart';
 
 class TemplateCheckboxChip extends StatelessWidget {
-  const TemplateCheckboxChip({super.key, required this.label, this.selected = false, this.onTap});
+  const TemplateCheckboxChip({
+    super.key,
+    required this.label,
+    this.selected = false,
+    this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -12,9 +18,9 @@ class TemplateCheckboxChip extends StatelessWidget {
     final child = Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
+        color: AppColor.surfaceMuted,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFBDBDBD)),
+        border: Border.all(color: AppColor.borderLight),
       ),
       child: Row(
         children: [
@@ -22,11 +28,13 @@ class TemplateCheckboxChip extends StatelessWidget {
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.transparent,
-              border: Border.all(color: Colors.black),
+              color: AppColor.transparent,
+              border: Border.all(color: AppColor.pureBlack),
               borderRadius: BorderRadius.circular(3),
             ),
-            child: selected ? const Icon(Icons.check, size: 19, color: Colors.black) : null,
+            child: selected
+                ? const Icon(Icons.check, size: 19, color: AppColor.pureBlack)
+                : null,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -36,7 +44,7 @@ class TemplateCheckboxChip extends StatelessWidget {
                 fontFamily: 'Siemreap',
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: AppColor.pureBlack,
                 height: 1.2,
               ),
             ),
@@ -47,6 +55,10 @@ class TemplateCheckboxChip extends StatelessWidget {
 
     if (onTap == null) return child;
 
-    return GestureDetector(onTap: onTap, behavior: HitTestBehavior.opaque, child: child);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: child,
+    );
   }
 }
