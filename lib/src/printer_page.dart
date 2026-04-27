@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/controllers/printer_page_controller_mixin.dart';
+import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
+import 'package:r99/src/widgets/app_menu_drawer.dart';
 import 'package:r99/src/widgets/print_template_card.dart';
 import 'package:r99/src/widgets/print_template_editor.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -13,11 +15,22 @@ class PrinterPage extends StatefulWidget {
 }
 
 class _PrinterPageState extends State<PrinterPage> with PrinterPageControllerMixin {
+  void onSelectDestination(AppMenuDestination destination) {
+    Navigator.of(context).pop();
+    if (destination == AppMenuDestination.printer) {
+      return;
+    }
+
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TextScannerPage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: AppMenuDrawer(currentDestination: AppMenuDestination.printer, onSelectDestination: onSelectDestination),
       appBar: AppBar(
-        title: const Text('Bluetooth Printer'),
+        title: const Text('R99 Shop'),
+        centerTitle: true,
         actions: [
           Watch((context) {
             return IconButton(

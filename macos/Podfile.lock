@@ -1,4 +1,6 @@
 PODS:
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
   - flutter_libserialport (0.0.1):
     - FlutterMacOS
     - libserialport
@@ -8,6 +10,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - flutter_libserialport (from `Flutter/ephemeral/.symlinks/plugins/flutter_libserialport/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - network_info_plus (from `Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos`)
@@ -17,6 +20,8 @@ SPEC REPOS:
     - libserialport
 
 EXTERNAL SOURCES:
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   flutter_libserialport:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_libserialport/macos
   FlutterMacOS:
@@ -25,6 +30,7 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos
 
 SPEC CHECKSUMS:
+  file_selector_macos: 3e56eaea051180007b900eacb006686fd54da150
   flutter_libserialport: d1a505fd4b05785f7b50cc7c93b361937ea1c5bd
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   libserialport: 1cb25e66ef3c92a8e59c2ea3820302c3fa2268cd
