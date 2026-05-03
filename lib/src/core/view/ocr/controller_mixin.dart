@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
+import 'package:r99/src/printer_page.dart';
 import 'package:r99/src/widgets/app_menu_drawer.dart';
 import 'package:signals_flutter/signals_flutter.dart';
 
@@ -41,7 +43,8 @@ mixin TextScannerPageControllerMixin on State<TextScannerPage> {
       }
     } catch (error) {
       if (!mounted) return;
-      errorMessage.value = 'Unable to read text. Please check permissions and try again.\n$error';
+      errorMessage.value =
+          'Unable to read text. Please check permissions and try again.\n$error';
     } finally {
       if (mounted) {
         isProcessing.value = false;
@@ -51,20 +54,34 @@ mixin TextScannerPageControllerMixin on State<TextScannerPage> {
 
   void onSelectDestination(AppMenuDestination destination) {
     Navigator.of(context).pop();
-    if (destination == AppMenuDestination.textScanner) return;
-    Navigator.of(context).pop();
+    switch (destination) {
+      case AppMenuDestination.textScanner:
+        return;
+      case AppMenuDestination.printer:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const PrinterPage()),
+        );
+      case AppMenuDestination.invoices:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const InvoiceListPage()),
+        );
+    }
   }
 
   Future<void> copyExtractedText() async {
     if (extractedText.value.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No extracted text to copy')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No extracted text to copy')),
+      );
       return;
     }
 
     await Clipboard.setData(ClipboardData(text: extractedText.value));
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Extracted text copied')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Extracted text copied')));
   }
 
   @override

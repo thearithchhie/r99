@@ -1,5 +1,5 @@
 # Command-only targets.
-.PHONY: get clean clean_cache macos m android_release ar fix_gradle c
+.PHONY: get clean clean_cache build b macos m android_release ar fix_gradle c
 
 # Flutter commands
 get: 
@@ -13,6 +13,12 @@ clean_cache:
 	flutter pub clean
 	flutter pub cache clean
 	flutter pub get
+
+build:
+	dart run build_runner build --delete-conflicting-outputs
+
+b:
+	dart run build_runner build --delete-conflicting-outputs
 
 macos:
 	flutter run -d macos

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:r99/src/core/database/app_database.dart';
 import 'package:r99/src/core/view/auth/login_page.dart';
 import 'package:r99/src/printer_page.dart';
 import 'package:r99/src/utilities/app_colors.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppDatabase.instance.open();
   runApp(const MyApp());
 }
 

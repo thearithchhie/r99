@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/controllers/printer_page_controller_mixin.dart';
+import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
 import 'package:r99/src/utilities/app_colors.dart';
 import 'package:r99/src/widgets/app_menu_drawer.dart';
@@ -19,13 +20,18 @@ class _PrinterPageState extends State<PrinterPage>
     with PrinterPageControllerMixin {
   void onSelectDestination(AppMenuDestination destination) {
     Navigator.of(context).pop();
-    if (destination == AppMenuDestination.printer) {
-      return;
+    switch (destination) {
+      case AppMenuDestination.printer:
+        return;
+      case AppMenuDestination.textScanner:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const TextScannerPage()));
+      case AppMenuDestination.invoices:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const InvoiceListPage()));
     }
-
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (_) => const TextScannerPage()));
   }
 
   @override
@@ -105,19 +111,37 @@ class _PrinterPageState extends State<PrinterPage>
                   onToggleOther: toggleOther,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Card Preview',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 10),
-
-                Center(
-                  child: RepaintBoundary(
-                    key: cardPreviewKey,
-                    child: PrintTemplateCard(data: templateData),
+                if (showPreview.value) ...[
+                  const Text(
+                    'Card Preview',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: RepaintBoundary(
+                      key: cardPreviewKey,
+                      child: PrintTemplateCard(data: templateData),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  const Card(
+                    color: AppColor.surfaceMuted,
+                    child: ListTile(
+                      leading: Icon(Icons.visibility_off_outlined),
+                      title: Text('Preview hidden'),
+                      subtitle: Text('Turn it back on from the menu toggle.'),
+                    ),
+                  ),
+                  Offstage(
+                    offstage: true,
+                    child: RepaintBoundary(
+                      key: cardPreviewKey,
+                      child: PrintTemplateCard(data: templateData),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Row(
                   children: [
                     Expanded(
@@ -131,7 +155,7 @@ class _PrinterPageState extends State<PrinterPage>
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: printDesign,
+                        onPressed: canPrintDesign ? printDesign : null,
                         child: const Text('Print Design'),
                       ),
                     ),

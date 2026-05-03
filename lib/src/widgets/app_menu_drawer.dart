@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:r99/src/core/database/app_preferences_store.dart';
 
-enum AppMenuDestination { printer, textScanner }
+enum AppMenuDestination { printer, textScanner, invoices }
 
-class AppMenuDrawer extends StatelessWidget {
+class AppMenuDrawer extends StatefulWidget {
   const AppMenuDrawer({
     super.key,
     required this.currentDestination,
@@ -11,6 +12,53 @@ class AppMenuDrawer extends StatelessWidget {
 
   final AppMenuDestination currentDestination;
   final ValueChanged<AppMenuDestination> onSelectDestination;
+
+  @override
+  State<AppMenuDrawer> createState() => _AppMenuDrawerState();
+}
+
+class _AppMenuDrawerState extends State<AppMenuDrawer> {
+  bool showPreview = true;
+  bool isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadPreviewPreference();
+  }
+
+  Future<void> loadPreviewPreference() async {
+    final savedValue = await AppPreferencesStore.loadShowPreview();
+    if (!mounted) return;
+    setState(() {
+      showPreview = savedValue;
+    });
+  }
+
+  Future<void> togglePreview(bool value) async {
+    setState(() {
+      showPreview = value;
+      isSaving = true;
+    });
+
+    try {
+      await AppPreferencesStore.saveShowPreview(value);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        showPreview = !value;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Unable to save preview setting')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSaving = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,34 +77,35 @@ class AppMenuDrawer extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.print_outlined),
               title: const Text('Printer'),
-              selected: currentDestination == AppMenuDestination.printer,
-              onTap: () => onSelectDestination(AppMenuDestination.printer),
+              selected: widget.currentDestination == AppMenuDestination.printer,
+              onTap: () =>
+                  widget.onSelectDestination(AppMenuDestination.printer),
             ),
             ListTile(
               leading: const Icon(Icons.document_scanner_outlined),
               title: const Text('Text Scanner'),
-              selected: currentDestination == AppMenuDestination.textScanner,
-              onTap: () => onSelectDestination(AppMenuDestination.textScanner),
+              selected:
+                  widget.currentDestination == AppMenuDestination.textScanner,
+              onTap: () =>
+                  widget.onSelectDestination(AppMenuDestination.textScanner),
             ),
             ListTile(
               leading: const Icon(Icons.receipt_long_outlined),
-              title: const Text('Orders'),
-              onTap: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Orders will be added soon')),
-                );
-              },
+              title: const Text('Invoices'),
+              selected:
+                  widget.currentDestination == AppMenuDestination.invoices,
+              onTap: () =>
+                  widget.onSelectDestination(AppMenuDestination.invoices),
             ),
-            ListTile(
-              leading: const Icon(Icons.settings_outlined),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Settings will be added soon')),
-                );
-              },
+            const Divider(height: 24),
+            SwitchListTile(
+              secondary: const Icon(Icons.visibility_outlined),
+              title: const Text('Show Preview'),
+              subtitle: Text(
+                showPreview ? 'Preview is visible' : 'Preview is hidden',
+              ),
+              value: showPreview,
+              onChanged: isSaving ? null : togglePreview,
             ),
           ],
         ),
