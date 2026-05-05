@@ -12,11 +12,15 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
   static const int pageSize = 20;
 
   final ScrollController scrollController = ScrollController();
+  final TextEditingController searchController = TextEditingController();
   final invoices = signal<List<PrintInvoice>>([]);
+  final allInvoices = signal<List<PrintInvoice>>([]);
   final isInitialLoading = signal<bool>(false);
   final isLoadingMore = signal<bool>(false);
+  final isSearching = signal<bool>(false);
   final hasMore = signal<bool>(true);
   final errorMessage = signal<String?>(null);
+  final searchQuery = signal<String>('');
 
   Isar get isar => AppDatabase.instance.isar;
 
@@ -24,10 +28,16 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
   void initState() {
     super.initState();
     scrollController.addListener(onScroll);
+    searchController.addListener(onSearchChanged);
     loadInvoices(reset: true);
   }
 
   Future<void> loadInvoices({bool reset = false}) async {
+    if (searchQuery.value.isNotEmpty) {
+      isInitialLoading.value = false;
+      isLoadingMore.value = false;
+      return;
+    }
     if (isInitialLoading.value || isLoadingMore.value) return;
     if (!reset && !hasMore.value) return;
 
@@ -52,6 +62,7 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
       if (!mounted) return;
 
       invoices.value = reset ? nextItems : [...invoices.value, ...nextItems];
+      allInvoices.value = invoices.value;
       hasMore.value = nextItems.length == pageSize;
     } catch (error) {
       if (!mounted) return;
@@ -64,7 +75,55 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
     }
   }
 
+  Future<void> onSearchChanged() async {
+    final query = normalizePhone(searchController.text);
+    searchQuery.value = query;
+    errorMessage.value = null;
+
+    if (query.isEmpty) {
+      isSearching.value = false;
+      if (allInvoices.value.isNotEmpty) {
+        invoices.value = allInvoices.value;
+        return;
+      }
+      await loadInvoices(reset: true);
+      return;
+    }
+
+    isSearching.value = true;
+    hasMore.value = false;
+
+    try {
+      final source = allInvoices.value.isEmpty
+          ? await isar.printInvoices
+                .where()
+                .anyCreatedAt()
+                .sortByCreatedAtDesc()
+                .findAll()
+          : allInvoices.value;
+
+      if (!mounted) return;
+
+      allInvoices.value = source;
+      invoices.value = source.where((invoice) {
+        return invoice.phoneLines.any((phone) {
+          return normalizePhone(phone).contains(query);
+        });
+      }).toList();
+    } catch (error) {
+      if (!mounted) return;
+      errorMessage.value = 'Unable to search invoices.\n$error';
+    } finally {
+      if (mounted) {
+        isSearching.value = false;
+        isInitialLoading.value = false;
+        isLoadingMore.value = false;
+      }
+    }
+  }
+
   void onScroll() {
+    if (searchQuery.value.isNotEmpty) return;
     if (!scrollController.hasClients ||
         isInitialLoading.value ||
         isLoadingMore.value) {
@@ -100,14 +159,28 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
     return '${invoice.currency}$value';
   }
 
+  void openInvoiceForReprint(PrintInvoice invoice) {
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => PrinterPage(initialInvoice: invoice)),
+    );
+  }
+
+  String normalizePhone(String value) {
+    return value.replaceAll(RegExp(r'\D'), '');
+  }
+
   @override
   void dispose() {
     scrollController.dispose();
+    searchController.dispose();
     invoices.dispose();
+    allInvoices.dispose();
     isInitialLoading.dispose();
     isLoadingMore.dispose();
+    isSearching.dispose();
     hasMore.dispose();
     errorMessage.dispose();
+    searchQuery.dispose();
     super.dispose();
   }
 }

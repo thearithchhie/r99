@@ -6,6 +6,7 @@ class PrintTemplateEditor extends StatelessWidget {
   const PrintTemplateEditor({
     super.key,
     required this.customerNameController,
+    required this.onCustomerNameChanged,
     required this.pageNameController,
     required this.totalPriceController,
     required this.selectedOption,
@@ -29,6 +30,7 @@ class PrintTemplateEditor extends StatelessWidget {
   });
 
   final TextEditingController customerNameController;
+  final ValueChanged<String> onCustomerNameChanged;
   final TextEditingController pageNameController;
   final TextEditingController totalPriceController;
   final String selectedOption;
@@ -65,10 +67,23 @@ class PrintTemplateEditor extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             child: Column(
               children: [
-                _InputField(
-                  controller: customerNameController,
-                  label: 'ឈ្នោះផេក',
-                  readOnly: true,
+                DropdownButtonFormField<String>(
+                  initialValue: customerNameController.text,
+                  decoration: InputDecoration(
+                    labelText: 'ឈ្នោះផេក',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    filled: true,
+                    fillColor: AppColor.pureWhite,
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'shop', child: Text('shop')),
+                    DropdownMenuItem(value: 'none', child: Text('none')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) onCustomerNameChanged(value);
+                  },
                 ),
                 const SizedBox(height: 10),
                 _InputField(

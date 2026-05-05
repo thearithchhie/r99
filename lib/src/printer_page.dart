@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/controllers/printer_page_controller_mixin.dart';
+import 'package:r99/src/core/database/models/print_invoice.dart';
 import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
 import 'package:r99/src/utilities/app_colors.dart';
@@ -10,7 +11,9 @@ import 'package:signals_flutter/signals_flutter.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 class PrinterPage extends StatefulWidget {
-  const PrinterPage({super.key});
+  const PrinterPage({super.key, this.initialInvoice});
+
+  final PrintInvoice? initialInvoice;
 
   @override
   State<PrinterPage> createState() => _PrinterPageState();
@@ -89,6 +92,7 @@ class _PrinterPageState extends State<PrinterPage>
                 const SizedBox(height: 16),
                 PrintTemplateEditor(
                   customerNameController: customerNameController,
+                  onCustomerNameChanged: setCustomerName,
                   pageNameController: pageNameController,
                   totalPriceController: totalPriceController,
                   selectedOption: selectedOption.value,
