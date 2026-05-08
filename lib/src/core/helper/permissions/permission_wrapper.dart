@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:permission_handler/permission_handler.dart';
 
 enum BluetoothPermissionResult { granted, denied, permanentlyDenied }
@@ -12,6 +14,10 @@ class PermissionWrapper {
   static PermissionWrapper get instance => _instance;
 
   Future<BluetoothPermissionResult> requestBluetoothScanPermissions() async {
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      return BluetoothPermissionResult.granted;
+    }
+
     final scanStatus = await Permission.bluetoothScan.request();
     final connectStatus = await Permission.bluetoothConnect.request();
     final statuses = [scanStatus, connectStatus];

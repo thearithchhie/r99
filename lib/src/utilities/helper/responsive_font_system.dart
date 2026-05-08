@@ -31,7 +31,11 @@ class ResponsiveFontSystem {
     return clampedFactor;
   }
 
-  static double getResponsiveFontSize(BuildContext context, double baseSize, {bool respectAccessibility = true}) {
+  static double getResponsiveFontSize(
+    BuildContext context,
+    double baseSize, {
+    bool respectAccessibility = true,
+  }) {
     final scaleFactor = _getScaleFactor(context);
 
     double fontSize = baseSize * scaleFactor;
@@ -65,7 +69,7 @@ class ResponsiveFontSystem {
   }
 
   static double getLetterSpacing(double fontSize, FontWeight weight) {
-    final weightMultiplier = weight.index >= FontWeight.w600.index ? 0.02 : 0.0;
+    final weightMultiplier = weight.value >= FontWeight.w600.value ? 0.02 : 0.0;
 
     if (fontSize <= 12) {
       return 0.1 + weightMultiplier;

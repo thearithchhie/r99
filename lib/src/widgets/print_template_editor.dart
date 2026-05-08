@@ -219,21 +219,15 @@ class PrintTemplateEditor extends StatelessWidget {
 }
 
 class _InputField extends StatelessWidget {
-  const _InputField({
-    required this.controller,
-    required this.label,
-    this.readOnly = false,
-  });
+  const _InputField({required this.controller, required this.label});
 
   final TextEditingController controller;
   final String label;
-  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),

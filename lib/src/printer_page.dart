@@ -84,7 +84,7 @@ class _PrinterPageState extends State<PrinterPage>
                       leading: Icon(Icons.info_outline),
                       title: Text('BLE connected'),
                       subtitle: Text(
-                        'If Print Test does nothing, pair the printer in Android Bluetooth settings and connect to the Classic Bluetooth device instead of BLE.',
+                        'Printing is blocked on BLE. Pair the printer in Android Bluetooth settings, disconnect this device, and connect to the Classic Bluetooth entry instead.',
                       ),
                     ),
                   ),

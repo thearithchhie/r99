@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
@@ -16,7 +18,15 @@ mixin TextScannerPageControllerMixin on State<TextScannerPage> {
   final errorMessage = signal<String?>(null);
   final isProcessing = signal<bool>(false);
 
+  bool get isWindowsDesktop => Platform.isWindows;
+
   Future<void> pickImage(ImageSource source) async {
+    if (isWindowsDesktop) {
+      errorMessage.value =
+          'Text Scanner is not available on Windows yet. The current OCR package in this app only supports Android and iOS.';
+      return;
+    }
+
     try {
       final XFile? image = await imagePicker.pickImage(source: source);
       if (image == null) {

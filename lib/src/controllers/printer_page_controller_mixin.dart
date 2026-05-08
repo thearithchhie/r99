@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -22,7 +23,13 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   final PermissionWrapper permissionWrapper = PermissionWrapper.instance;
   final GlobalKey cardPreviewKey = GlobalKey();
 
-  static const Set<PrinterConnectionType> scanTypes = {PrinterConnectionType.bluetooth, PrinterConnectionType.ble};
+  Set<PrinterConnectionType> get scanTypes {
+    if (Platform.isWindows) {
+      return {PrinterConnectionType.bluetooth, PrinterConnectionType.usb};
+    }
+
+    return {PrinterConnectionType.bluetooth, PrinterConnectionType.ble};
+  }
 
   final TextEditingController customerNameController = TextEditingController(text: 'shop');
   final TextEditingController pageNameController = TextEditingController(text: '');
@@ -50,7 +57,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   bool get connectedViaBle => connectedDevice.value is BlePrinterDevice;
 
   List<PrinterDevice> get printerDevices {
-    return devices.value.where((device) {
+    final filtered = devices.value.where((device) {
       final name = device.name.toLowerCase();
       return name.contains('mp') ||
           name.contains('printer') ||
@@ -58,6 +65,32 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
           name.contains('58') ||
           device == connectedDevice.value;
     }).toList();
+
+    final Map<String, PrinterDevice> byName = {};
+    for (final device in filtered) {
+      final key = normalizedDeviceName(device.name);
+      final existing = byName[key];
+
+      if (existing == null) {
+        byName[key] = device;
+        continue;
+      }
+
+      if (existing is BlePrinterDevice && device is BluetoothPrinterDevice) {
+        byName[key] = device;
+      }
+    }
+
+    final result = byName.values.toList();
+    result.sort((a, b) {
+      final rankA = transportRank(a);
+      final rankB = transportRank(b);
+      if (rankA != rankB) {
+        return rankA.compareTo(rankB);
+      }
+      return a.name.compareTo(b.name);
+    });
+    return result;
   }
 
   PrintTemplateData get templateData {
@@ -210,9 +243,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
     if (connectedViaBle) {
       showMessage(
-        'Connected with BLE. MP583 printers often print only with Classic Bluetooth.',
+        'Connected with BLE. Disconnect and connect to the Classic Bluetooth printer entry before printing.',
         duration: const Duration(seconds: 4),
       );
+      return;
     }
 
     try {
@@ -274,6 +308,19 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       PrinterConnectionType.usb => 'USB',
       PrinterConnectionType.network => 'Network',
     };
+  }
+
+  int transportRank(PrinterDevice device) {
+    return switch (device.connectionType) {
+      PrinterConnectionType.bluetooth => 0,
+      PrinterConnectionType.usb => 1,
+      PrinterConnectionType.network => 2,
+      PrinterConnectionType.ble => 3,
+    };
+  }
+
+  String normalizedDeviceName(String value) {
+    return value.trim().toLowerCase();
   }
 
   String prettyState(PrinterConnectionState currentState) {
