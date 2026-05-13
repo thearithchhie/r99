@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:r99/gen/fonts.gen.dart';
 import 'package:r99/src/print_template_data.dart';
 import 'package:r99/src/utilities/app_colors.dart';
 import 'package:r99/src/utilities/extensions/string_extension.dart';
@@ -10,7 +11,7 @@ class PrintTemplateCard extends StatelessWidget {
   final PrintTemplateData data;
 
   TextStyle get khmerTitleStyle => const TextStyle(
-    fontFamily: 'Siemreap',
+    fontFamily: FontFamily.siemreap,
     fontSize: 20,
     fontWeight: FontWeight.w900,
     color: AppColor.pureBlack,
@@ -18,7 +19,7 @@ class PrintTemplateCard extends StatelessWidget {
   );
 
   TextStyle get khmerBodyStyleCustomerName => const TextStyle(
-    fontFamily: 'Siemreap',
+    fontFamily: FontFamily.siemreap,
     fontSize: 22,
     fontWeight: FontWeight.w900,
     color: AppColor.pureBlack,
@@ -26,25 +27,33 @@ class PrintTemplateCard extends StatelessWidget {
   );
 
   TextStyle get khmerBodyStyleLocation => const TextStyle(
-    fontFamily: 'Siemreap',
+    fontFamily: FontFamily.siemreap,
     fontSize: 22,
     fontWeight: FontWeight.w900,
     color: AppColor.pureBlack,
     height: 1.25,
   );
 
-  TextStyle get bodyStylePhone => const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColor.pureBlack);
+  TextStyle get bodyStylePhone => const TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+    color: AppColor.pureBlack,
+  );
 
   TextStyle get khmerBodyStyle => const TextStyle(
-    fontFamily: 'Siemreap',
+    fontFamily: FontFamily.siemreap,
     fontSize: 20,
     fontWeight: FontWeight.bold,
     color: AppColor.pureBlack,
     height: 1.3,
   );
 
-  TextStyle get _khmerSmallStyle =>
-      const TextStyle(fontFamily: 'Siemreap', fontSize: 22, fontWeight: FontWeight.w800, height: 1.4);
+  TextStyle get _khmerSmallStyle => const TextStyle(
+    fontFamily: FontFamily.siemreap,
+    fontSize: 22,
+    fontWeight: FontWeight.w800,
+    height: 1.4,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +83,11 @@ class PrintTemplateCard extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.facebook_rounded, size: 20, fontWeight: FontWeight.w500),
+                            const Icon(
+                              Icons.facebook_rounded,
+                              size: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
                             const SizedBox(width: 5),
                             Text('ឈ្មោះផេក៖', style: khmerBodyStyle),
                             const SizedBox(width: 5),
@@ -87,11 +100,22 @@ class PrintTemplateCard extends StatelessWidget {
                           runSpacing: 5,
                           alignment: WrapAlignment.center,
                           children: [
-                            const Icon(Icons.phone, size: 20, fontWeight: FontWeight.w500),
-                            Text('លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ', style: khmerBodyStyle),
+                            const Icon(
+                              Icons.phone,
+                              size: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            Text(
+                              'លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ',
+                              style: khmerBodyStyle,
+                            ),
                             Text(
                               '097 71 56 486',
-                              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColor.pureBlack),
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColor.pureBlack,
+                              ),
                             ),
                           ],
                         ),
@@ -110,7 +134,9 @@ class PrintTemplateCard extends StatelessWidget {
                         title: 'លេខទូរស័ព្ទអ្នកទទួល',
                         lines: data.phoneLines.isEmpty
                             ? const ['-']
-                            : data.phoneLines.map((value) => value.formatPhonePreview()).toList(),
+                            : data.phoneLines
+                                  .map((value) => value.formatPhonePreview())
+                                  .toList(),
                         titleStyle: khmerTitleStyle,
                         bodyStyle: bodyStylePhone,
                       ),
@@ -118,14 +144,19 @@ class PrintTemplateCard extends StatelessWidget {
                       _InfoBox(
                         icon: Icons.location_on,
                         title: 'ទីតាំង',
-                        lines: data.locationLines.isEmpty ? const ['-'] : data.locationLines,
+                        lines: data.locationLines.isEmpty
+                            ? const ['-']
+                            : data.locationLines,
                         titleStyle: khmerTitleStyle,
                         bodyStyle: khmerBodyStyleLocation,
                         tall: true,
                       ),
                       const SizedBox(height: 10),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 12,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColor.surfaceMuted,
                           borderRadius: BorderRadius.circular(18),
@@ -133,9 +164,15 @@ class PrintTemplateCard extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.local_shipping_outlined, size: 22, fontWeight: FontWeight.w500),
+                            const Icon(
+                              Icons.local_shipping_outlined,
+                              size: 22,
+                              fontWeight: FontWeight.w500,
+                            ),
                             const SizedBox(width: 8),
-                            Expanded(child: Text('សេវាដឹក', style: khmerTitleStyle)),
+                            Expanded(
+                              child: Text('សេវាដឹក', style: khmerTitleStyle),
+                            ),
                             Text(
                               data.totalPrice.isEmpty
                                   ? 'តម្លៃសរុប៖ ${data.currency}${data.selectedOption}'
@@ -149,15 +186,24 @@ class PrintTemplateCard extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: TemplateCheckboxChip(label: 'សេវាខាងភ្ញៀវ', selected: data.guestServiceChecked),
+                            child: TemplateCheckboxChip(
+                              label: 'សេវាខាងភ្ញៀវ',
+                              selected: data.guestServiceChecked,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: data.virakChecked),
+                            child: TemplateCheckboxChip(
+                              label: 'វីរៈប៊ុនថាំ',
+                              selected: data.virakChecked,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: TemplateCheckboxChip(label: 'J&T', selected: data.jtChecked),
+                            child: TemplateCheckboxChip(
+                              label: 'J&T',
+                              selected: data.jtChecked,
+                            ),
                           ),
                         ],
                       ),
@@ -219,7 +265,10 @@ class _InfoBox extends StatelessWidget {
           for (int index = 0; index < lines.length; index++) ...[
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: tall ? 7 : 5),
+              padding: EdgeInsets.symmetric(
+                horizontal: 10,
+                vertical: tall ? 7 : 5,
+              ),
               decoration: BoxDecoration(
                 color: AppColor.pureWhite,
                 borderRadius: BorderRadius.circular(10),

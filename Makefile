@@ -50,3 +50,7 @@ c:
 # Auto export
 ex:
 	./ff auto-export
+
+# Build runner
+bb:
+	dart run build_runner build

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:r99/gen/fonts.gen.dart';
 import 'package:r99/src/utilities/app_colors.dart';
 
 class TemplateCheckboxChip extends StatelessWidget {
@@ -41,7 +42,7 @@ class TemplateCheckboxChip extends StatelessWidget {
             child: Text(
               label,
               style: const TextStyle(
-                fontFamily: 'Siemreap',
+                fontFamily: FontFamily.siemreap,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: AppColor.pureBlack,

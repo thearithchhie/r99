@@ -148,7 +148,7 @@ class AutoExportCommand extends Command {
         'export "dart:io" show File;',
         // 'export "package:flutter_bloc/flutter_bloc.dart";',
         'export "package:awesome_extensions/awesome_extensions.dart";',
-        // 'export "package:app/gen/assets.gen.dart";',
+        'export "package:r99/gen/assets.gen.dart";',
       ];
       files.insertAll(0, preImports);
       exportFile = File(join(directory.path, 'export.dart'));
