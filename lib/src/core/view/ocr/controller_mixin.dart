@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:r99/src/core/view/delivery_import/delivery_import_page.dart';
 import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
 import 'package:r99/src/printer_page.dart';
@@ -74,6 +75,10 @@ mixin TextScannerPageControllerMixin on State<TextScannerPage> {
       case AppMenuDestination.invoices:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const InvoiceListPage()),
+        );
+      case AppMenuDestination.deliveries:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const DeliveryImportPage()),
         );
     }
   }

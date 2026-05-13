@@ -1,0 +1,118 @@
+import 'dart:io';
+
+import 'package:args/command_runner.dart';
+import 'package:ff/helpers.dart';
+
+class BuildProjectCommand extends Command {
+  @override
+  String get description => 'Using for building apk and ipa files.';
+
+  @override
+  String get name => 'build';
+
+  BuildProjectCommand() {
+    argParser.addFlag('firebase', abbr: 'f', defaultsTo: false, help: 'upload app to firebase distribute');
+    argParser.addFlag('patch', abbr: 'p', defaultsTo: false, help: 'upload app to firebase distribute');
+  }
+
+  @override
+  void run() async {
+    final config = await getConfig();
+    final pubspec = await getPubspec();
+    bool firebase = argResults?['firebase'];
+    bool patch = argResults?['patch'];
+    final bool android = config['build_settings']['platforms']?.contains('android') ?? false;
+    final bool ios = config['build_settings']['platforms']?.contains('ios') ?? false;
+    final buildDirectoryPath = config['build_settings']['output_path'];
+    final distributeIdAndroid = config['build_settings']['distribute']['id']['android'];
+    final distributeIdIod = config['build_settings']['distribute']['id']['ios'];
+    final distributeGroup = config['build_settings']['distribute']['group'];
+    final flavor = config['build_settings']['flavor'];
+    final flutterVersion = config['build_settings']['flutter_version'];
+    final artifact = config['build_settings']['artifact'];
+    final exportMethod = config['build_settings']['export_method'];
+    final appName = config['build_settings']['name'];
+
+    if (!ios && !android) {
+      print('Please specify a platform');
+      return;
+    }
+
+    String script = '';
+
+    final buildDirectory = Directory(buildDirectoryPath);
+
+    String name = appName + '_' + flavor + '_' + pubspec['version'];
+
+    String flavorC = '--target lib/main_$flavor.dart --flavor $flavor';
+    String artifactC = '--artifact=$artifact';
+    String flutterSdkC = '--flutter-version=$flutterVersion';
+
+    // Clean output folder
+    if (buildDirectory.existsSync()) {
+      if (android) {
+        await runScript('rm $buildDirectoryPath/*.$artifact', 'Clear old build');
+      }
+      if (ios) {
+        await runScript('rm $buildDirectoryPath/*.ipa', 'Clear old build');
+      }
+    } else {
+      await buildDirectory.create(recursive: true);
+    }
+
+    if (android) {
+      if(!patch){
+        printInfo("Building APK file...");
+        /// flutter build apk --release
+        ///
+        script = addScript(script, script);
+        await runScript('''
+shorebird release android $artifactC $flutterSdkC $flavorC -- --no-tree-shake-icons
+        ''', "Build apk file");
+
+        printInfo("Copy APKs to output folder...");
+        await runScript('''
+cp build/app/outputs/flutter-apk/app-$flavor-release.$artifact ${buildDirectory.path}/$name.$artifact
+        ''', 'Copy apk to output folder');
+        if (firebase && (distributeIdAndroid?.isNotEmpty ?? false)) {
+          printInfo("Upload apk to Distribute ...");
+          final String scrip = '''
+firebase appdistribution:distribute ${buildDirectory.path}/$name.apk --app "$distributeIdAndroid" --groups "${distributeGroup ?? ''}" --release-notes ""
+        ''';
+          await runScript(scrip, "Upload apk Success");
+        }
+      } else {
+        printInfo("Patch APK file...");
+        await runScript('''
+ shorebird patch --platforms=android $flavorC --release-version=latest -- --no-tree-shake-icons
+        ''', "Patch apk file");
+      }
+    }
+
+    if (ios) {
+     if(!patch){
+       printSuccess("Building ipa and copy to output folder...");
+       /// flutter build ipa  --release --export-method=ad-hoc  --obfuscate --split-debug-info=any/path
+       await runScript('''
+shorebird release ios --export-method=$exportMethod $flutterSdkC $flavorC -- --no-tree-shake-icons
+        ''', "Build ipa file");
+       printInfo("Copy ipa to output folder...");
+       await runScript('''
+cp build/ios/ipa/*.ipa ${buildDirectory.path}/$name.ipa
+        ''', "Copy ipa to output folder");
+       if (firebase && (distributeIdIod?.isNotEmpty ?? false)) {
+         printInfo("Upload ipa to Distribute ...");
+
+         await runScript('''
+firebase appdistribution:distribute ${buildDirectory.path}/$name.ipa --app "$distributeIdIod" --groups "${distributeGroup ?? ''}" --release-notes ""
+        ''', "Upload ipa Success");
+       }
+     } else {
+       printInfo("Patch ipa file...");
+       await runScript('''
+ shorebird patch --platforms=ios $flavorC --release-version=latest -- --no-tree-shake-icons
+        ''', "Patch ipa file");
+     }
+    }
+  }
+}

@@ -45,3 +45,8 @@ fix_gradle:
 # clear console 
 c: 
 	clear
+
+
+# Auto export
+ex:
+	./ff auto-export

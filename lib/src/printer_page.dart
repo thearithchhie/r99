@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/controllers/printer_page_controller_mixin.dart';
 import 'package:r99/src/core/database/models/print_invoice.dart';
+import 'package:r99/src/core/view/delivery_import/delivery_import_page.dart';
 import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
 import 'package:r99/src/utilities/app_colors.dart';
@@ -19,40 +20,32 @@ class PrinterPage extends StatefulWidget {
   State<PrinterPage> createState() => _PrinterPageState();
 }
 
-class _PrinterPageState extends State<PrinterPage>
-    with PrinterPageControllerMixin {
+class _PrinterPageState extends State<PrinterPage> with PrinterPageControllerMixin {
   void onSelectDestination(AppMenuDestination destination) {
     Navigator.of(context).pop();
     switch (destination) {
       case AppMenuDestination.printer:
         return;
       case AppMenuDestination.textScanner:
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const TextScannerPage()));
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TextScannerPage()));
       case AppMenuDestination.invoices:
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => const InvoiceListPage()));
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const InvoiceListPage()));
+      case AppMenuDestination.deliveries:
+        Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DeliveryImportPage()));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: AppMenuDrawer(
-        currentDestination: AppMenuDestination.printer,
-        onSelectDestination: onSelectDestination,
-      ),
+      drawer: AppMenuDrawer(currentDestination: AppMenuDestination.printer, onSelectDestination: onSelectDestination),
       appBar: AppBar(
         title: const Text('R99 Shop'),
         centerTitle: true,
         actions: [
           Watch((context) {
             return IconButton(
-              onPressed: state.value == PrinterConnectionState.connected
-                  ? disconnectPrinter
-                  : null,
+              onPressed: state.value == PrinterConnectionState.connected ? disconnectPrinter : null,
               icon: const Icon(Icons.link_off),
             );
           }),
@@ -116,10 +109,7 @@ class _PrinterPageState extends State<PrinterPage>
                 ),
                 const SizedBox(height: 16),
                 if (showPreview.value) ...[
-                  const Text(
-                    'Card Preview',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                  ),
+                  const Text('Card Preview', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 10),
                   Center(
                     child: RepaintBoundary(
@@ -151,9 +141,7 @@ class _PrinterPageState extends State<PrinterPage>
                     Expanded(
                       child: ElevatedButton(
                         onPressed: isScanning.value ? null : startScan,
-                        child: Text(
-                          isScanning.value ? 'Scanning...' : 'Scan Printers',
-                        ),
+                        child: Text(isScanning.value ? 'Scanning...' : 'Scan Printers'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -166,8 +154,7 @@ class _PrinterPageState extends State<PrinterPage>
                   ],
                 ),
                 const SizedBox(height: 16),
-                if (state.value != PrinterConnectionState.connected &&
-                    printerDevices.isEmpty)
+                if (state.value != PrinterConnectionState.connected && printerDevices.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 40),
                     child: Center(
@@ -191,23 +178,15 @@ class _PrinterPageState extends State<PrinterPage>
                   }),
               ],
             ),
-            if (isScanning.value &&
-                state.value != PrinterConnectionState.connected) ...[
-              const ModalBarrier(
-                dismissible: false,
-                color: AppColor.overlayScrim,
-              ),
+            if (isScanning.value && state.value != PrinterConnectionState.connected) ...[
+              const ModalBarrier(dismissible: false, color: AppColor.overlayScrim),
               const Center(
                 child: Card(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Scanning printers...'),
-                      ],
+                      children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Scanning printers...')],
                     ),
                   ),
                 ),

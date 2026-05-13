@@ -1,0 +1,34 @@
+build_settings:
+  name: R99
+  platforms:
+    - android
+    #- ios
+  output_path: output
+  flutter_version: 3.32.8
+  artifact: apk
+  # app-store / ad-hoc / enterprise / development / developer-id
+  export_method: app-store
+  # production / staging / development
+  flavor: staging
+  distribute:
+    id:
+      android: 1:372653292310:android:402afcfd2ac33def402e37
+      ios: 1:372653292310:ios:9a6afa369947fbb7402e37
+    group:
+
+locale:
+  file_exel: localization.xlsx
+  file_exel_import: localization-import.xlsx
+  languages:
+    - name: en-US
+      key: en
+      title: English
+    - name: zh-CN
+      key: zh-cn
+      title: Chinese Simplify
+    - name: km-KH
+      key: km
+      title: Khmer
+    - name: vi-VN
+      key: vi
+      title: Vietname

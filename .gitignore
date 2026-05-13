@@ -43,3 +43,23 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local credentials
+credentials.json
+project_tool/credentials.json
+
+# Local scripts
+/.firebaserc
+ios/build/ios/
+outputs/
+
+claude_docs/*
+.claude/*
+CLAUDE.md
+
+# MCP config (contains secrets)
+.claude/.mcp.json
+*.g.dart
+
+# Ignore _.dart files in lib folder
+lib/**/_.dart

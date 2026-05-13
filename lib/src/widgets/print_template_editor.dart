@@ -57,10 +57,7 @@ class PrintTemplateEditor extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Template Input',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-        ),
+        const Text('Template Input', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
         const SizedBox(height: 10),
         Card(
           child: Padding(
@@ -71,9 +68,7 @@ class PrintTemplateEditor extends StatelessWidget {
                   initialValue: customerNameController.text,
                   decoration: InputDecoration(
                     labelText: 'ឈ្នោះផេក',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                     filled: true,
                     fillColor: AppColor.pureWhite,
                   ),
@@ -86,10 +81,7 @@ class PrintTemplateEditor extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 10),
-                _InputField(
-                  controller: pageNameController,
-                  label: 'ឈ្នោះអតិថិជន',
-                ),
+                _InputField(controller: pageNameController, label: 'ឈ្នោះអតិថិជន'),
                 const SizedBox(height: 10),
                 _DynamicFieldGroup(
                   title: 'លេខទូរស័ព្ទ',
@@ -111,22 +103,13 @@ class PrintTemplateEditor extends StatelessWidget {
                 const SizedBox(height: 10),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    "តម្លៃសរុប៖ ",
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  child: Text("តម្លៃសរុប៖ ", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                 ),
                 const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
-                      child: _InputField(
-                        controller: totalPriceController,
-                        label: 'តម្លៃសរុប',
-                      ),
+                      child: _InputField(controller: totalPriceController, label: 'តម្លៃសរុប'),
                     ),
                     const SizedBox(width: 10),
                     SizedBox(
@@ -135,9 +118,7 @@ class PrintTemplateEditor extends StatelessWidget {
                         initialValue: selectedOption,
                         decoration: InputDecoration(
                           labelText: 'ជម្រើស',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                           filled: true,
                           fillColor: AppColor.pureWhite,
                         ),
@@ -164,9 +145,7 @@ class PrintTemplateEditor extends StatelessWidget {
                         initialValue: currency,
                         decoration: InputDecoration(
                           labelText: 'រូបិយប័ណ្ណ',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
                           filled: true,
                           fillColor: AppColor.pureWhite,
                         ),
@@ -193,19 +172,11 @@ class PrintTemplateEditor extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: TemplateCheckboxChip(
-                        label: 'វីរៈប៊ុនថាំ',
-                        selected: virakChecked,
-                        onTap: onToggleVirak,
-                      ),
+                      child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: virakChecked, onTap: onToggleVirak),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
-                      child: TemplateCheckboxChip(
-                        label: 'J&T',
-                        selected: jtChecked,
-                        onTap: onToggleJt,
-                      ),
+                      child: TemplateCheckboxChip(label: 'J&T', selected: jtChecked, onTap: onToggleJt),
                     ),
                   ],
                 ),
@@ -262,35 +233,20 @@ class _DynamicFieldGroup extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              child: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
             ),
-            IconButton(
-              onPressed: onAdd,
-              icon: Icon(icon),
-              tooltip: 'Add $title',
-            ),
+            IconButton(onPressed: onAdd, icon: Icon(icon), tooltip: 'Add $title'),
           ],
         ),
         for (int index = 0; index < controllers.length; index++) ...[
           Row(
             children: [
               Expanded(
-                child: _InputField(
-                  controller: controllers[index],
-                  label: labelBuilder(index),
-                ),
+                child: _InputField(controller: controllers[index], label: labelBuilder(index)),
               ),
               const SizedBox(width: 8),
               IconButton(
-                onPressed: controllers.length > 1
-                    ? () => onRemove(index)
-                    : null,
+                onPressed: controllers.length > 1 ? () => onRemove(index) : null,
                 icon: const Icon(Icons.remove_circle_outline),
                 tooltip: 'Remove ${labelBuilder(index)}',
               ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/core/database/app_preferences_store.dart';
 
-enum AppMenuDestination { printer, textScanner, invoices }
+enum AppMenuDestination { printer, textScanner, invoices, deliveries }
 
 class AppMenuDrawer extends StatefulWidget {
   const AppMenuDrawer({
@@ -96,6 +96,14 @@ class _AppMenuDrawerState extends State<AppMenuDrawer> {
                   widget.currentDestination == AppMenuDestination.invoices,
               onTap: () =>
                   widget.onSelectDestination(AppMenuDestination.invoices),
+            ),
+            ListTile(
+              leading: const Icon(Icons.cloud_download_outlined),
+              title: const Text('Deliveries'),
+              selected:
+                  widget.currentDestination == AppMenuDestination.deliveries,
+              onTap: () =>
+                  widget.onSelectDestination(AppMenuDestination.deliveries),
             ),
             const Divider(height: 24),
             SwitchListTile(

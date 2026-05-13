@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+exec dart run project_tool/bin/ff.dart "$@"

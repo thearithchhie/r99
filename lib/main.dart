@@ -1,11 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:r99/src/core/database/app_database.dart';
-import 'package:r99/src/core/view/auth/login_page.dart';
-import 'package:r99/src/printer_page.dart';
-import 'package:r99/src/utilities/app_colors.dart';
+import 'package:r99/export.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppEnv.load();
   await AppDatabase.instance.open();
   runApp(const MyApp());
 }
