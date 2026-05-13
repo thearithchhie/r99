@@ -1,49 +1,31 @@
-import 'package:flutter/services.dart';
+import 'package:r99/export.dart';
 
-class AppEnv {
-  AppEnv._();
+abstract class AppEnv {
+  const AppEnv();
 
-  static final Map<String, String> _values = <String, String>{};
+  String get baseUrl;
 
-  static Future<void> load() async {
-    try {
-      final raw = await rootBundle.loadString('.env');
-      _values
-        ..clear()
-        ..addAll(_parse(raw));
-    } catch (_) {
-      _values.clear();
+  String get socketUrl;
+
+  String get apiPath => '/api/v1';
+
+  String get dinkTalkBotToken => 'b1fd25f9d4cebd89e8b6cf3a529b74088a08639231c5cb8c7f83a494134f04ed';
+
+  String get shareDeepLink;
+
+  String get getBaseUrl {
+    final String v = UserStorage.customBaseUrlBox.get(defaultValue: '');
+    if (v.isNotEmpty) {
+      return v;
     }
+    return baseUrl;
   }
 
-  static String get googleSheetLink {
-    return _values['GOOGLE_SHEET_LINK']?.trim() ?? '';
-  }
-
-  static Map<String, String> _parse(String raw) {
-    final values = <String, String>{};
-
-    for (final line in raw.split('\n')) {
-      final trimmed = line.trim();
-      if (trimmed.isEmpty || trimmed.startsWith('#')) {
-        continue;
-      }
-
-      final separatorIndex = trimmed.indexOf('=');
-      if (separatorIndex <= 0) {
-        continue;
-      }
-
-      final key = trimmed.substring(0, separatorIndex).trim();
-      final value = trimmed.substring(separatorIndex + 1).trim();
-
-      if (key.isEmpty) {
-        continue;
-      }
-
-      values[key] = value;
+  String get getSocketUrl {
+    final String v = UserStorage.customSocketUrlBox.get(defaultValue: '');
+    if (v.isNotEmpty) {
+      return v;
     }
-
-    return values;
+    return socketUrl;
   }
 }

@@ -2,7 +2,7 @@ import 'package:r99/export.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppEnv.load();
+  await AppLoadEnv.load();
   await AppDatabase.instance.open();
   runApp(const MyApp());
 }

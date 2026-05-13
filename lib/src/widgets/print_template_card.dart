@@ -11,11 +11,29 @@ class PrintTemplateCard extends StatelessWidget {
 
   TextStyle get khmerTitleStyle => const TextStyle(
     fontFamily: 'Siemreap',
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: FontWeight.w900,
     color: AppColor.pureBlack,
     height: 1.25,
   );
+
+  TextStyle get khmerBodyStyleCustomerName => const TextStyle(
+    fontFamily: 'Siemreap',
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+    color: AppColor.pureBlack,
+    height: 1.25,
+  );
+
+  TextStyle get khmerBodyStyleLocation => const TextStyle(
+    fontFamily: 'Siemreap',
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+    color: AppColor.pureBlack,
+    height: 1.25,
+  );
+
+  TextStyle get bodyStylePhone => const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColor.pureBlack);
 
   TextStyle get khmerBodyStyle => const TextStyle(
     fontFamily: 'Siemreap',
@@ -84,7 +102,7 @@ class PrintTemplateCard extends StatelessWidget {
                         title: 'ឈ្មោះអតិថិជន',
                         lines: [data.pageName.isEmpty ? '-' : data.pageName],
                         titleStyle: khmerTitleStyle,
-                        bodyStyle: khmerBodyStyle,
+                        bodyStyle: khmerBodyStyleCustomerName,
                       ),
                       const SizedBox(height: 10),
                       _InfoBox(
@@ -94,7 +112,7 @@ class PrintTemplateCard extends StatelessWidget {
                             ? const ['-']
                             : data.phoneLines.map((value) => value.formatPhonePreview()).toList(),
                         titleStyle: khmerTitleStyle,
-                        bodyStyle: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColor.pureBlack),
+                        bodyStyle: bodyStylePhone,
                       ),
                       const SizedBox(height: 10),
                       _InfoBox(
@@ -102,7 +120,7 @@ class PrintTemplateCard extends StatelessWidget {
                         title: 'ទីតាំង',
                         lines: data.locationLines.isEmpty ? const ['-'] : data.locationLines,
                         titleStyle: khmerTitleStyle,
-                        bodyStyle: khmerBodyStyle,
+                        bodyStyle: khmerBodyStyleLocation,
                         tall: true,
                       ),
                       const SizedBox(height: 10),

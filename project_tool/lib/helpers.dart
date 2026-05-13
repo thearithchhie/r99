@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+// ignore: depend_on_referenced_packages
+import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 import 'package:chalk/chalk.dart';
+import 'package:googleapis/drive/v3.dart' as drive;
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 import 'package:yaml/yaml.dart';
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:googleapis/drive/v3.dart' as drive;
-import 'package:_discoveryapis_commons/_discoveryapis_commons.dart' as commons;
 
 final _scopes = [drive.DriveApi.driveFileScope];
 Map<String, String>? _toolEnvCache;
