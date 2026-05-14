@@ -53,11 +53,9 @@ class _DeliveryImportPageState extends State<DeliveryImportPage>
       appBar: AppBar(title: const Text('Deliveries')),
       body: Watch((context) {
         final previewRecord = activePreviewRecord.value;
-        final queryText = searchController.text;
 
         Widget content;
-        if ((isLoading.value || isSearching.value) &&
-            deliveryRecords.value.isEmpty) {
+        if (isLoading.value && deliveryRecords.value.isEmpty) {
           content = const Center(child: CircularProgressIndicator());
         } else if (errorMessage.value != null &&
             deliveryRecords.value.isEmpty) {
@@ -74,9 +72,7 @@ class _DeliveryImportPageState extends State<DeliveryImportPage>
                   ),
                   const SizedBox(height: 12),
                   ElevatedButton(
-                    onPressed: () => searchQuery.value.isEmpty
-                        ? loadDeliveryRecords()
-                        : onSearchChanged(),
+                    onPressed: loadDeliveryRecords,
                     child: const Text('Retry'),
                   ),
                 ],
@@ -84,13 +80,7 @@ class _DeliveryImportPageState extends State<DeliveryImportPage>
             ),
           );
         } else if (deliveryRecords.value.isEmpty) {
-          content = Center(
-            child: Text(
-              searchQuery.value.isEmpty
-                  ? 'No imported deliveries yet.'
-                  : 'No deliveries found for this phone number',
-            ),
-          );
+          content = const Center(child: Text('No imported deliveries yet.'));
         } else {
           content = ListView(
             padding: const EdgeInsets.all(16),
@@ -121,33 +111,6 @@ class _DeliveryImportPageState extends State<DeliveryImportPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Google Sheet Import',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Paste a public Google Sheet share URL. The app will download the sheet, scrape rows as-is, and replace the local delivery import list.',
-                          ),
-                          const SizedBox(height: 14),
-                          TextField(
-                            controller: sheetUrlController,
-                            keyboardType: TextInputType.url,
-                            decoration: InputDecoration(
-                              labelText: 'Google Sheet URL',
-                              hintText:
-                                  'https://docs.google.com/spreadsheets/d/.../edit',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              filled: true,
-                              fillColor: AppColor.pureWhite,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
                           Row(
                             children: [
                               Expanded(
@@ -192,7 +155,7 @@ class _DeliveryImportPageState extends State<DeliveryImportPage>
                               onPressed:
                                   isImporting.value ||
                                       isPrintingAll.value ||
-                                      allDeliveryRecords.value.isEmpty
+                                      deliveryRecords.value.isEmpty
                                   ? null
                                   : confirmDeleteAll,
                               icon: const Icon(Icons.delete_outline),
@@ -233,29 +196,6 @@ class _DeliveryImportPageState extends State<DeliveryImportPage>
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                  child: TextField(
-                    controller: searchController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      hintText: 'Optional: search by phone number',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: queryText.isEmpty
-                          ? null
-                          : IconButton(
-                              onPressed: searchController.clear,
-                              icon: const Icon(Icons.close),
-                            ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      filled: true,
-                      fillColor: AppColor.pureWhite,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
                 Expanded(child: content),
               ],
             ),

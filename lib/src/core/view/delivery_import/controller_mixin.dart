@@ -1,42 +1,23 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
-import 'package:isar_community/isar.dart';
-import 'package:r99/src/core/database/app_database.dart';
-import 'package:r99/src/core/database/models/delivery_record.dart';
-import 'package:r99/src/core/database/models/print_invoice.dart';
-import 'package:r99/src/core/database/services/print_invoice_store.dart';
-import 'package:r99/src/core/printer/shared_printer_manager.dart';
-import 'package:r99/src/core/services/google_sheet_delivery_import_service.dart';
-import 'package:r99/src/core/view/delivery_import/delivery_import_page.dart';
-import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
-import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
-import 'package:r99/src/print_template_data.dart';
-import 'package:r99/src/printer_page.dart';
-import 'package:r99/src/widgets/app_menu_drawer.dart';
-import 'package:signals_flutter/signals_flutter.dart';
+import 'package:r99/export.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
   static const int printBatchSize = 5;
 
-  final TextEditingController sheetUrlController = TextEditingController();
-  final TextEditingController searchController = TextEditingController();
   final GlobalKey printPreviewKey = GlobalKey();
 
   final deliveryRecords = signal<List<DeliveryRecord>>([]);
-  final allDeliveryRecords = signal<List<DeliveryRecord>>([]);
   final importMessages = signal<List<String>>([]);
   final activePreviewRecord = signal<DeliveryRecord?>(null);
   final isImporting = signal<bool>(false);
   final isLoading = signal<bool>(false);
-  final isSearching = signal<bool>(false);
   final isPrintingAll = signal<bool>(false);
   final summaryMessage = signal<String?>(null);
-  final searchQuery = signal<String>('');
   final errorMessage = signal<String?>(null);
 
   Isar get isar => AppDatabase.instance.isar;
@@ -45,22 +26,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
   @override
   void initState() {
     super.initState();
-    searchController.addListener(onSearchChanged);
     loadDeliveryRecords();
-  }
-
-  void applyDeliveryRecords(List<DeliveryRecord> records) {
-    allDeliveryRecords.value = records;
-
-    final query = searchQuery.value;
-    if (query.isEmpty) {
-      deliveryRecords.value = records;
-      return;
-    }
-
-    deliveryRecords.value = records.where((record) {
-      return normalizePhone(record.phone).contains(query);
-    }).toList();
   }
 
   Future<void> loadDeliveryRecords() async {
@@ -72,7 +38,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
           .sortByImportedAtDesc()
           .findAll();
       if (!mounted) return;
-      applyDeliveryRecords(records);
+      deliveryRecords.value = records;
     } catch (error) {
       if (!mounted) return;
       errorMessage.value = 'Unable to load imported deliveries.\n$error';
@@ -83,45 +49,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     }
   }
 
-  Future<void> onSearchChanged() async {
-    final query = normalizePhone(searchController.text);
-    searchQuery.value = query;
-    errorMessage.value = null;
-
-    if (query.isEmpty) {
-      isSearching.value = false;
-      if (allDeliveryRecords.value.isNotEmpty) {
-        deliveryRecords.value = allDeliveryRecords.value;
-        return;
-      }
-      await loadDeliveryRecords();
-      return;
-    }
-
-    isSearching.value = true;
-
-    try {
-      final source = allDeliveryRecords.value.isEmpty
-          ? await isar.deliveryRecords.where().sortByImportedAtDesc().findAll()
-          : allDeliveryRecords.value;
-
-      if (!mounted) return;
-
-      applyDeliveryRecords(source);
-    } catch (error) {
-      if (!mounted) return;
-      errorMessage.value = 'Unable to search deliveries.\n$error';
-    } finally {
-      if (mounted) {
-        isSearching.value = false;
-        isLoading.value = false;
-      }
-    }
-  }
-
   Future<void> importFromGoogleSheet() async {
-    final typedUrl = sheetUrlController.text.trim();
-
     isImporting.value = true;
     summaryMessage.value = null;
     errorMessage.value = null;
@@ -129,7 +57,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
     try {
       final resolvedShareUrl = GoogleSheetDeliveryImportService.resolveShareUrl(
-        typedUrl,
+        '',
       );
       final result = await GoogleSheetDeliveryImportService.importFromShareUrl(
         resolvedShareUrl,
@@ -145,9 +73,6 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
       if (!mounted) return;
 
       importMessages.value = result.messages;
-      if (typedUrl != resolvedShareUrl) {
-        sheetUrlController.text = resolvedShareUrl;
-      }
       summaryMessage.value = result.skippedRows == 0
           ? 'Imported ${result.records.length} deliveries.'
           : 'Imported ${result.records.length} deliveries. '
@@ -266,10 +191,10 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
       if (!mounted) return;
 
-      final updatedRecords = allDeliveryRecords.value
+      final updatedRecords = deliveryRecords.value
           .where((item) => item.id != record.id)
           .toList();
-      applyDeliveryRecords(updatedRecords);
+      deliveryRecords.value = updatedRecords;
 
       if (activePreviewRecord.value?.id == record.id) {
         activePreviewRecord.value = null;
@@ -293,7 +218,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
       if (!mounted) return;
 
-      applyDeliveryRecords(const []);
+      deliveryRecords.value = const [];
       activePreviewRecord.value = null;
       summaryMessage.value = 'Deleted all imported deliveries.';
       errorMessage.value = null;
@@ -372,10 +297,6 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     return 'shop';
   }
 
-  String normalizePhone(String value) {
-    return value.replaceAll(RegExp(r'\D'), '');
-  }
-
   String deviceTransport(PrinterDevice device) {
     return switch (device.connectionType) {
       PrinterConnectionType.bluetooth => 'Classic Bluetooth',
@@ -439,18 +360,13 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
   @override
   void dispose() {
-    sheetUrlController.dispose();
-    searchController.dispose();
     deliveryRecords.dispose();
-    allDeliveryRecords.dispose();
     importMessages.dispose();
     activePreviewRecord.dispose();
     isImporting.dispose();
     isLoading.dispose();
-    isSearching.dispose();
     isPrintingAll.dispose();
     summaryMessage.dispose();
-    searchQuery.dispose();
     errorMessage.dispose();
     super.dispose();
   }

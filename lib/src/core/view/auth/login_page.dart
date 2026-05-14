@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:r99/src/utilities/app_colors.dart';
+import 'package:r99/export.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.onLoginSuccess});
@@ -10,153 +9,100 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  bool obscurePassword = true;
-
-  @override
-  void dispose() {
-    _usernameController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  void submit() {
-    final form = _formKey.currentState;
-    if (form == null || !form.validate()) {
-      return;
-    }
-
-    FocusScope.of(context).unfocus();
-    widget.onLoginSuccess();
-  }
-
+class _LoginPageState extends State<LoginPage> with LoginPageControllerMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColor.loginBackgroundGradient,
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 420),
-                child: Card(
-                  elevation: 0,
-                  color: AppColor.pureWhite,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                    side: const BorderSide(color: AppColor.cardBorder),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          CircleAvatar(
-                            radius: 80,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(100),
-                              child: Image.asset(
-                                'assets/logo/logo.jpg',
-                                fit: BoxFit.contain,
+      body: Watch((context) {
+        return Container(
+          decoration: const BoxDecoration(gradient: AppColor.loginBackgroundGradient),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Card(
+                    elevation: 0,
+                    color: AppColor.pureWhite,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                      side: const BorderSide(color: AppColor.cardBorder),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Form(
+                        key: formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CircleAvatar(
+                              radius: 80,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image.asset(Assets.logo.logo.path, fit: BoxFit.contain),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                          Align(
-                            alignment: Alignment.center,
-                            child: Text(
-                              'Welcome Back',
-                              style: theme.textTheme.headlineSmall!.copyWith(
-                                fontWeight: FontWeight.w700,
+                            const SizedBox(height: 20),
+                            Align(
+                              alignment: Alignment.center,
+                              child: Text(
+                                'Welcome Back',
+                                style: theme.textTheme.headlineSmall!.copyWith(fontWeight: FontWeight.w700),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                          TextFormField(
-                            controller: _usernameController,
-                            textInputAction: TextInputAction.next,
-                            decoration: InputDecoration(
+                            const SizedBox(height: 24),
+                            CustomInputFieldText(
+                              controller: usernameController,
+                              textInputAction: TextInputAction.next,
                               labelText: 'Username',
                               prefixIcon: const Icon(Icons.person_outline),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              filled: true,
-                              fillColor: AppColor.loginInputFill,
+                              validator: (value) {
+                                if (value == null || value.trim().isEmpty) {
+                                  return 'Please enter username';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Please enter username';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 14),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: obscurePassword,
-                            onFieldSubmitted: (_) => submit(),
-                            decoration: InputDecoration(
+                            const SizedBox(height: 14),
+                            CustomInputFieldText(
+                              controller: passwordController,
+                              obscureText: obscurePassword.value,
+                              onFieldSubmitted: (_) => submit(),
                               labelText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
                               suffixIcon: IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    obscurePassword = !obscurePassword;
-                                  });
-                                },
+                                onPressed: toggleObscurePassword,
                                 icon: Icon(
-                                  obscurePassword
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
+                                  obscurePassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                                 ),
                               ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              filled: true,
-                              fillColor: AppColor.loginInputFill,
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Please enter password';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter password';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 22),
-                          SizedBox(
-                            height: 54,
-                            child: FilledButton(
-                              onPressed: submit,
-                              style: FilledButton.styleFrom(
-                                backgroundColor: AppColor.themeSeed,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                            const SizedBox(height: 22),
+                            SizedBox(
+                              height: 54,
+                              child: FilledButton(
+                                onPressed: submit,
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColor.themeSeed,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                                 ),
-                              ),
-                              child: const Text(
-                                'Sign In',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
+                                child: const Text(
+                                  'Sign In',
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -164,8 +110,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

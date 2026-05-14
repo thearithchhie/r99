@@ -17,3 +17,5 @@ enum StorageBox {
 
   final bool inEncrypt;
 }
+
+enum KeyboardType { normal, number, double }
