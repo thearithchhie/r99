@@ -3,19 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
-import 'package:r99/src/core/database/app_database.dart';
-import 'package:r99/src/core/database/app_preferences_store.dart';
-import 'package:r99/src/core/database/models/app_preference.dart';
-import 'package:r99/src/core/database/models/print_invoice.dart';
-import 'package:r99/src/core/database/services/print_invoice_store.dart';
-import 'package:r99/src/core/helper/permissions/permission_wrapper.dart';
-import 'package:r99/src/core/printer/shared_printer_manager.dart';
-import 'package:r99/src/print_template_data.dart';
-import 'package:r99/src/printer_page.dart';
-import 'package:signals_flutter/signals_flutter.dart';
+import 'package:r99/export.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 mixin PrinterPageControllerMixin on State<PrinterPage> {
@@ -31,20 +21,14 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     return {PrinterConnectionType.bluetooth, PrinterConnectionType.ble};
   }
 
-  final TextEditingController customerNameController = TextEditingController(
-    text: 'shop',
-  );
-  final TextEditingController pageNameController = TextEditingController(
-    text: '',
-  );
+  final TextEditingController customerNameController = TextEditingController(text: 'shop');
+  final TextEditingController pageNameController = TextEditingController(text: '');
   final TextEditingController totalPriceController = TextEditingController();
   late final Signal<List<TextEditingController>> phoneControllers;
   late final Signal<List<TextEditingController>> locationControllers;
 
   final devices = signal<List<PrinterDevice>>([]);
-  final state = signal<PrinterConnectionState>(
-    PrinterConnectionState.disconnected,
-  );
+  final state = signal<PrinterConnectionState>(PrinterConnectionState.disconnected);
   final connectedDevice = signal<PrinterDevice?>(null);
   final isScanning = signal<bool>(false);
   final guestServiceChecked = signal<bool>(false);
@@ -52,7 +36,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   final jtChecked = signal<bool>(false);
   final otherChecked = signal<bool>(false);
   final selectedOption = signal<String>('0');
-  final currency = signal<String>('\$');
+  final currency = signal<String>(CurrencyType.fallback.symbol);
   final showPreview = signal<bool>(true);
   final templateTick = signal<int>(0);
 
@@ -63,18 +47,9 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   bool get connectedViaBle => connectedDevice.value is BlePrinterDevice;
 
   List<PrinterDevice> get printerDevices {
-    final filtered = devices.value.where((device) {
-      final name = device.name.toLowerCase();
-      return name.contains('mp') ||
-          name.contains('printer') ||
-          name.contains('pos') ||
-          name.contains('58') ||
-          device == connectedDevice.value;
-    }).toList();
-
     final Map<String, PrinterDevice> byName = {};
-    for (final device in filtered) {
-      final key = normalizedDeviceName(device.name);
+    for (final device in devices.value) {
+      final key = deviceUniqueKey(device);
       final existing = byName[key];
 
       if (existing == null) {
@@ -94,7 +69,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       if (rankA != rankB) {
         return rankA.compareTo(rankB);
       }
-      return a.name.compareTo(b.name);
+      return deviceDisplayName(a).compareTo(deviceDisplayName(b));
     });
     return result;
   }
@@ -121,33 +96,19 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
     final hasCustomerName = customerNameController.text.trim().isNotEmpty;
     final hasPageName = pageNameController.text.trim().isNotEmpty;
-    final hasAllPhones = phoneControllers.value.every(
-      (controller) => controller.text.trim().isNotEmpty,
-    );
-    final hasAllLocations = locationControllers.value.every(
-      (controller) => controller.text.trim().isNotEmpty,
-    );
-    final hasPrice =
-        totalPriceController.text.trim().isNotEmpty ||
-        selectedOption.value != '0';
+    final hasAllPhones = phoneControllers.value.every((controller) => controller.text.trim().isNotEmpty);
+    final hasAllLocations = locationControllers.value.every((controller) => controller.text.trim().isNotEmpty);
+    final hasPrice = totalPriceController.text.trim().isNotEmpty || selectedOption.value != '0';
 
-    return hasCustomerName &&
-        hasPageName &&
-        hasAllPhones &&
-        hasAllLocations &&
-        hasPrice;
+    return hasCustomerName && hasPageName && hasAllPhones && hasAllLocations && hasPrice;
   }
 
   @override
   void initState() {
     super.initState();
 
-    phoneControllers = signal<List<TextEditingController>>([
-      _createTemplateController(''),
-    ]);
-    locationControllers = signal<List<TextEditingController>>([
-      _createTemplateController(''),
-    ]);
+    phoneControllers = signal<List<TextEditingController>>([_createTemplateController('')]);
+    locationControllers = signal<List<TextEditingController>>([_createTemplateController('')]);
 
     state.value = manager.state;
     connectedDevice.value = manager.connectedDevice;
@@ -290,17 +251,13 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   Future<img.Image> captureCardPreview() async {
     await Future<void>.delayed(const Duration(milliseconds: 60));
 
-    final boundary =
-        cardPreviewKey.currentContext?.findRenderObject()
-            as RenderRepaintBoundary?;
+    final boundary = cardPreviewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) {
       throw Exception('Card preview is not ready');
     }
 
     final ui.Image image = await boundary.toImage(pixelRatio: 3.5);
-    final ByteData? byteData = await image.toByteData(
-      format: ui.ImageByteFormat.png,
-    );
+    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     if (byteData == null) {
       throw Exception('Unable to capture card preview');
     }
@@ -323,6 +280,31 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       return '$typeLabel • ${device.deviceId}';
     }
     return typeLabel;
+  }
+
+  String deviceDisplayName(PrinterDevice device) {
+    final name = device.name.trim();
+    if (name.isNotEmpty) {
+      return name;
+    }
+
+    return switch (device) {
+      BluetoothPrinterDevice(address: final address) => 'Bluetooth $address',
+      BlePrinterDevice(deviceId: final deviceId) => 'BLE $deviceId',
+      UsbPrinterDevice() => 'USB printer',
+      NetworkPrinterDevice() => 'Network printer',
+      _ => 'Unknown printer',
+    };
+  }
+
+  String deviceUniqueKey(PrinterDevice device) {
+    return switch (device) {
+      BluetoothPrinterDevice(address: final address) => 'bt:${address.toLowerCase()}',
+      BlePrinterDevice(deviceId: final deviceId) => 'ble:${deviceId.toLowerCase()}',
+      UsbPrinterDevice() => 'usb:${normalizedDeviceName(device.name)}',
+      NetworkPrinterDevice() => 'net:${normalizedDeviceName(device.name)}',
+      _ => '${device.connectionType.name}:${normalizedDeviceName(device.name)}',
+    };
   }
 
   String deviceTransport(PrinterDevice device) {
@@ -364,20 +346,14 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     customerNameController.text = normalizedCustomerName(invoice.customerName);
     pageNameController.text = invoice.pageName;
     totalPriceController.text = invoice.totalPrice;
-    selectedOption.value = invoice.selectedOption.isEmpty
-        ? '0'
-        : invoice.selectedOption;
-    currency.value = invoice.currency.isEmpty ? '\$' : invoice.currency;
+    selectedOption.value = invoice.selectedOption.isEmpty ? '0' : invoice.selectedOption;
+    currency.value = invoice.currency.isEmpty ? CurrencyType.fallback.symbol : invoice.currency;
     guestServiceChecked.value = invoice.guestServiceChecked;
     virakChecked.value = invoice.virakChecked;
     jtChecked.value = invoice.jtChecked;
     otherChecked.value = invoice.otherChecked;
-    replacePhoneFields(
-      invoice.phoneLines.isEmpty ? const [''] : invoice.phoneLines,
-    );
-    replaceLocationFields(
-      invoice.locationLines.isEmpty ? const [''] : invoice.locationLines,
-    );
+    replacePhoneFields(invoice.phoneLines.isEmpty ? const [''] : invoice.phoneLines);
+    replaceLocationFields(invoice.locationLines.isEmpty ? const [''] : invoice.locationLines);
     refreshTemplate();
   }
 
@@ -385,18 +361,14 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     for (final controller in phoneControllers.value) {
       controller.dispose();
     }
-    phoneControllers.value = values
-        .map((value) => _createTemplateController(value))
-        .toList();
+    phoneControllers.value = values.map((value) => _createTemplateController(value)).toList();
   }
 
   void replaceLocationFields(List<String> values) {
     for (final controller in locationControllers.value) {
       controller.dispose();
     }
-    locationControllers.value = values
-        .map((value) => _createTemplateController(value))
-        .toList();
+    locationControllers.value = values.map((value) => _createTemplateController(value)).toList();
   }
 
   void resetTemplateForm() {
@@ -404,7 +376,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     pageNameController.clear();
     totalPriceController.clear();
     selectedOption.value = '0';
-    currency.value = '\$';
+    currency.value = CurrencyType.fallback.symbol;
     guestServiceChecked.value = false;
     virakChecked.value = false;
     jtChecked.value = false;
@@ -415,8 +387,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     refreshTemplate();
   }
 
-  void toggleGuestService() =>
-      guestServiceChecked.value = !guestServiceChecked.value;
+  void toggleGuestService() => guestServiceChecked.value = !guestServiceChecked.value;
   void toggleVirak() => virakChecked.value = !virakChecked.value;
   void toggleJt() => jtChecked.value = !jtChecked.value;
   void toggleOther() => otherChecked.value = !otherChecked.value;
@@ -444,18 +415,12 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   void addPhoneField() {
-    phoneControllers.value = [
-      ...phoneControllers.value,
-      _createTemplateController(''),
-    ];
+    phoneControllers.value = [...phoneControllers.value, _createTemplateController('')];
     refreshTemplate();
   }
 
   void addLocationField() {
-    locationControllers.value = [
-      ...locationControllers.value,
-      _createTemplateController(''),
-    ];
+    locationControllers.value = [...locationControllers.value, _createTemplateController('')];
     refreshTemplate();
   }
 
@@ -480,10 +445,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   List<String> collectLines(List<TextEditingController> controllers) {
-    return controllers
-        .map((controller) => controller.text.trim())
-        .where((value) => value.isNotEmpty)
-        .toList();
+    return controllers.map((controller) => controller.text.trim()).where((value) => value.isNotEmpty).toList();
   }
 
   TextEditingController _createTemplateController(String text) {
@@ -497,13 +459,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     templateTick.value++;
   }
 
-  void showMessage(
-    String message, {
-    Duration duration = const Duration(seconds: 4),
-  }) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
+  void showMessage(String message, {Duration duration = const Duration(seconds: 4)}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   @override

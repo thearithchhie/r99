@@ -19,3 +19,34 @@ enum StorageBox {
 }
 
 enum KeyboardType { normal, number, double }
+
+enum CurrencyType {
+  usd(title: 'US Dollar', symbol: '\$', path: '', currentCode: "USD"),
+  khr(title: 'Khmer Riel', symbol: '៛', path: '', currentCode: "KHR");
+
+  const CurrencyType({
+    required this.title,
+    required this.path,
+    required this.symbol,
+    required this.currentCode,
+  });
+
+  final String title;
+  final String path;
+  final String symbol;
+  final String currentCode;
+
+  static CurrencyType get fallback => CurrencyType.usd;
+
+  static CurrencyType fromRawPrice(String rawPrice) {
+    final trimmed = rawPrice.trim();
+
+    for (final currency in CurrencyType.values) {
+      if (trimmed.startsWith(currency.symbol)) {
+        return currency;
+      }
+    }
+
+    return fallback;
+  }
+}

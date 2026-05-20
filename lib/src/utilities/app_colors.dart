@@ -73,6 +73,29 @@ class AppColor {
   static const Color overlayScrim = Color(0x99000000);
   static const Color errorText = Colors.redAccent;
 
+  static const Color brandPrimary = Color(0xFFD71920);
+  static const Color brandPrimarySoft = Color(0x33D71920);
+  static const Color appDarkBackground = Color(0xFF111111);
+  static const Color appDarkBackgroundAlt = Color(0xFF080808);
+  static const Color darkSurface = Color(0xFF151515);
+  static const Color darkSurfaceAlt = Color(0xFF1A1A1A);
+  static const Color darkSurfaceBorder = Color(0xFF3A3A3A);
+  static const Color darkSurfaceBorderSoft = Color(0xFF1E1E1E);
+  static const Color textOnDark = Color(0xFFFFFFFF);
+  static const Color textMuted = Color(0xFFBFC0C0);
+
+  static const LinearGradient appDarkBackgroundGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [appDarkBackground, appDarkBackgroundAlt],
+  );
+
+  static const LinearGradient darkSurfaceGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [darkSurface, appDarkBackgroundAlt],
+  );
+
   static Color colorHex(String v) {
     v = v.replaceAll("#", "");
     return Color(int.parse("0xFF$v"));

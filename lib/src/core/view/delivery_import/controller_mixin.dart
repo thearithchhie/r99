@@ -33,10 +33,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     isLoading.value = true;
     errorMessage.value = null;
     try {
-      final records = await isar.deliveryRecords
-          .where()
-          .sortByImportedAtDesc()
-          .findAll();
+      final records = await isar.deliveryRecords.where().sortByImportedAtDesc().findAll();
       if (!mounted) return;
       deliveryRecords.value = records;
     } catch (error) {
@@ -56,12 +53,8 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     importMessages.value = [];
 
     try {
-      final resolvedShareUrl = GoogleSheetDeliveryImportService.resolveShareUrl(
-        '',
-      );
-      final result = await GoogleSheetDeliveryImportService.importFromShareUrl(
-        resolvedShareUrl,
-      );
+      final resolvedShareUrl = GoogleSheetDeliveryImportService.resolveShareUrl('');
+      final result = await GoogleSheetDeliveryImportService.importFromShareUrl(resolvedShareUrl);
 
       await isar.writeTxn(() async {
         await isar.deliveryRecords.clear();
@@ -120,14 +113,8 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     final recordsToPrint = List<DeliveryRecord>.from(deliveryRecords.value);
 
     try {
-      for (
-        var start = 0;
-        start < recordsToPrint.length;
-        start += printBatchSize
-      ) {
-        final end = (start + printBatchSize < recordsToPrint.length)
-            ? start + printBatchSize
-            : recordsToPrint.length;
+      for (var start = 0; start < recordsToPrint.length; start += printBatchSize) {
+        final end = (start + printBatchSize < recordsToPrint.length) ? start + printBatchSize : recordsToPrint.length;
         final batch = recordsToPrint.sublist(start, end);
         final batchInvoices = <PrintInvoice>[];
 
@@ -156,17 +143,14 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
         await isar.writeTxn(() async {
           await isar.printInvoices.putAll(batchInvoices);
-          await isar.deliveryRecords.deleteAll(
-            batch.map((record) => record.id).toList(),
-          );
+          await isar.deliveryRecords.deleteAll(batch.map((record) => record.id).toList());
         });
 
         committedCount += batch.length;
       }
 
       if (!mounted) return;
-      summaryMessage.value =
-          'Printed $committedCount deliveries successfully in batches of $printBatchSize.';
+      summaryMessage.value = 'Printed $committedCount deliveries successfully in batches of $printBatchSize.';
       await loadDeliveryRecords();
       showMessage('Printed all imported deliveries.');
     } catch (error) {
@@ -191,9 +175,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
       if (!mounted) return;
 
-      final updatedRecords = deliveryRecords.value
-          .where((item) => item.id != record.id)
-          .toList();
+      final updatedRecords = deliveryRecords.value.where((item) => item.id != record.id).toList();
       deliveryRecords.value = updatedRecords;
 
       if (activePreviewRecord.value?.id == record.id) {
@@ -234,9 +216,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     await WidgetsBinding.instance.endOfFrame;
     await Future<void>.delayed(const Duration(milliseconds: 60));
 
-    final boundary =
-        printPreviewKey.currentContext?.findRenderObject()
-            as RenderRepaintBoundary?;
+    final boundary = printPreviewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) {
       throw Exception('Delivery preview is not ready.');
     }
@@ -258,9 +238,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
   PrintTemplateData templateDataFromRecord(DeliveryRecord record) {
     final parsedPrice = parsePrice(record.price);
     final serviceLabel = record.deliverService.trim();
-    final isJt =
-        serviceLabel.toUpperCase() == 'J&T' ||
-        serviceLabel.toUpperCase() == 'J & T';
+    final isJt = serviceLabel.toUpperCase() == 'J&T' || serviceLabel.toUpperCase() == 'J & T';
     final hasOtherService = serviceLabel.isNotEmpty && !isJt;
 
     return PrintTemplateData(
@@ -276,54 +254,6 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
       jtChecked: isJt,
       otherChecked: hasOtherService,
     );
-  }
-
-  ParsedPrice parsePrice(String rawPrice) {
-    final trimmed = rawPrice.trim();
-    if (trimmed.startsWith('៛')) {
-      return ParsedPrice(currency: '៛', amount: trimmed.substring(1).trim());
-    }
-    if (trimmed.startsWith('\$')) {
-      return ParsedPrice(currency: '\$', amount: trimmed.substring(1).trim());
-    }
-    return ParsedPrice(currency: '\$', amount: trimmed);
-  }
-
-  String normalizeShopValue(String value) {
-    final normalized = value.trim().toLowerCase();
-    if (normalized == 'none') {
-      return 'none';
-    }
-    return 'shop';
-  }
-
-  String deviceTransport(PrinterDevice device) {
-    return switch (device.connectionType) {
-      PrinterConnectionType.bluetooth => 'Classic Bluetooth',
-      PrinterConnectionType.ble => 'BLE',
-      PrinterConnectionType.usb => 'USB',
-      PrinterConnectionType.network => 'Network',
-    };
-  }
-
-  void onSelectDestination(AppMenuDestination destination) {
-    Navigator.of(context).pop();
-    switch (destination) {
-      case AppMenuDestination.deliveries:
-        return;
-      case AppMenuDestination.printer:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const PrinterPage()),
-        );
-      case AppMenuDestination.textScanner:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const TextScannerPage()),
-        );
-      case AppMenuDestination.invoices:
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const InvoiceListPage()),
-        );
-    }
   }
 
   void openDeliveryForReprint(DeliveryRecord record) {
@@ -342,20 +272,11 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
       ..jtChecked = template.jtChecked
       ..otherChecked = template.otherChecked;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => PrinterPage(initialInvoice: draftInvoice),
-      ),
-    );
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => PrinterPage(initialInvoice: draftInvoice)));
   }
 
-  void showMessage(
-    String message, {
-    Duration duration = const Duration(seconds: 4),
-  }) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
+  void showMessage(String message, {Duration duration = const Duration(seconds: 4)}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   @override
@@ -370,11 +291,4 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     errorMessage.dispose();
     super.dispose();
   }
-}
-
-class ParsedPrice {
-  const ParsedPrice({required this.currency, required this.amount});
-
-  final String currency;
-  final String amount;
 }
