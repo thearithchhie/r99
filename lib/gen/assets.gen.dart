@@ -21,6 +21,31 @@ class $AssetsLogoGen {
   List<AssetGenImage> get values => [logo];
 }
 
+class $AssetsSvgsGen {
+  const $AssetsSvgsGen();
+
+  /// File path: assets/svgs/facebook-svgrepo-com.svg
+  String get facebookSvgrepoCom => 'assets/svgs/facebook-svgrepo-com.svg';
+
+  /// File path: assets/svgs/location-pin-svgrepo-com.svg
+  String get locationPinSvgrepoCom =>
+      'assets/svgs/location-pin-svgrepo-com.svg';
+
+  /// File path: assets/svgs/person-svgrepo-com.svg
+  String get personSvgrepoCom => 'assets/svgs/person-svgrepo-com.svg';
+
+  /// File path: assets/svgs/truck-speed-svgrepo-com.svg
+  String get truckSpeedSvgrepoCom => 'assets/svgs/truck-speed-svgrepo-com.svg';
+
+  /// List of all assets
+  List<String> get values => [
+    facebookSvgrepoCom,
+    locationPinSvgrepoCom,
+    personSvgrepoCom,
+    truckSpeedSvgrepoCom,
+  ];
+}
+
 class $AssetsTessdataGen {
   const $AssetsTessdataGen();
 
@@ -39,6 +64,7 @@ class Assets {
 
   static const String aEnv = '.env';
   static const $AssetsLogoGen logo = $AssetsLogoGen();
+  static const $AssetsSvgsGen svgs = $AssetsSvgsGen();
   static const $AssetsTessdataGen tessdata = $AssetsTessdataGen();
   static const String tessdataConfig = 'assets/tessdata_config.json';
 

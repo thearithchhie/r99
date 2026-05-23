@@ -24,4 +24,20 @@ class PrintTemplateData {
   final bool virakChecked;
   final bool jtChecked;
   final bool otherChecked;
+
+  Map<String, Object?> toMacOSPrintMap() {
+    return {
+      'customerName': customerName,
+      'pageName': pageName,
+      'phoneLines': phoneLines,
+      'locationLines': locationLines,
+      'selectedOption': selectedOption,
+      'totalPrice': totalPrice,
+      'currency': currency,
+      'guestServiceChecked': guestServiceChecked,
+      'virakChecked': virakChecked,
+      'jtChecked': jtChecked,
+      'otherChecked': otherChecked,
+    };
+  }
 }

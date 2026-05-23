@@ -18,6 +18,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       return {PrinterConnectionType.bluetooth, PrinterConnectionType.usb};
     }
 
+    if (Platform.isMacOS || Platform.isLinux) {
+      return {PrinterConnectionType.usb};
+    }
+
     return {PrinterConnectionType.bluetooth, PrinterConnectionType.ble};
   }
 
@@ -45,6 +49,24 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   StreamSubscription<AppPreference?>? previewPreferenceSub;
 
   bool get connectedViaBle => connectedDevice.value is BlePrinterDevice;
+  bool get isDesktopUsbMode => Platform.isMacOS || Platform.isLinux;
+  bool get isMacOSNativePrintingMode => Platform.isMacOS;
+
+  String get desktopUsbHelpText {
+    if (Platform.isMacOS) {
+      return 'On macOS, this app can show installed printer queues and serial USB printers. Some raw USB ports may still fail if the printer is not a serial ESC/POS device.';
+    }
+
+    return 'On desktop USB, this app works only with serial USB printers.';
+  }
+
+  String get desktopUsbEmptyStateText {
+    if (Platform.isMacOS) {
+      return 'No macOS or USB serial printers found.\nMake sure the printer is powered on, installed in macOS if needed, and plugged in, then scan again.';
+    }
+
+    return 'No USB serial printers found.\nMake sure the printer is powered on and plugged in, then scan again.';
+  }
 
   List<PrinterDevice> get printerDevices {
     final Map<String, PrinterDevice> byName = {};
@@ -110,11 +132,23 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     phoneControllers = signal<List<TextEditingController>>([_createTemplateController('')]);
     locationControllers = signal<List<TextEditingController>>([_createTemplateController('')]);
 
-    state.value = manager.state;
-    connectedDevice.value = manager.connectedDevice;
+    if (isMacOSNativePrinterDevice(sharedMacOSNativePrinterDevice.value)) {
+      state.value = PrinterConnectionState.connected;
+      connectedDevice.value = sharedMacOSNativePrinterDevice.value;
+    } else {
+      state.value = manager.state;
+      connectedDevice.value = manager.connectedDevice;
+    }
 
     stateSub = manager.stateStream.listen((nextState) {
       if (!mounted) return;
+
+      if (isMacOSNativePrinterDevice(sharedMacOSNativePrinterDevice.value)) {
+        state.value = PrinterConnectionState.connected;
+        connectedDevice.value = sharedMacOSNativePrinterDevice.value;
+        return;
+      }
+
       state.value = nextState;
       connectedDevice.value = manager.connectedDevice;
     });
@@ -169,6 +203,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     devices.value = [];
     isScanning.value = true;
 
+    if (Platform.isMacOS) {
+      await startMacOSScan();
+      return;
+    }
+
     scanSub = manager
         .scanAll(timeout: const Duration(seconds: 12), types: scanTypes)
         .listen(
@@ -188,8 +227,54 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
         );
   }
 
-  Future<void> connectPrinter(PrinterDevice device) async {
+  Future<void> startMacOSScan() async {
+    List<PrinterDevice> nativeDevices = [];
+
     try {
+      final printerNames = await MacOSNativePrinterService.listPrinters();
+      nativeDevices = printerNames
+          .map(
+            (name) => UsbPrinterDevice(
+              name: name,
+              identifier: MacOSNativePrinterService.buildIdentifier(name),
+              usbPlatform: UsbPlatform.desktop,
+            ),
+          )
+          .toList();
+      devices.value = nativeDevices;
+    } catch (error) {
+      if (mounted) {
+        showMessage('Unable to load macOS printers: $error');
+      }
+    }
+
+    scanSub = manager
+        .scanAll(timeout: const Duration(seconds: 12), types: scanTypes)
+        .listen(
+          (foundDevices) {
+            if (!mounted) return;
+            devices.value = [...nativeDevices, ...foundDevices];
+          },
+          onDone: () {
+            if (!mounted) return;
+            isScanning.value = false;
+          },
+          onError: (error) {
+            if (!mounted) return;
+            isScanning.value = false;
+            showMessage('Scan failed: $error');
+          },
+        );
+  }
+
+  Future<void> connectPrinter(PrinterDevice device) async {
+    if (isMacOSNativePrinterDevice(device)) {
+      await connectMacOSNativePrinter(device);
+      return;
+    }
+
+    try {
+      sharedMacOSNativePrinterDevice.value = null;
       await manager.connect(device);
 
       if (!mounted) return;
@@ -198,15 +283,49 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       showMessage('Connected: ${device.name}');
     } catch (e) {
       if (!mounted) return;
+      if (isDesktopUsbMode && device is UsbPrinterDevice) {
+        showMessage(
+          'Connect failed: desktop USB here supports serial USB printers only. '
+          'If this printer is a normal USB printer-class device, it may appear in the scan list but still cannot connect.\n$e',
+          duration: const Duration(seconds: 6),
+        );
+        return;
+      }
+      showMessage('Connect failed: $e');
+    }
+  }
+
+  Future<void> connectMacOSNativePrinter(PrinterDevice device) async {
+    try {
+      final printers = await MacOSNativePrinterService.listPrinters();
+      if (!printers.contains(device.name)) {
+        throw Exception('Printer queue not found in macOS');
+      }
+
+      sharedMacOSNativePrinterDevice.value = device;
+      state.value = PrinterConnectionState.connected;
+      connectedDevice.value = device;
+      showMessage('Ready: ${device.name}');
+    } catch (e) {
+      if (!mounted) return;
       showMessage('Connect failed: $e');
     }
   }
 
   Future<void> disconnectPrinter() async {
+    if (isMacOSNativePrinterDevice(connectedDevice.value)) {
+      sharedMacOSNativePrinterDevice.value = null;
+      connectedDevice.value = null;
+      state.value = PrinterConnectionState.disconnected;
+      showMessage('Disconnected');
+      return;
+    }
+
     try {
       await manager.disconnect();
       if (!mounted) return;
 
+      sharedMacOSNativePrinterDevice.value = null;
       connectedDevice.value = null;
 
       showMessage('Disconnected');
@@ -230,6 +349,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       return;
     }
 
+    if (isMacOSNativePrinterDevice(connectedDevice.value)) {
+      await printWithMacOSNativePrinter(connectedDevice.value!);
+      return;
+    }
+
     try {
       final ticket = await Ticket.create(PaperSize.mm58);
       final image = await captureCardPreview();
@@ -248,7 +372,21 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     }
   }
 
-  Future<img.Image> captureCardPreview() async {
+  Future<void> printWithMacOSNativePrinter(PrinterDevice device) async {
+    try {
+      await MacOSNativePrinterService.printTemplate(printerName: device.name, data: templateData);
+      await savePrintedInvoice();
+      resetTemplateForm();
+
+      if (!mounted) return;
+      showMessage('Printed successfully');
+    } catch (e) {
+      if (!mounted) return;
+      showMessage('Print failed: $e');
+    }
+  }
+
+  Future<Uint8List> captureCardPreviewPngBytes() async {
     await Future<void>.delayed(const Duration(milliseconds: 60));
 
     final boundary = cardPreviewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
@@ -262,7 +400,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       throw Exception('Unable to capture card preview');
     }
 
-    final captured = img.decodePng(byteData.buffer.asUint8List());
+    return byteData.buffer.asUint8List();
+  }
+
+  Future<img.Image> captureCardPreview() async {
+    final captured = img.decodePng(await captureCardPreviewPngBytes());
     if (captured == null) {
       throw Exception('Unable to decode card image');
     }
@@ -271,6 +413,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   String deviceSubtitle(PrinterDevice device) {
+    if (isMacOSNativePrinterDevice(device)) {
+      return 'macOS Printer • Installed queue';
+    }
+
     final typeLabel = deviceTransport(device);
 
     if (device is BluetoothPrinterDevice) {
@@ -299,6 +445,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
   String deviceUniqueKey(PrinterDevice device) {
     return switch (device) {
+      UsbPrinterDevice(identifier: final identifier) when MacOSNativePrinterService.isNativeIdentifier(identifier) =>
+        'macos-native:${device.name.toLowerCase()}',
       BluetoothPrinterDevice(address: final address) => 'bt:${address.toLowerCase()}',
       BlePrinterDevice(deviceId: final deviceId) => 'ble:${deviceId.toLowerCase()}',
       UsbPrinterDevice() => 'usb:${normalizedDeviceName(device.name)}',
@@ -308,6 +456,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   String deviceTransport(PrinterDevice device) {
+    if (isMacOSNativePrinterDevice(device)) {
+      return 'macOS Printer';
+    }
+
     return switch (device.connectionType) {
       PrinterConnectionType.bluetooth => 'Classic Bluetooth',
       PrinterConnectionType.ble => 'BLE',
@@ -317,12 +469,22 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   int transportRank(PrinterDevice device) {
+    if (isMacOSNativePrinterDevice(device)) {
+      return 0;
+    }
+
     return switch (device.connectionType) {
-      PrinterConnectionType.bluetooth => 0,
-      PrinterConnectionType.usb => 1,
-      PrinterConnectionType.network => 2,
-      PrinterConnectionType.ble => 3,
+      PrinterConnectionType.bluetooth => 1,
+      PrinterConnectionType.usb => 2,
+      PrinterConnectionType.network => 3,
+      PrinterConnectionType.ble => 4,
     };
+  }
+
+  bool isMacOSNativePrinterDevice(PrinterDevice? device) {
+    return Platform.isMacOS &&
+        device is UsbPrinterDevice &&
+        MacOSNativePrinterService.isNativeIdentifier(device.identifier);
   }
 
   String normalizedDeviceName(String value) {

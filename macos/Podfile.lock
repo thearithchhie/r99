@@ -5,15 +5,22 @@ PODS:
     - FlutterMacOS
     - libserialport
   - FlutterMacOS (1.0.0)
+  - isar_community_flutter_libs (1.0.0):
+    - FlutterMacOS
   - libserialport (0.1.1)
   - network_info_plus (0.0.1):
+    - FlutterMacOS
+  - path_provider_foundation (0.0.1):
+    - Flutter
     - FlutterMacOS
 
 DEPENDENCIES:
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - flutter_libserialport (from `Flutter/ephemeral/.symlinks/plugins/flutter_libserialport/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - isar_community_flutter_libs (from `Flutter/ephemeral/.symlinks/plugins/isar_community_flutter_libs/macos`)
   - network_info_plus (from `Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
 
 SPEC REPOS:
   trunk:
@@ -26,15 +33,21 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_libserialport/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
+  isar_community_flutter_libs:
+    :path: Flutter/ephemeral/.symlinks/plugins/isar_community_flutter_libs/macos
   network_info_plus:
     :path: Flutter/ephemeral/.symlinks/plugins/network_info_plus/macos
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
 
 SPEC CHECKSUMS:
   file_selector_macos: 3e56eaea051180007b900eacb006686fd54da150
   flutter_libserialport: d1a505fd4b05785f7b50cc7c93b361937ea1c5bd
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  isar_community_flutter_libs: d3749f6775866378fc78328b10f1397a05fba673
   libserialport: 1cb25e66ef3c92a8e59c2ea3820302c3fa2268cd
   network_info_plus: 2cb02d8435635eae13b3b79279681985121cf30c
+  path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
 
 PODFILE CHECKSUM: 54d867c82ac51cbd61b565781b9fada492027009
 

@@ -94,6 +94,17 @@ class _PrinterPageState extends State<PrinterPage>
                     ),
                   ),
                 ],
+                if (isDesktopUsbMode &&
+                    state.value != PrinterConnectionState.connected) ...[
+                  const SizedBox(height: 12),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.usb_outlined),
+                      title: const Text('Desktop USB note'),
+                      subtitle: Text(desktopUsbHelpText),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 PrintTemplateEditor(
                   customerNameController: customerNameController,
@@ -173,11 +184,13 @@ class _PrinterPageState extends State<PrinterPage>
                 const SizedBox(height: 16),
                 if (state.value != PrinterConnectionState.connected &&
                     printerDevices.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 40),
                     child: Center(
                       child: Text(
-                        'No printer devices found.\nMake sure the printer is powered on and paired, then scan again.',
+                        isDesktopUsbMode
+                            ? desktopUsbEmptyStateText
+                            : 'No printer devices found.\nMake sure the printer is powered on and paired, then scan again.',
                         textAlign: TextAlign.center,
                       ),
                     ),
