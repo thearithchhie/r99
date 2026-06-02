@@ -19,6 +19,7 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
   final isInitialLoading = signal<bool>(false);
   final isLoadingMore = signal<bool>(false);
   final isSearching = signal<bool>(false);
+  final isDeletingAll = signal<bool>(false);
   final hasMore = signal<bool>(true);
   final errorMessage = signal<String?>(null);
   final searchQuery = signal<String>('');
@@ -170,6 +171,66 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
     );
   }
 
+  Future<void> confirmDeleteAllInvoices() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete all invoices?'),
+        content: const Text(
+          'This will remove every saved invoice from local history.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Delete All'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await deleteAllInvoices();
+    }
+  }
+
+  Future<void> deleteAllInvoices() async {
+    if (isDeletingAll.value) return;
+
+    isDeletingAll.value = true;
+    errorMessage.value = null;
+
+    try {
+      await isar.writeTxn(() async {
+        await isar.printInvoices.clear();
+      });
+
+      if (!mounted) return;
+
+      invoices.value = [];
+      allInvoices.value = [];
+      hasMore.value = false;
+      searchController.clear();
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('All invoices removed.')));
+    } catch (error) {
+      if (!mounted) return;
+      errorMessage.value = 'Unable to delete invoices.\n$error';
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Delete All failed. Please try again.')),
+      );
+    } finally {
+      if (mounted) {
+        isDeletingAll.value = false;
+      }
+    }
+  }
+
   String normalizePhone(String value) {
     return value.replaceAll(RegExp(r'\D'), '');
   }
@@ -183,6 +244,7 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
     isInitialLoading.dispose();
     isLoadingMore.dispose();
     isSearching.dispose();
+    isDeletingAll.dispose();
     hasMore.dispose();
     errorMessage.dispose();
     searchQuery.dispose();

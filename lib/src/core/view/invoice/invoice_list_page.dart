@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:r99/src/core/database/models/print_invoice.dart';
 import 'package:r99/src/core/view/invoice/controller_mixin.dart';
+import 'package:r99/src/core/view/invoice/widget/invoice_card_widget.dart';
 import 'package:r99/src/utilities/app_colors.dart';
 import 'package:r99/src/widgets/app_menu_drawer.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -20,6 +20,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> with InvoiceListPageC
       appBar: AppBar(title: const Text('Invoices')),
       body: Watch((context) {
         final queryText = searchController.text;
+        final hasAnyInvoices = invoices.value.isNotEmpty || allInvoices.value.isNotEmpty;
 
         Widget content;
         if ((isInitialLoading.value || isSearching.value) && invoices.value.isEmpty) {
@@ -63,7 +64,7 @@ class _InvoiceListPageState extends State<InvoiceListPage> with InvoiceListPageC
               }
 
               final invoice = invoices.value[index];
-              return _InvoiceCard(
+              return InvoiceCardWidget(
                 invoice: invoice,
                 amount: invoiceAmount(invoice),
                 onUseAgain: () => openInvoiceForReprint(invoice),
@@ -91,74 +92,30 @@ class _InvoiceListPageState extends State<InvoiceListPage> with InvoiceListPageC
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      '${invoices.value.length} invoice${invoices.value.length == 1 ? '' : 's'} shown',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColor.neutral500),
+                    ),
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: !hasAnyInvoices || isDeletingAll.value ? null : confirmDeleteAllInvoices,
+                    icon: isDeletingAll.value
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.delete_outline),
+                    label: Text(isDeletingAll.value ? 'Deleting...' : 'Delete All'),
+                  ),
+                ],
+              ),
+            ),
             Expanded(child: content),
           ],
         );
       }),
-    );
-  }
-}
-
-class _InvoiceCard extends StatelessWidget {
-  const _InvoiceCard({required this.invoice, required this.amount, required this.onUseAgain});
-
-  final PrintInvoice invoice;
-  final String amount;
-  final VoidCallback onUseAgain;
-
-  @override
-  Widget build(BuildContext context) {
-    final detailStyle = Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColor.neutral500);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    invoice.customerName.isEmpty ? 'R99' : invoice.customerName,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                Text(amount, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(invoice.pageName.isEmpty ? '-' : invoice.pageName, style: detailStyle),
-            const SizedBox(height: 6),
-            Text(invoice.phoneLines.isEmpty ? '-' : invoice.phoneLines.join(', '), style: detailStyle),
-            const SizedBox(height: 6),
-            Text(invoice.locationLines.isEmpty ? '-' : invoice.locationLines.join(', '), style: detailStyle),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    invoice.printerName.isEmpty
-                        ? invoice.printerTransport
-                        : '${invoice.printerName} • ${invoice.printerTransport}',
-                    style: detailStyle,
-                  ),
-                ),
-                Text(invoice.createdAt.toLocal().toString().substring(0, 16), style: detailStyle),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: OutlinedButton.icon(
-                onPressed: onUseAgain,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Use Again'),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
