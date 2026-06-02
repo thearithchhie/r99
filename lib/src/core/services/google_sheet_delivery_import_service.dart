@@ -33,12 +33,12 @@ class GoogleSheetDeliveryImportService {
 
     final headers = rows.first.map((value) => sanitizeCell(value).toLowerCase()).toList();
     final columnMap = <String, int>{
-      'shop': headers.indexOf('shop'),
-      'customername': headers.indexOf('customername'),
-      'phone': headers.indexOf('phone'),
-      'location': headers.indexOf('location'),
-      'totalprice': headers.indexOf('totalprice'),
-      'deliver_service': headers.indexOf('deliver_service'),
+      ColumMapHeader.shop.key: headers.indexOf(ColumMapHeader.shop.key),
+      ColumMapHeader.customername.key: headers.indexOf(ColumMapHeader.customername.key),
+      ColumMapHeader.phone.key: headers.indexOf(ColumMapHeader.phone.key),
+      ColumMapHeader.location.key: headers.indexOf(ColumMapHeader.location.key),
+      ColumMapHeader.totalprice.key: headers.indexOf(ColumMapHeader.totalprice.key),
+      ColumMapHeader.deliverService.key: headers.indexOf(ColumMapHeader.deliverService.key),
     };
 
     final missingColumns = columnMap.entries.where((entry) => entry.value < 0).map((entry) => entry.key).toList();
@@ -60,12 +60,12 @@ class GoogleSheetDeliveryImportService {
         return sanitizeCell(row[columnIndex]);
       }
 
-      final customerName = valueOf('customername');
-      final phone = valueOf('phone');
-      final location = valueOf('location');
-      final price = valueOf('totalprice');
-      final deliverService = valueOf('deliver_service');
-      final shop = valueOf('shop');
+      final customerName = valueOf(ColumMapHeader.customername.key);
+      final phone = valueOf(ColumMapHeader.phone.key);
+      final location = valueOf(ColumMapHeader.location.key);
+      final price = valueOf(ColumMapHeader.totalprice.key);
+      final deliverService = valueOf(ColumMapHeader.deliverService.key);
+      final shop = valueOf(ColumMapHeader.shop.key);
 
       if (customerName.isEmpty &&
           phone.isEmpty &&
@@ -86,7 +86,7 @@ class GoogleSheetDeliveryImportService {
           ..location = location
           ..price = price
           ..deliverService = deliverService
-          ..shop = shop.isEmpty ? 'shop' : shop,
+          ..shop = shop.isEmpty ? ColumMapHeader.shop.key : shop,
       );
     }
 

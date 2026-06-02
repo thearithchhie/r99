@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
 import 'package:r99/export.dart';
+import 'package:r99/src/core/printer/ios_bluetooth_image_printer_service.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 mixin PrinterPageControllerMixin on State<PrinterPage> {
@@ -20,6 +21,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
     if (Platform.isMacOS || Platform.isLinux) {
       return {PrinterConnectionType.usb};
+    }
+
+    if (Platform.isIOS) {
+      return {PrinterConnectionType.ble};
     }
 
     return {PrinterConnectionType.bluetooth, PrinterConnectionType.ble};
@@ -48,7 +53,9 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   StreamSubscription<PrinterConnectionState>? stateSub;
   StreamSubscription<AppPreference?>? previewPreferenceSub;
 
-  bool get connectedViaBle => connectedDevice.value is BlePrinterDevice;
+  bool get connectedViaBle =>
+      connectedDevice.value is BlePrinterDevice && !IOSBluetoothImagePrinterService.isDevice(connectedDevice.value);
+  bool get isIOSBluetoothImagePrinterConnected => IOSBluetoothImagePrinterService.isDevice(connectedDevice.value);
   bool get isDesktopUsbMode => Platform.isMacOS || Platform.isLinux;
   bool get isMacOSNativePrintingMode => Platform.isMacOS;
 
@@ -132,7 +139,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     phoneControllers = signal<List<TextEditingController>>([_createTemplateController('')]);
     locationControllers = signal<List<TextEditingController>>([_createTemplateController('')]);
 
-    if (isMacOSNativePrinterDevice(sharedMacOSNativePrinterDevice.value)) {
+    if (IOSBluetoothImagePrinterService.isDevice(sharedIOSBluetoothImagePrinterDevice.value)) {
+      state.value = PrinterConnectionState.connected;
+      connectedDevice.value = sharedIOSBluetoothImagePrinterDevice.value;
+    } else if (isMacOSNativePrinterDevice(sharedMacOSNativePrinterDevice.value)) {
       state.value = PrinterConnectionState.connected;
       connectedDevice.value = sharedMacOSNativePrinterDevice.value;
     } else {
@@ -142,6 +152,12 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
     stateSub = manager.stateStream.listen((nextState) {
       if (!mounted) return;
+
+      if (IOSBluetoothImagePrinterService.isDevice(sharedIOSBluetoothImagePrinterDevice.value)) {
+        state.value = PrinterConnectionState.connected;
+        connectedDevice.value = sharedIOSBluetoothImagePrinterDevice.value;
+        return;
+      }
 
       if (isMacOSNativePrinterDevice(sharedMacOSNativePrinterDevice.value)) {
         state.value = PrinterConnectionState.connected;
@@ -182,6 +198,14 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   Future<void> startScan() async {
+    if (Platform.isMacOS) {
+      await scanSub?.cancel();
+      devices.value = [];
+      isScanning.value = true;
+      await startMacOSScan();
+      return;
+    }
+
     final permissionResult = await requestBluetoothPermissions();
 
     if (permissionResult != BluetoothPermissionResult.granted) {
@@ -203,8 +227,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     devices.value = [];
     isScanning.value = true;
 
-    if (Platform.isMacOS) {
-      await startMacOSScan();
+    if (Platform.isIOS) {
+      await startIOSBluetoothImageScan();
       return;
     }
 
@@ -225,6 +249,29 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
             showMessage('Scan failed: $error');
           },
         );
+  }
+
+  Future<void> startIOSBluetoothImageScan() async {
+    try {
+      final foundDevices = await IOSBluetoothImagePrinterService.scanDevices(
+        onDevicesChanged: (foundDevices) {
+          if (!mounted) return;
+          devices.value = foundDevices;
+          if (foundDevices.isNotEmpty) {
+            isScanning.value = false;
+          }
+        },
+      );
+      if (!mounted) return;
+      devices.value = foundDevices;
+    } catch (error) {
+      if (!mounted) return;
+      showMessage('iOS image Bluetooth scan failed: $error');
+    } finally {
+      if (mounted) {
+        isScanning.value = false;
+      }
+    }
   }
 
   Future<void> startMacOSScan() async {
@@ -268,6 +315,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   Future<void> connectPrinter(PrinterDevice device) async {
+    if (Platform.isIOS && device is BlePrinterDevice) {
+      await connectIOSBluetoothImagePrinter(device);
+      return;
+    }
+
     if (isMacOSNativePrinterDevice(device)) {
       await connectMacOSNativePrinter(device);
       return;
@@ -275,6 +327,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
     try {
       sharedMacOSNativePrinterDevice.value = null;
+      sharedIOSBluetoothImagePrinterDevice.value = null;
       await manager.connect(device);
 
       if (!mounted) return;
@@ -295,6 +348,23 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     }
   }
 
+  Future<void> connectIOSBluetoothImagePrinter(BlePrinterDevice device) async {
+    try {
+      await IOSBluetoothImagePrinterService.connect(device);
+      if (!mounted) return;
+
+      sharedMacOSNativePrinterDevice.value = null;
+      sharedIOSBluetoothImagePrinterDevice.value = device;
+      connectedDevice.value = device;
+      state.value = PrinterConnectionState.connected;
+
+      showMessage('Ready: ${deviceDisplayName(device)}');
+    } catch (e) {
+      if (!mounted) return;
+      showMessage('Connect failed: $e');
+    }
+  }
+
   Future<void> connectMacOSNativePrinter(PrinterDevice device) async {
     try {
       final printers = await MacOSNativePrinterService.listPrinters();
@@ -302,6 +372,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
         throw Exception('Printer queue not found in macOS');
       }
 
+      sharedIOSBluetoothImagePrinterDevice.value = null;
       sharedMacOSNativePrinterDevice.value = device;
       state.value = PrinterConnectionState.connected;
       connectedDevice.value = device;
@@ -313,8 +384,18 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   Future<void> disconnectPrinter() async {
+    if (IOSBluetoothImagePrinterService.isDevice(connectedDevice.value)) {
+      await IOSBluetoothImagePrinterService.disconnect(connectedDevice.value! as BlePrinterDevice);
+      sharedIOSBluetoothImagePrinterDevice.value = null;
+      connectedDevice.value = null;
+      state.value = PrinterConnectionState.disconnected;
+      showMessage('Disconnected');
+      return;
+    }
+
     if (isMacOSNativePrinterDevice(connectedDevice.value)) {
       sharedMacOSNativePrinterDevice.value = null;
+      sharedIOSBluetoothImagePrinterDevice.value = null;
       connectedDevice.value = null;
       state.value = PrinterConnectionState.disconnected;
       showMessage('Disconnected');
@@ -326,6 +407,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       if (!mounted) return;
 
       sharedMacOSNativePrinterDevice.value = null;
+      sharedIOSBluetoothImagePrinterDevice.value = null;
       connectedDevice.value = null;
 
       showMessage('Disconnected');
@@ -354,6 +436,11 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       return;
     }
 
+    if (IOSBluetoothImagePrinterService.isDevice(connectedDevice.value)) {
+      await printWithIOSBluetoothImagePrinter();
+      return;
+    }
+
     try {
       final ticket = await Ticket.create(PaperSize.mm58);
       final image = await captureCardPreview();
@@ -361,6 +448,21 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       ticket.feed(3);
 
       await manager.printTicket(ticket);
+      await savePrintedInvoice();
+      resetTemplateForm();
+
+      if (!mounted) return;
+      showMessage('Printed successfully');
+    } catch (e) {
+      if (!mounted) return;
+      showMessage('Print failed: $e');
+    }
+  }
+
+  Future<void> printWithIOSBluetoothImagePrinter() async {
+    try {
+      final imageBytes = await captureCardPreviewPngBytes(pixelRatio: 1);
+      await IOSBluetoothImagePrinterService.printImageBytes(imageBytes);
       await savePrintedInvoice();
       resetTemplateForm();
 
@@ -386,7 +488,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
     }
   }
 
-  Future<Uint8List> captureCardPreviewPngBytes() async {
+  Future<Uint8List> captureCardPreviewPngBytes({double pixelRatio = 3.5}) async {
     await Future<void>.delayed(const Duration(milliseconds: 60));
 
     final boundary = cardPreviewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
@@ -394,7 +496,7 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
       throw Exception('Card preview is not ready');
     }
 
-    final ui.Image image = await boundary.toImage(pixelRatio: 3.5);
+    final ui.Image image = await boundary.toImage(pixelRatio: pixelRatio);
     final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     if (byteData == null) {
       throw Exception('Unable to capture card preview');
@@ -456,6 +558,10 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
   }
 
   String deviceTransport(PrinterDevice device) {
+    if (IOSBluetoothImagePrinterService.isDevice(device)) {
+      return 'iOS Bluetooth Image';
+    }
+
     if (isMacOSNativePrinterDevice(device)) {
       return 'macOS Printer';
     }
@@ -565,8 +671,8 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
   String normalizedCustomerName(String value) {
     final normalized = value.trim().toLowerCase();
-    if (normalized == 'shop' || normalized == 'r99') {
-      return 'shop';
+    if (normalized == ColumMapHeader.shop.key || normalized == 'r99') {
+      return ColumMapHeader.shop.key;
     }
     return 'none';
   }

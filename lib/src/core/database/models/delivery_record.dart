@@ -1,4 +1,4 @@
-import 'package:isar_community/isar.dart';
+import 'package:r99/export.dart';
 
 part 'delivery_record.g.dart';
 
@@ -15,7 +15,7 @@ class DeliveryRecord {
   String location = '';
   String price = '';
   String deliverService = '';
-  String shop = 'shop';
+  String shop = ColumMapHeader.shop.key;
   int printCount = 0;
   DateTime? lastPrintedAt;
 }

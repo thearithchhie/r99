@@ -39,7 +39,7 @@ class SerializableCapture {
     } catch (e) {
       // Fallback: use regex when AST parsing fails (e.g. experimental Dart syntax like dot-shorthands)
       if (fsEntity is File) {
-        final content = (fsEntity as File).readAsStringSync();
+        final content = (fsEntity).readAsStringSync();
         final hiveTypeRegex = RegExp(r'@HiveType\s*\([^)]*\)\s+class\s+(\w+)');
         for (final match in hiveTypeRegex.allMatches(content)) {
           hiveClasses.add(match.group(1)!);
@@ -117,8 +117,8 @@ class AutoExportCommand extends Command {
             'web_view_web.dart',
             'web_view_builder.dart',
           ];
-          final isPartOf = fsEntity is File &&
-              (fsEntity as File).readAsStringSync().contains(RegExp(r'^\s*part\s+of\s', multiLine: true));
+          final isPartOf =
+              fsEntity is File && (fsEntity).readAsStringSync().contains(RegExp(r'^\s*part\s+of\s', multiLine: true));
           if (![
                 '_.dart',
                 '.g.dart',

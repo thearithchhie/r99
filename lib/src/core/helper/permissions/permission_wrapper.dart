@@ -18,6 +18,20 @@ class PermissionWrapper {
       return BluetoothPermissionResult.granted;
     }
 
+    if (Platform.isIOS) {
+      final bluetoothStatus = await Permission.bluetooth.request();
+
+      if (bluetoothStatus.isGranted) {
+        return BluetoothPermissionResult.granted;
+      }
+
+      if (bluetoothStatus.isPermanentlyDenied) {
+        return BluetoothPermissionResult.permanentlyDenied;
+      }
+
+      return BluetoothPermissionResult.denied;
+    }
+
     final scanStatus = await Permission.bluetoothScan.request();
     final connectStatus = await Permission.bluetoothConnect.request();
     final statuses = [scanStatus, connectStatus];
