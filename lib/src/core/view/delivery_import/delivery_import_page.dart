@@ -311,7 +311,12 @@ class _DeliveryCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 6),
-            Text(record.shop.isEmpty ? '-' : record.shop, style: detailStyle),
+            Text(
+              record.shop.isEmpty
+                  ? '-'
+                  : (ShopType.fromRaw(record.shop)?.value ?? record.shop),
+              style: detailStyle,
+            ),
             const SizedBox(height: 6),
             Text(record.phone.isEmpty ? '-' : record.phone, style: detailStyle),
             const SizedBox(height: 6),

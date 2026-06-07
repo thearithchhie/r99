@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/core/database/models/print_invoice.dart';
 import 'package:r99/src/utilities/app_colors.dart';
+import 'package:r99/src/utilities/enum.dart';
 
 class InvoiceCardWidget extends StatelessWidget {
   const InvoiceCardWidget({
@@ -13,6 +14,11 @@ class InvoiceCardWidget extends StatelessWidget {
   final PrintInvoice invoice;
   final String amount;
   final VoidCallback onUseAgain;
+
+  String get shopDisplayName {
+    return ShopType.fromRaw(invoice.customerName)?.value ??
+        invoice.customerName;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +36,7 @@ class InvoiceCardWidget extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    invoice.customerName.isEmpty ? 'R99' : invoice.customerName,
+                    shopDisplayName,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

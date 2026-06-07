@@ -19,11 +19,7 @@ ParsedPrice parsePrice(String rawPrice) {
 }
 
 String normalizeShopValue(String value) {
-  final normalized = value.trim().toLowerCase();
-  if (normalized == 'none') {
-    return 'none';
-  }
-  return 'shop';
+  return ShopType.normalizeKey(value);
 }
 
 String deviceTransport(PrinterDevice device) {

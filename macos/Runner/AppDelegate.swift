@@ -165,7 +165,18 @@ struct MacOSPrintTemplate {
   }
 
   var shouldShowShopHeader: Bool {
-    customerName == "shop"
+    shopDisplayName != nil
+  }
+
+  var shopDisplayName: String? {
+    let normalized = customerName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    if normalized.isEmpty || normalized == "shop" || normalized == "r99" || normalized == "key_r99" {
+      return "R99"
+    }
+    if normalized == "r99-ii" || normalized == "r99 ii" || normalized == "r99 2" || normalized == "key_r99_ii" {
+      return "R99-II"
+    }
+    return nil
   }
 }
 
@@ -205,7 +216,7 @@ final class NativeTemplatePrintView: NSView {
 
     if template.shouldShowShopHeader {
       y = drawPageHeader(
-        title: "ឈ្មោះផេកៈ R99",
+        title: "ឈ្មោះផេកៈ \(template.shopDisplayName ?? "R99")",
         y: y,
         width: contentWidth,
         x: contentX

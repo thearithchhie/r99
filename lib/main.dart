@@ -47,6 +47,7 @@ class _AppGateState extends State<AppGate> {
     if (SupabaseAuthService.isInitialized) {
       authSub = SupabaseAuthService.authStateChanges.listen((signedIn) {
         if (!mounted) return;
+        if (isLoggedIn == signedIn) return;
         setState(() {
           isLoggedIn = signedIn;
         });
@@ -55,6 +56,7 @@ class _AppGateState extends State<AppGate> {
   }
 
   void login() {
+    if (!mounted || isLoggedIn) return;
     setState(() {
       isLoggedIn = true;
     });

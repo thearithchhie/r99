@@ -15,7 +15,7 @@ class DeliveryRecord {
   String location = '';
   String price = '';
   String deliverService = '';
-  String shop = ColumMapHeader.shop.key;
+  String shop = ShopType.r99.key;
   int printCount = 0;
   DateTime? lastPrintedAt;
 }

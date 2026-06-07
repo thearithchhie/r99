@@ -41,7 +41,11 @@ mixin LoginPageControllerMixin on State<LoginPage> {
   }
 
   void openSignUpPage() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => SignUpPage(onLoginSuccess: widget.onLoginSuccess)));
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SignUpPage(onLoginSuccess: widget.onLoginSuccess),
+      ),
+    );
   }
 
   @override

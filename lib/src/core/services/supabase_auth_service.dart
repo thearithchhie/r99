@@ -54,6 +54,10 @@ class SupabaseAuthService {
         password: password,
       );
     } on AuthException catch (error) {
+      final friendlyMessage = _friendlyAuthErrorMessage(error);
+      if (friendlyMessage != null) {
+        throw Exception(friendlyMessage);
+      }
       if (SupabaseAuthErrorCode.fromKey(error.code) ==
               SupabaseAuthErrorCode.invalidCredentials ||
           error.message.toLowerCase().contains('invalid login credentials')) {
@@ -84,6 +88,10 @@ class SupabaseAuthService {
         password: password,
       );
     } on AuthException catch (error) {
+      final friendlyMessage = _friendlyAuthErrorMessage(error);
+      if (friendlyMessage != null) {
+        throw Exception(friendlyMessage);
+      }
       if (SupabaseAuthErrorCode.fromKey(error.code) ==
               SupabaseAuthErrorCode.overEmailSendRateLimit ||
           error.message.toLowerCase().contains('email rate limit')) {
@@ -98,5 +106,18 @@ class SupabaseAuthService {
   static Future<void> signOut() async {
     if (!_initialized) return;
     await client.auth.signOut();
+  }
+
+  static String? _friendlyAuthErrorMessage(AuthException error) {
+    final text = '${error.runtimeType} ${error.message}'.toLowerCase();
+    if (error is AuthRetryableFetchException ||
+        text.contains('socketfailed') ||
+        text.contains('host lookup') ||
+        text.contains('failed host lookup') ||
+        text.contains('no address associated with hostname') ||
+        text.contains('clientexception')) {
+      return SupabaseAuthErrorCode.networkUnavailable.message;
+    }
+    return null;
   }
 }
