@@ -19,16 +19,11 @@ class _LoginPageState extends State<LoginPage> with LoginPageControllerMixin {
     return Scaffold(
       body: Watch((context) {
         return Container(
-          decoration: const BoxDecoration(
-            gradient: AppColor.appDarkBackgroundGradient,
-          ),
+          decoration: const BoxDecoration(gradient: AppColor.appDarkBackgroundGradient),
           child: SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 20,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 430),
                   child: Form(
@@ -38,81 +33,50 @@ class _LoginPageState extends State<LoginPage> with LoginPageControllerMixin {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          SizedBox(
-                            height: 320,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width: 126,
-                                  height: 126,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(999),
-                                    child: Assets.logo.logo.image(
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 126,
+                                height: 126,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(999),
+                                  child: Assets.logo.logo.image(fit: BoxFit.cover),
                                 ),
-                                const SizedBox(height: 18),
-                                Text(
-                                  'R99',
-                                  style: theme.textTheme.displaySmall?.copyWith(
-                                    color: AppColor.brandPrimary,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 1,
-                                  ),
+                              ),
+                              const SizedBox(height: 18),
+                              Text(
+                                'R99',
+                                style: theme.textTheme.displaySmall?.copyWith(
+                                  color: AppColor.brandPrimary,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1,
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'delivery interface',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: AppColor.textOnDark.withValues(
-                                      alpha: 0.78,
-                                    ),
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 18),
-                          Text(
-                            'Member Login',
-                            textAlign: TextAlign.center,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              color: AppColor.textOnDark,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 28),
                           CustomInputFieldText(
                             controller: usernameController,
                             textInputAction: TextInputAction.next,
-                            hintText: 'Username',
-                            prefixIcon: const Icon(
-                              Icons.person_outline_rounded,
-                            ),
+                            keyboardType: TextInputType.emailAddress,
+                            hintText: 'Email',
+                            prefixIcon: const Icon(Icons.person_outline_rounded),
                             fillColor: AppColor.darkSurfaceAlt,
                             borderRadius: _fieldRadius,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 22,
-                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
                             textStyle: const TextStyle(
                               color: AppColor.textOnDark,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
-                            hintStyle: const TextStyle(
-                              color: AppColor.textMuted,
-                              fontSize: 15,
-                            ),
+                            hintStyle: const TextStyle(color: AppColor.textMuted, fontSize: 15),
                             prefixIconColor: AppColor.textMuted,
                             enabledBorderColor: AppColor.darkSurfaceBorder,
                             focusedBorderColor: AppColor.brandPrimary,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Please enter username';
+                                return 'Please enter email';
                               }
                               return null;
                             },
@@ -127,26 +91,18 @@ class _LoginPageState extends State<LoginPage> with LoginPageControllerMixin {
                             suffixIcon: IconButton(
                               onPressed: toggleObscurePassword,
                               icon: Icon(
-                                obscurePassword.value
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined,
+                                obscurePassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                               ),
                             ),
                             fillColor: AppColor.darkSurfaceAlt,
                             borderRadius: _fieldRadius,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 22,
-                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
                             textStyle: const TextStyle(
                               color: AppColor.textOnDark,
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
-                            hintStyle: const TextStyle(
-                              color: AppColor.textMuted,
-                              fontSize: 15,
-                            ),
+                            hintStyle: const TextStyle(color: AppColor.textMuted, fontSize: 15),
                             prefixIconColor: AppColor.textMuted,
                             suffixIconColor: AppColor.textMuted,
                             enabledBorderColor: AppColor.darkSurfaceBorder,
@@ -159,54 +115,73 @@ class _LoginPageState extends State<LoginPage> with LoginPageControllerMixin {
                             },
                           ),
                           const SizedBox(height: 24),
+                          if (errorMessage.value != null) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: AppColor.brandPrimarySoft,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: AppColor.brandPrimary),
+                              ),
+                              child: Text(
+                                errorMessage.value!,
+                                style: const TextStyle(color: AppColor.textOnDark, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                           SizedBox(
                             height: 60,
                             child: FilledButton(
-                              onPressed: submit,
+                              onPressed: isSubmitting.value ? null : submit,
                               style: FilledButton.styleFrom(
                                 backgroundColor: AppColor.brandPrimary,
                                 foregroundColor: AppColor.textOnDark,
                                 elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    _fieldRadius,
-                                  ),
-                                ),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(_fieldRadius)),
                                 shadowColor: AppColor.brandPrimarySoft,
                               ),
-                              child: const Text(
-                                'SIGN IN',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.6,
-                                ),
-                              ),
+                              child: isSubmitting.value
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColor.textOnDark),
+                                    )
+                                  : const Text(
+                                      'SIGN IN',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, letterSpacing: 0.6),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 28),
                           Center(
-                            child: Text.rich(
-                              TextSpan(
-                                children: [
+                            child: Column(
+                              children: [
+                                TextButton(
+                                  onPressed: openSignUpPage,
+                                  child: const Text('No account yet? Sign up first'),
+                                ),
+                                Text.rich(
                                   TextSpan(
-                                    text: 'Forgot the password? ',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: AppColor.textMuted,
-                                    ),
+                                    children: [
+                                      TextSpan(
+                                        text: 'Forgot the password? ',
+                                        style: theme.textTheme.bodyMedium?.copyWith(color: AppColor.textMuted),
+                                      ),
+                                      TextSpan(
+                                        text: 'Click here',
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: AppColor.textOnDark,
+                                          fontWeight: FontWeight.w600,
+                                          decoration: TextDecoration.underline,
+                                          decorationColor: AppColor.textOnDark,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  TextSpan(
-                                    text: 'Click here',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: AppColor.textOnDark,
-                                      fontWeight: FontWeight.w600,
-                                      decoration: TextDecoration.underline,
-                                      decorationColor: AppColor.textOnDark,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              textAlign: TextAlign.center,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
                         ],

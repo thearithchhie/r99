@@ -7,17 +7,26 @@ class DeliveryImportPage extends StatefulWidget {
   State<DeliveryImportPage> createState() => _DeliveryImportPageState();
 }
 
-class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryImportPageControllerMixin {
+class _DeliveryImportPageState extends State<DeliveryImportPage>
+    with DeliveryImportPageControllerMixin {
   Future<void> confirmDeleteAll() async {
     final shouldDelete = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Delete all deliveries?'),
-          content: const Text('This will remove every imported delivery from local history.'),
+          content: const Text(
+            'This will remove every imported delivery from local history.',
+          ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Delete All')),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Delete All'),
+            ),
           ],
         );
       },
@@ -34,11 +43,21 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
       case AppMenuDestination.deliveries:
         return;
       case AppMenuDestination.printer:
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const PrinterPage()));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const PrinterPage()),
+        );
       case AppMenuDestination.textScanner:
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const TextScannerPage()));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const TextScannerPage()),
+        );
       case AppMenuDestination.invoices:
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const InvoiceListPage()));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const InvoiceListPage()),
+        );
+      case AppMenuDestination.logs:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HealthLogPage()),
+        );
     }
   }
 
@@ -56,7 +75,8 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
         Widget content;
         if (isLoading.value && deliveryRecords.value.isEmpty) {
           content = const Center(child: CircularProgressIndicator());
-        } else if (errorMessage.value != null && deliveryRecords.value.isEmpty) {
+        } else if (errorMessage.value != null &&
+            deliveryRecords.value.isEmpty) {
           content = Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
@@ -69,7 +89,10 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                     style: const TextStyle(color: AppColor.errorText),
                   ),
                   const SizedBox(height: 12),
-                  ElevatedButton(onPressed: loadDeliveryRecords, child: const Text('Retry')),
+                  ElevatedButton(
+                    onPressed: loadDeliveryRecords,
+                    child: const Text('Retry'),
+                  ),
                 ],
               ),
             ),
@@ -84,7 +107,9 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                 (record) => _DeliveryCard(
                   record: record,
                   onUseAgain: () => openDeliveryForReprint(record),
-                  onDelete: isImporting.value || isPrintingAll.value ? null : () => deleteDeliveryRecord(record),
+                  onDelete: isImporting.value || isPrintingAll.value
+                      ? null
+                      : () => deleteDeliveryRecord(record),
                 ),
               ),
             ],
@@ -108,19 +133,35 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                             children: [
                               Expanded(
                                 child: FilledButton.icon(
-                                  onPressed: isImporting.value || isPrintingAll.value ? null : importFromGoogleSheet,
-                                  icon: const Icon(Icons.cloud_download_outlined),
-                                  label: Text(isImporting.value ? 'Importing...' : 'Import Deliveries'),
+                                  onPressed:
+                                      isImporting.value || isPrintingAll.value
+                                      ? null
+                                      : importFromGoogleSheet,
+                                  icon: const Icon(
+                                    Icons.cloud_download_outlined,
+                                  ),
+                                  label: Text(
+                                    isImporting.value
+                                        ? 'Importing...'
+                                        : 'Import Deliveries',
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: OutlinedButton.icon(
-                                  onPressed: isImporting.value || isPrintingAll.value || deliveryRecords.value.isEmpty
+                                  onPressed:
+                                      isImporting.value ||
+                                          isPrintingAll.value ||
+                                          deliveryRecords.value.isEmpty
                                       ? null
                                       : printAllDeliveries,
                                   icon: const Icon(Icons.print_outlined),
-                                  label: Text(isPrintingAll.value ? 'Printing...' : 'Print All'),
+                                  label: Text(
+                                    isPrintingAll.value
+                                        ? 'Printing...'
+                                        : 'Print All',
+                                  ),
                                 ),
                               ),
                             ],
@@ -129,7 +170,10 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                           SizedBox(
                             width: double.infinity,
                             child: OutlinedButton.icon(
-                              onPressed: isImporting.value || isPrintingAll.value || deliveryRecords.value.isEmpty
+                              onPressed:
+                                  isImporting.value ||
+                                      isPrintingAll.value ||
+                                      deliveryRecords.value.isEmpty
                                   ? null
                                   : confirmDeleteAll,
                               icon: const Icon(Icons.delete_outline),
@@ -144,7 +188,9 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                               decoration: BoxDecoration(
                                 color: AppColor.surfaceMuted,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: AppColor.borderLighter),
+                                border: Border.all(
+                                  color: AppColor.borderLighter,
+                                ),
                               ),
                               child: Text(summaryMessage.value!),
                             ),
@@ -154,7 +200,12 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                             ...importMessages.value.map(
                               (message) => Padding(
                                 padding: const EdgeInsets.only(bottom: 6),
-                                child: Text('• $message', style: const TextStyle(color: AppColor.errorText)),
+                                child: Text(
+                                  '• $message',
+                                  style: const TextStyle(
+                                    color: AppColor.errorText,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -174,23 +225,35 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
                     offset: const Offset(0, 2400),
                     child: RepaintBoundary(
                       key: printPreviewKey,
-                      child: PrintTemplateCard(data: templateDataFromRecord(previewRecord)),
+                      child: PrintTemplateCard(
+                        data: templateDataFromRecord(previewRecord),
+                      ),
                     ),
                   ),
                 ),
               ),
             if (isImporting.value || isPrintingAll.value) ...[
-              const ModalBarrier(dismissible: false, color: AppColor.overlayScrim),
+              const ModalBarrier(
+                dismissible: false,
+                color: AppColor.overlayScrim,
+              ),
               Center(
                 child: Card(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 20,
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const CircularProgressIndicator(),
                         const SizedBox(height: 16),
-                        Text(isImporting.value ? 'Importing deliveries...' : 'Printing all deliveries...'),
+                        Text(
+                          isImporting.value
+                              ? 'Importing deliveries...'
+                              : 'Printing all deliveries...',
+                        ),
                       ],
                     ),
                   ),
@@ -205,7 +268,11 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
 }
 
 class _DeliveryCard extends StatelessWidget {
-  const _DeliveryCard({required this.record, required this.onUseAgain, required this.onDelete});
+  const _DeliveryCard({
+    required this.record,
+    required this.onUseAgain,
+    required this.onDelete,
+  });
 
   final DeliveryRecord record;
   final VoidCallback onUseAgain;
@@ -213,7 +280,9 @@ class _DeliveryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final detailStyle = Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColor.neutral500);
+    final detailStyle = Theme.of(
+      context,
+    ).textTheme.bodySmall?.copyWith(color: AppColor.neutral500);
 
     return Card(
       child: Padding(
@@ -226,10 +295,19 @@ class _DeliveryCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     record.customerName.isEmpty ? '-' : record.customerName,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-                Text(record.price, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                Text(
+                  record.price,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 6),
@@ -237,11 +315,19 @@ class _DeliveryCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(record.phone.isEmpty ? '-' : record.phone, style: detailStyle),
             const SizedBox(height: 6),
-            Text(record.location.isEmpty ? '-' : record.location, style: detailStyle),
+            Text(
+              record.location.isEmpty ? '-' : record.location,
+              style: detailStyle,
+            ),
             const SizedBox(height: 8),
             Row(
               children: [
-                Expanded(child: Text(record.deliverService.isEmpty ? '-' : record.deliverService, style: detailStyle)),
+                Expanded(
+                  child: Text(
+                    record.deliverService.isEmpty ? '-' : record.deliverService,
+                    style: detailStyle,
+                  ),
+                ),
                 Text('Printed ${record.printCount}x', style: detailStyle),
               ],
             ),

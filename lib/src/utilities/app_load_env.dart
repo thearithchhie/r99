@@ -20,6 +20,14 @@ class AppLoadEnv {
     return _values['GOOGLE_SHEET_LINK']?.trim() ?? '';
   }
 
+  static String get supabaseUrl {
+    return _values['SUPABASE_URL']?.trim() ?? '';
+  }
+
+  static String get supabaseAnonKey {
+    return _values['SUPABASE_ANON_KEY']?.trim() ?? '';
+  }
+
   static Map<String, String> _parse(String raw) {
     final values = <String, String>{};
 

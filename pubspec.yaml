@@ -51,6 +51,7 @@ dependencies:
   flutter_bluetooth_printer: ^2.20.0
   hive_ce_flutter: ^2.3.4
   flutter_gen_runner: ^5.14.1
+  supabase_flutter: ^2.12.4
 
 dev_dependencies:
   build_runner: ^2.7.0

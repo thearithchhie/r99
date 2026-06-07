@@ -21,27 +21,35 @@ class $AssetsLogoGen {
   List<AssetGenImage> get values => [logo];
 }
 
-class $AssetsSvgsGen {
-  const $AssetsSvgsGen();
+class $AssetsPngsGen {
+  const $AssetsPngsGen();
 
-  /// File path: assets/svgs/facebook-svgrepo-com.svg
-  String get facebookSvgrepoCom => 'assets/svgs/facebook-svgrepo-com.svg';
+  /// File path: assets/pngs/facebook-svgrepo-com.png
+  AssetGenImage get facebookSvgrepoCom =>
+      const AssetGenImage('assets/pngs/facebook-svgrepo-com.png');
 
-  /// File path: assets/svgs/location-pin-svgrepo-com.svg
-  String get locationPinSvgrepoCom =>
-      'assets/svgs/location-pin-svgrepo-com.svg';
+  /// File path: assets/pngs/location-pin-svgrepo-com.png
+  AssetGenImage get locationPinSvgrepoCom =>
+      const AssetGenImage('assets/pngs/location-pin-svgrepo-com.png');
 
-  /// File path: assets/svgs/person-svgrepo-com.svg
-  String get personSvgrepoCom => 'assets/svgs/person-svgrepo-com.svg';
+  /// File path: assets/pngs/person-svgrepo-com.png
+  AssetGenImage get personSvgrepoCom =>
+      const AssetGenImage('assets/pngs/person-svgrepo-com.png');
 
-  /// File path: assets/svgs/truck-speed-svgrepo-com.svg
-  String get truckSpeedSvgrepoCom => 'assets/svgs/truck-speed-svgrepo-com.svg';
+  /// File path: assets/pngs/phone-call-answer-svgrepo-com.png
+  AssetGenImage get phoneCallAnswerSvgrepoCom =>
+      const AssetGenImage('assets/pngs/phone-call-answer-svgrepo-com.png');
+
+  /// File path: assets/pngs/truck-speed-svgrepo-com.png
+  AssetGenImage get truckSpeedSvgrepoCom =>
+      const AssetGenImage('assets/pngs/truck-speed-svgrepo-com.png');
 
   /// List of all assets
-  List<String> get values => [
+  List<AssetGenImage> get values => [
     facebookSvgrepoCom,
     locationPinSvgrepoCom,
     personSvgrepoCom,
+    phoneCallAnswerSvgrepoCom,
     truckSpeedSvgrepoCom,
   ];
 }
@@ -64,7 +72,7 @@ class Assets {
 
   static const String aEnv = '.env';
   static const $AssetsLogoGen logo = $AssetsLogoGen();
-  static const $AssetsSvgsGen svgs = $AssetsSvgsGen();
+  static const $AssetsPngsGen pngs = $AssetsPngsGen();
   static const $AssetsTessdataGen tessdata = $AssetsTessdataGen();
   static const String tessdataConfig = 'assets/tessdata_config.json';
 

@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:r99/export.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLoadEnv.load();
+  await SupabaseAuthService.initialize();
   await AppDatabase.instance.open();
   runApp(const MyApp());
 }
@@ -34,6 +37,22 @@ class AppGate extends StatefulWidget {
 
 class _AppGateState extends State<AppGate> {
   bool isLoggedIn = false;
+  StreamSubscription<bool>? authSub;
+
+  @override
+  void initState() {
+    super.initState();
+    isLoggedIn = SupabaseAuthService.isSignedIn;
+
+    if (SupabaseAuthService.isInitialized) {
+      authSub = SupabaseAuthService.authStateChanges.listen((signedIn) {
+        if (!mounted) return;
+        setState(() {
+          isLoggedIn = signedIn;
+        });
+      });
+    }
+  }
 
   void login() {
     setState(() {
@@ -48,5 +67,11 @@ class _AppGateState extends State<AppGate> {
     }
 
     return LoginPage(onLoginSuccess: login);
+  }
+
+  @override
+  void dispose() {
+    authSub?.cancel();
+    super.dispose();
   }
 }

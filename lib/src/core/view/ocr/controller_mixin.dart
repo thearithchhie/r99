@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:r99/src/core/view/delivery_import/delivery_import_page.dart';
+import 'package:r99/src/core/view/health_log/health_log_page.dart';
 import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
 import 'package:r99/src/printer_page.dart';
@@ -79,6 +80,10 @@ mixin TextScannerPageControllerMixin on State<TextScannerPage> {
       case AppMenuDestination.deliveries:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const DeliveryImportPage()),
+        );
+      case AppMenuDestination.logs:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HealthLogPage()),
         );
     }
   }

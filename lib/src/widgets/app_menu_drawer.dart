@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:r99/src/core/database/app_preferences_store.dart';
+import 'package:r99/src/core/services/supabase_auth_service.dart';
+import 'package:r99/src/core/view/auth/login_page.dart';
+import 'package:r99/src/printer_page.dart';
 
-enum AppMenuDestination { printer, textScanner, invoices, deliveries }
+enum AppMenuDestination { printer, textScanner, invoices, deliveries, logs }
 
 class AppMenuDrawer extends StatefulWidget {
   const AppMenuDrawer({
@@ -60,6 +63,49 @@ class _AppMenuDrawerState extends State<AppMenuDrawer> {
     }
   }
 
+  Future<void> confirmSignOut() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Sign out?'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) {
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
+    await SupabaseAuthService.signOut();
+
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => LoginPage(
+          onLoginSuccess: () {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const PrinterPage()),
+              (_) => false,
+            );
+          },
+        ),
+      ),
+      (_) => false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -105,6 +151,12 @@ class _AppMenuDrawerState extends State<AppMenuDrawer> {
               onTap: () =>
                   widget.onSelectDestination(AppMenuDestination.deliveries),
             ),
+            ListTile(
+              leading: const Icon(Icons.fact_check_outlined),
+              title: const Text('Health Logs'),
+              selected: widget.currentDestination == AppMenuDestination.logs,
+              onTap: () => widget.onSelectDestination(AppMenuDestination.logs),
+            ),
             const Divider(height: 24),
             SwitchListTile(
               secondary: const Icon(Icons.visibility_outlined),
@@ -114,6 +166,13 @@ class _AppMenuDrawerState extends State<AppMenuDrawer> {
               ),
               value: showPreview,
               onChanged: isSaving ? null : togglePreview,
+            ),
+            const Spacer(),
+            const Divider(height: 1),
+            ListTile(
+              leading: const Icon(Icons.logout_outlined),
+              title: const Text('Sign Out'),
+              onTap: confirmSignOut,
             ),
           ],
         ),

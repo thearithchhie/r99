@@ -59,3 +59,34 @@ enum ColumMapHeader {
   final String key;
   final String value;
 }
+
+enum SupabaseAuthErrorCode {
+  invalidCredentials(
+    key: 'invalid_credentials',
+    message: 'Invalid email or password. Please check your credentials and try again.',
+  ),
+  overEmailSendRateLimit(
+    key: 'over_email_send_rate_limit',
+    message:
+        'Supabase email limit reached. Please wait and try again, or ask admin to create/confirm your account in Supabase.',
+  );
+
+  const SupabaseAuthErrorCode({required this.key, required this.message});
+
+  final String key;
+  final String message;
+
+  static SupabaseAuthErrorCode? fromKey(String? key) {
+    if (key == null || key.isEmpty) {
+      return null;
+    }
+
+    for (final code in SupabaseAuthErrorCode.values) {
+      if (code.key == key) {
+        return code;
+      }
+    }
+
+    return null;
+  }
+}

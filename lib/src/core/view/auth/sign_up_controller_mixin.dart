@@ -1,14 +1,16 @@
 import 'package:r99/export.dart';
 
-mixin LoginPageControllerMixin on State<LoginPage> {
+mixin SignUpPageControllerMixin on State<SignUpPage> {
   final formKey = GlobalKey<FormState>();
-  final usernameController = TextEditingController();
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   final obscurePassword = signal<bool>(true);
   final isSubmitting = signal<bool>(false);
   final errorMessage = signal<String?>(null);
+  final successMessage = signal<String?>(null);
 
-  Future<void> submit() async {
+  Future<void> submitSignUp() async {
     final form = formKey.currentState;
     if (form == null || !form.validate()) {
       return;
@@ -17,15 +19,23 @@ mixin LoginPageControllerMixin on State<LoginPage> {
     FocusScope.of(context).unfocus();
     isSubmitting.value = true;
     errorMessage.value = null;
+    successMessage.value = null;
 
     try {
-      await SupabaseAuthService.signInWithEmailPassword(
-        email: usernameController.text,
+      final signedIn = await SupabaseAuthService.signUpWithEmailPassword(
+        email: emailController.text,
         password: passwordController.text,
       );
 
       if (!mounted) return;
-      widget.onLoginSuccess();
+
+      if (signedIn) {
+        widget.onLoginSuccess();
+        return;
+      }
+
+      successMessage.value =
+          'Account created. Please check your email to confirm, then sign in.';
     } catch (error) {
       if (!mounted) return;
       errorMessage.value = error.toString().replaceFirst('Exception: ', '');
@@ -40,17 +50,15 @@ mixin LoginPageControllerMixin on State<LoginPage> {
     obscurePassword.value = !obscurePassword.value;
   }
 
-  void openSignUpPage() {
-    Navigator.of(context).push(MaterialPageRoute(builder: (_) => SignUpPage(onLoginSuccess: widget.onLoginSuccess)));
-  }
-
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
+    confirmPasswordController.dispose();
     obscurePassword.dispose();
     isSubmitting.dispose();
     errorMessage.dispose();
+    successMessage.dispose();
     super.dispose();
   }
 }
