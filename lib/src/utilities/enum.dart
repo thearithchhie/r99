@@ -1,3 +1,5 @@
+import 'package:r99/export.dart';
+
 enum StorageBox {
   announcement,
   aboutUS,
@@ -24,12 +26,7 @@ enum CurrencyType {
   usd(title: 'US Dollar', symbol: '\$', path: '', currentCode: "USD"),
   khr(title: 'Khmer Riel', symbol: '៛', path: '', currentCode: "KHR");
 
-  const CurrencyType({
-    required this.title,
-    required this.path,
-    required this.symbol,
-    required this.currentCode,
-  });
+  const CurrencyType({required this.title, required this.path, required this.symbol, required this.currentCode});
 
   final String title;
   final String path;
@@ -77,10 +74,7 @@ enum ShopType {
   static ShopType fallback = ShopType.r99;
 
   static ShopType? fromRaw(String value) {
-    final normalized = value.trim().toLowerCase().replaceAll(
-      RegExp(r'\s+'),
-      ' ',
-    );
+    final normalized = value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
     if (normalized.isEmpty ||
         normalized == ColumMapHeader.shop.key ||
         normalized == 'r99' ||
@@ -108,8 +102,7 @@ enum ShopType {
 enum SupabaseAuthErrorCode {
   invalidCredentials(
     key: 'invalid_credentials',
-    message:
-        'Invalid email or password. Please check your credentials and try again.',
+    message: 'Invalid email or password. Please check your credentials and try again.',
   ),
   overEmailSendRateLimit(
     key: 'over_email_send_rate_limit',
@@ -118,8 +111,7 @@ enum SupabaseAuthErrorCode {
   ),
   networkUnavailable(
     key: 'network_unavailable',
-    message:
-        'Cannot connect to Supabase. Please check internet/DNS connection and try again.',
+    message: 'Cannot connect to Supabase. Please check internet/DNS connection and try again.',
   );
 
   const SupabaseAuthErrorCode({required this.key, required this.message});
@@ -140,4 +132,15 @@ enum SupabaseAuthErrorCode {
 
     return null;
   }
+}
+
+enum FlavorType {
+  development(env: EnvDev()),
+  staging(env: EnvStg()),
+  production(env: EnvPro()),
+  local(env: EnvLocal());
+
+  const FlavorType({required this.env});
+
+  final AppEnv env;
 }

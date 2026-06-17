@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:image/image.dart' as img;
 import 'package:r99/export.dart';
-import 'package:r99/src/core/printer/ios_bluetooth_image_printer_service.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
@@ -34,10 +33,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     isLoading.value = true;
     errorMessage.value = null;
     try {
-      final records = await isar.deliveryRecords
-          .where()
-          .sortByImportedAtDesc()
-          .findAll();
+      final records = await isar.deliveryRecords.where().sortByImportedAtDesc().findAll();
       if (!mounted) return;
       deliveryRecords.value = records;
     } catch (error) {
@@ -57,12 +53,8 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     importMessages.value = [];
 
     try {
-      final resolvedShareUrl = GoogleSheetDeliveryImportService.resolveShareUrl(
-        '',
-      );
-      final result = await GoogleSheetDeliveryImportService.importFromShareUrl(
-        resolvedShareUrl,
-      );
+      final resolvedShareUrl = GoogleSheetDeliveryImportService.resolveShareUrl('');
+      final result = await GoogleSheetDeliveryImportService.importFromShareUrl(resolvedShareUrl);
 
       await isar.writeTxn(() async {
         await isar.deliveryRecords.clear();
@@ -102,20 +94,21 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     }
 
     final iosPrinterDevice = sharedIOSBluetoothImagePrinterDevice.value;
-    final printWithIOSBluetoothImage = IOSBluetoothImagePrinterService.isDevice(
-      iosPrinterDevice,
-    );
+    final macOSNativeDevice = sharedMacOSNativePrinterDevice.value;
+    final printWithIOSBluetoothImage = IOSBluetoothImagePrinterService.isDevice(iosPrinterDevice);
+    final printWithMacOSNative = macOSNativeDevice != null;
 
-    if (!printWithIOSBluetoothImage &&
-        manager.state != PrinterConnectionState.connected) {
+    if (!printWithIOSBluetoothImage && !printWithMacOSNative && manager.state != PrinterConnectionState.connected) {
       showMessage('Connect printer first from the Printer page.');
       return;
     }
 
     final connectedDevice = printWithIOSBluetoothImage
         ? iosPrinterDevice!
+        : printWithMacOSNative
+        ? macOSNativeDevice
         : manager.connectedDevice;
-    if (!printWithIOSBluetoothImage && connectedDevice is BlePrinterDevice) {
+    if (!printWithIOSBluetoothImage && !printWithMacOSNative && connectedDevice is BlePrinterDevice) {
       showMessage(
         'Connected with BLE. Disconnect and reconnect with the Classic Bluetooth printer entry before printing.',
         duration: const Duration(seconds: 4),
@@ -129,14 +122,8 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     final recordsToPrint = List<DeliveryRecord>.from(deliveryRecords.value);
 
     try {
-      for (
-        var start = 0;
-        start < recordsToPrint.length;
-        start += printBatchSize
-      ) {
-        final end = (start + printBatchSize < recordsToPrint.length)
-            ? start + printBatchSize
-            : recordsToPrint.length;
+      for (var start = 0; start < recordsToPrint.length; start += printBatchSize) {
+        final end = (start + printBatchSize < recordsToPrint.length) ? start + printBatchSize : recordsToPrint.length;
         final batch = recordsToPrint.sublist(start, end);
         final batchInvoices = <PrintInvoice>[];
 
@@ -145,23 +132,24 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
           await WidgetsBinding.instance.endOfFrame;
           await Future<void>.delayed(const Duration(milliseconds: 80));
 
-          final ticket = await Ticket.create(PaperSize.mm58);
           final templateData = templateDataFromRecord(record);
-          final image = await capturePreview(
-            pixelRatio: printWithIOSBluetoothImage ? 1 : 3.5,
-          );
 
-          if (!printWithIOSBluetoothImage) {
-            ticket.imageRaster(image, align: PrintAlign.center, maxWidth: 384);
-            ticket.feed(3);
-          }
-
-          if (printWithIOSBluetoothImage) {
-            await IOSBluetoothImagePrinterService.printImageBytes(
-              img.encodePng(image),
-            );
+          if (printWithMacOSNative) {
+            await MacOSNativePrinterService.printTemplate(printerName: macOSNativeDevice.name, data: templateData);
           } else {
-            await manager.printTicket(ticket);
+            final ticket = await Ticket.create(PaperSize.mm58);
+            final image = await capturePreview(pixelRatio: printWithIOSBluetoothImage ? 1 : 3.5);
+
+            if (!printWithIOSBluetoothImage) {
+              ticket.imageRaster(image, align: PrintAlign.center, maxWidth: 384);
+              ticket.feed(3);
+            }
+
+            if (printWithIOSBluetoothImage) {
+              await IOSBluetoothImagePrinterService.printImageBytes(img.encodePng(image));
+            } else {
+              await manager.printTicket(ticket);
+            }
           }
           batchInvoices.add(
             PrintInvoiceStore.buildInvoice(
@@ -175,17 +163,14 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
         await isar.writeTxn(() async {
           await isar.printInvoices.putAll(batchInvoices);
-          await isar.deliveryRecords.deleteAll(
-            batch.map((record) => record.id).toList(),
-          );
+          await isar.deliveryRecords.deleteAll(batch.map((record) => record.id).toList());
         });
 
         committedCount += batch.length;
       }
 
       if (!mounted) return;
-      summaryMessage.value =
-          'Printed $committedCount deliveries successfully in batches of $printBatchSize.';
+      summaryMessage.value = 'Printed $committedCount deliveries successfully in batches of $printBatchSize.';
       await loadDeliveryRecords();
       showMessage('Printed all imported deliveries.');
     } catch (error) {
@@ -210,9 +195,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
 
       if (!mounted) return;
 
-      final updatedRecords = deliveryRecords.value
-          .where((item) => item.id != record.id)
-          .toList();
+      final updatedRecords = deliveryRecords.value.where((item) => item.id != record.id).toList();
       deliveryRecords.value = updatedRecords;
 
       if (activePreviewRecord.value?.id == record.id) {
@@ -253,9 +236,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     await WidgetsBinding.instance.endOfFrame;
     await Future<void>.delayed(const Duration(milliseconds: 60));
 
-    final boundary =
-        printPreviewKey.currentContext?.findRenderObject()
-            as RenderRepaintBoundary?;
+    final boundary = printPreviewKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
     if (boundary == null) {
       throw Exception('Delivery preview is not ready.');
     }
@@ -277,9 +258,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
   PrintTemplateData templateDataFromRecord(DeliveryRecord record) {
     final parsedPrice = parsePrice(record.price);
     final serviceLabel = record.deliverService.trim();
-    final isJt =
-        serviceLabel.toUpperCase() == 'J&T' ||
-        serviceLabel.toUpperCase() == 'J & T';
+    final isJt = serviceLabel.toUpperCase() == 'J&T' || serviceLabel.toUpperCase() == 'J & T';
     final hasOtherService = serviceLabel.isNotEmpty && !isJt;
 
     return PrintTemplateData(
@@ -313,20 +292,11 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
       ..jtChecked = template.jtChecked
       ..otherChecked = template.otherChecked;
 
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (_) => PrinterPage(initialInvoice: draftInvoice),
-      ),
-    );
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => PrinterPage(initialInvoice: draftInvoice)));
   }
 
-  void showMessage(
-    String message, {
-    Duration duration = const Duration(seconds: 4),
-  }) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
+  void showMessage(String message, {Duration duration = const Duration(seconds: 4)}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   String deliveryDeviceTransport(PrinterDevice device) {

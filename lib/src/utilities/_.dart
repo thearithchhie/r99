@@ -3,5 +3,6 @@ export 'enum.dart';
 export 'app_colors.dart';
 export 'app_env.dart';
 export 'app_gloabal.dart';
+export 'general.dart';
 export 'app_load_env.dart';
 export 'helper/_.dart';

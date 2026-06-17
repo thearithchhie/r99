@@ -7,6 +7,7 @@ Available docs:
 - [Project Overview](./project-overview.md)
 - [Features Guide](./features-guide.md)
 - [Build and Release](./build-and-release.md)
+- [Android Gradle and Product Flavors](./android-gradle-and-flavors.md)
 
 Quick paths in the codebase:
 

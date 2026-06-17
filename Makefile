@@ -1,5 +1,5 @@
 # Command-only targets.
-.PHONY: get clean clean_cache build b macos m android_release ar windows_release wr fix_gradle c
+.PHONY: get clean clean_cache build b macos m android_release ar ios_release ir windows_release wr fix_gradle c
 
 # Flutter commands
 get: 
@@ -21,22 +21,28 @@ b:
 	dart run build_runner build --delete-conflicting-outputs
 
 macos:
-	flutter run -d macos
+	flutter run -d macos -t lib/main_development.dart
 
 m:
-	flutter run -d macos
+	flutter run -d macos -t lib/main_development.dart
 
 android_release:
-	flutter build apk --release
+	flutter build apk --release --flavor production -t lib/main_production.dart
 
 ar:
-	flutter build apk --release
+	flutter build apk --release --flavor production -t lib/main_production.dart
+
+ios_release:
+	flutter build ipa --release -t lib/main_production.dart --export-method development
+
+ir:
+	flutter build ipa --release -t lib/main_production.dart --export-method development
 
 windows_release:
-	flutter build windows --release
+	flutter build windows --release -t lib/main_production.dart
 
 wr:
-	flutter build windows --release
+	flutter build windows --release -t lib/main_production.dart
 
 # Fix Gradle lock issues
 fix_gradle:

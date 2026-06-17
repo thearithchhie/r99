@@ -1,29 +1,34 @@
 import 'dart:async';
 
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:r99/export.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await AppLoadEnv.load();
-  await SupabaseAuthService.initialize();
-  await AppDatabase.instance.open();
-  runApp(const MyApp());
-}
+// Future<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   await AppLoadEnv.load();
+//   await SupabaseAuthService.initialize();
+//   await AppDatabase.instance.open();
+//   runApp(const App());
+// }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class App extends StatelessWidget {
+  const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'R99 Printer',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColor.themeSeed),
-        scaffoldBackgroundColor: AppColor.appScaffoldBackground,
-        useMaterial3: true,
+    return FlavorBanner(
+      child: GlobalLoaderOverlay(
+        child: MaterialApp(
+          title: 'R99 Printer',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: AppColor.themeSeed),
+            scaffoldBackgroundColor: AppColor.appScaffoldBackground,
+            useMaterial3: true,
+          ),
+          home: const AppGate(),
+        ),
       ),
-      home: const AppGate(),
     );
   }
 }

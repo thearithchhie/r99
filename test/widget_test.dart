@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:r99/main.dart';
+import 'package:r99/app.dart';
 
 void main() {
   testWidgets('shows login screen on app start', (WidgetTester tester) async {
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const App());
 
     expect(find.text('Welcome Back'), findsOneWidget);
     expect(find.text('Username'), findsOneWidget);

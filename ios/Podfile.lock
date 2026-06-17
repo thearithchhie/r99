@@ -1,53 +1,91 @@
 PODS:
+  - app_links (7.0.0):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_bluetooth_printer (2.0.0):
     - Flutter
   - flutter_tesseract_ocr (0.3.4):
     - Flutter
     - SwiftyTesseract
+  - image_picker_ios (0.0.1):
+    - Flutter
   - isar_community_flutter_libs (1.0.0):
     - Flutter
+  - network_info_plus (0.0.1):
+    - Flutter
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - SwiftyTesseract (3.1.3)
   - unified_esc_pos_printer (1.0.0):
     - Flutter
+  - url_launcher_ios (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
+  - app_links (from `.symlinks/plugins/app_links/ios`)
   - Flutter (from `Flutter`)
   - flutter_bluetooth_printer (from `.symlinks/plugins/flutter_bluetooth_printer/ios`)
   - flutter_tesseract_ocr (from `.symlinks/plugins/flutter_tesseract_ocr/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - isar_community_flutter_libs (from `.symlinks/plugins/isar_community_flutter_libs/ios`)
+  - network_info_plus (from `.symlinks/plugins/network_info_plus/ios`)
+  - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - unified_esc_pos_printer (from `.symlinks/plugins/unified_esc_pos_printer/ios`)
+  - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
 
 SPEC REPOS:
   trunk:
     - SwiftyTesseract
 
 EXTERNAL SOURCES:
+  app_links:
+    :path: ".symlinks/plugins/app_links/ios"
   Flutter:
     :path: Flutter
   flutter_bluetooth_printer:
     :path: ".symlinks/plugins/flutter_bluetooth_printer/ios"
   flutter_tesseract_ocr:
     :path: ".symlinks/plugins/flutter_tesseract_ocr/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
   isar_community_flutter_libs:
     :path: ".symlinks/plugins/isar_community_flutter_libs/ios"
+  network_info_plus:
+    :path: ".symlinks/plugins/network_info_plus/ios"
+  path_provider_foundation:
+    :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  shared_preferences_foundation:
+    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   unified_esc_pos_printer:
     :path: ".symlinks/plugins/unified_esc_pos_printer/ios"
+  url_launcher_ios:
+    :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  app_links: 6d01271b3907b0ee7325c5297c75d697c4226c4d
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_bluetooth_printer: 03d6206c1cb42dc233d3d30b0071fac068c184fd
   flutter_tesseract_ocr: c01971df9e5817a08563298b8ce571fa10e164f1
+  image_picker_ios: 4f2f91b01abdb52842a8e277617df877e40f905b
   isar_community_flutter_libs: cf478bdca01f7fb2bde0320930a785456748f1ad
+  network_info_plus: 6613d9d7cdeb0e6f366ed4dbe4b3c51c52d567a9
+  path_provider_foundation: 0b743cbb62d8e47eab856f09262bb8c1ddcfe6ba
   permission_handler_apple: 9878588469a2b0d0fc1e048d9f43605f92e6cec2
+  shared_preferences_foundation: 5086985c1d43c5ba4d5e69a4e8083a389e2909e6
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   unified_esc_pos_printer: ec763b844eba04ddab83a77149bd184e60b717b6
+  url_launcher_ios: bb13df5870e8c4234ca12609d04010a21be43dfa
 
-PODFILE CHECKSUM: eee421ac0de77df3793c02bab7db99051cdbf79b
+PODFILE CHECKSUM: dc19e3fdff765cda5acd5b2685233e4050cf7add
 
 COCOAPODS: 1.16.2

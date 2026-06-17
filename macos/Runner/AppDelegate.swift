@@ -83,7 +83,7 @@ final class MacOSNativePrinterBridge: NSObject {
       )
     }
 
-    let pageWidthPoints = mmToPoints(70.0)
+    let pageWidthPoints = mmToPoints(58.0)
     let pageHeightPoints = mmToPoints(102.0)
     let pageSize = NSSize(width: pageWidthPoints, height: pageHeightPoints)
 
@@ -102,8 +102,8 @@ final class MacOSNativePrinterBridge: NSObject {
 
     let printView = NativeTemplatePrintView(frame: NSRect(origin: .zero, size: pageSize), template: template)
     let operation = NSPrintOperation(view: printView, printInfo: printInfo)
-    operation.showsPrintPanel = true
-    operation.showsProgressPanel = true
+    operation.showsPrintPanel = false
+    operation.showsProgressPanel = false
 
     if !operation.run() {
       throw NSError(
@@ -203,16 +203,16 @@ final class NativeTemplatePrintView: NSView {
     bounds.fill()
     NSGraphicsContext.current?.imageInterpolation = .none
 
-    let outerTop: CGFloat = 6
-    let outerSideInset: CGFloat = 6
-    let maxOuterHeight = bounds.height - 12
-    let outerBottomLimit = bounds.height - 6
+    let outerTop: CGFloat = 1
+    let outerSideInset: CGFloat = 1
+    let maxOuterHeight = bounds.height - 2
+    let outerBottomLimit = bounds.height - 4
     let outerWidth = bounds.width - (outerSideInset * 2)
     let minOuterHeight: CGFloat = 40
 
     var y = outerTop + 8
-    let contentX = outerSideInset + 10
-    let contentWidth = outerWidth - 20
+    let contentX = outerSideInset + 6
+    let contentWidth = outerWidth - 12
 
     if template.shouldShowShopHeader {
       y = drawPageHeader(
@@ -272,12 +272,12 @@ final class NativeTemplatePrintView: NSView {
     drawLeadingIcon("truck.box.fill", rect: NSRect(x: amountRect.minX + 8, y: amountRect.minY + 5, width: 12, height: 12))
     _ = drawText(
       "សេវាដឹក",
-      rect: NSRect(x: amountRect.minX + 23, y: amountRect.minY + 2, width: 92, height: 16),
+      rect: NSRect(x: amountRect.minX + 23, y: amountRect.minY + 2, width: 60, height: 16),
       font: khmerFont(size: 10.2, weight: .bold)
     )
     _ = drawText(
-      "តម្លៃសរុបៈ \(template.amountText)",
-      rect: NSRect(x: amountRect.minX + 102, y: amountRect.minY + 2, width: amountRect.width - 110, height: 16),
+      "តម្លៃ: \(template.amountText)",
+      rect: NSRect(x: amountRect.minX + 84, y: amountRect.minY + 2, width: amountRect.width - 84, height: 16),
       font: khmerFont(size: 9.8, weight: .bold),
       alignment: .right
     )
@@ -321,10 +321,7 @@ final class NativeTemplatePrintView: NSView {
       contentBottom = y + footerHeight
     }
 
-    let outerHeight = min(
-      max(contentBottom - outerTop + footerBottomPadding + borderBottomPadding, minOuterHeight),
-      maxOuterHeight
-    )
+    let outerHeight = bounds.height - (outerTop * 2)
     let outerRect = NSRect(
       x: outerSideInset,
       y: outerTop,

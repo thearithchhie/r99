@@ -1,4 +1,4 @@
-import 'package:r99/src/utilities/extensions/string_extension.dart';
+import 'package:r99/export.dart' show StringsExtension;
 
 extension DynamicExtension on dynamic {
   String? toAppString({String? defaultVal = ''}) {
