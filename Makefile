@@ -1,5 +1,5 @@
 # Command-only targets.
-.PHONY: get clean clean_cache build b macos m android_release ar ios_release ir windows_release wr fix_gradle c
+.PHONY: get clean clean_cache build b macos m macos_staging ms macos_prod mp macos_build mb macos_build_staging mbs macos_build_prod mbp android_release ar ios_release ir windows_release wr fix_gradle c
 
 # Flutter commands
 get: 
@@ -25,6 +25,36 @@ macos:
 
 m:
 	flutter run -d macos -t lib/main_development.dart
+
+macos_staging:
+	flutter run -d macos -t lib/main_staging.dart
+
+ms:
+	flutter run -d macos -t lib/main_staging.dart
+
+macos_prod:
+	flutter run -d macos -t lib/main_production.dart
+
+mp:
+	flutter run -d macos -t lib/main_production.dart
+
+macos_build:
+	flutter build macos -t lib/main_development.dart
+
+mb:
+	flutter build macos -t lib/main_development.dart
+
+macos_build_staging:
+	flutter build macos -t lib/main_staging.dart
+
+mbs:
+	flutter build macos -t lib/main_staging.dart
+
+macos_build_prod:
+	flutter build macos -t lib/main_production.dart
+
+mbp:
+	flutter build macos -t lib/main_production.dart
 
 android_release:
 	flutter build apk --release --flavor production -t lib/main_production.dart

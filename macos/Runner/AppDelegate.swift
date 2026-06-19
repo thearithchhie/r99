@@ -183,6 +183,7 @@ struct MacOSPrintTemplate {
 final class NativeTemplatePrintView: NSView {
   private let template: MacOSPrintTemplate
   private let accentColor = NSColor.black
+  private(set) var neededPageHeight: CGFloat = 0
 
   init(frame frameRect: NSRect, template: MacOSPrintTemplate) {
     self.template = template
@@ -205,8 +206,6 @@ final class NativeTemplatePrintView: NSView {
 
     let outerTop: CGFloat = 1
     let outerSideInset: CGFloat = 1
-    let maxOuterHeight = bounds.height - 2
-    let outerBottomLimit = bounds.height - 4
     let outerWidth = bounds.width - (outerSideInset * 2)
     let minOuterHeight: CGFloat = 40
 
@@ -228,7 +227,7 @@ final class NativeTemplatePrintView: NSView {
         width: contentWidth,
         x: contentX
       )
-      y += 8
+      y += 4
     }
 
     y = drawSection(
@@ -236,8 +235,11 @@ final class NativeTemplatePrintView: NSView {
       title: "ឈ្មោះអតិថិជន",
       lines: [template.pageName.isEmpty ? "-" : template.pageName],
       y: y,
-      minBoxHeight: 28,
-      titleFont: khmerFont(size: 11.5, weight: .bold),
+      topMargin: 2,
+      bottomMargin: -8,
+      titleBoxGap: 2,
+      minBoxHeight: 22,
+      titleFont: khmerFont(size: 11, weight: .bold),
       bodyFont: NSFont.boldSystemFont(ofSize: 12.5),
       contentX: contentX,
       contentWidth: contentWidth
@@ -247,9 +249,12 @@ final class NativeTemplatePrintView: NSView {
       iconName: "phone.fill",
       title: "លេខទូរស័ព្ទអ្នកទទួល",
       lines: template.phoneLines.isEmpty ? ["-"] : template.phoneLines,
-      y: y,
-      minBoxHeight: 10,
-      titleFont: khmerFont(size: 11.5, weight: .bold),
+      y: y + 2,
+      topMargin: 4,
+      bottomMargin: -6, // -8
+      titleBoxGap: 2,
+      minBoxHeight: 16,
+      titleFont: khmerFont(size: 11, weight: .bold),
       bodyFont: NSFont.boldSystemFont(ofSize: 11),
       contentX: contentX,
       contentWidth: contentWidth
@@ -260,24 +265,28 @@ final class NativeTemplatePrintView: NSView {
       title: "ទីតាំង",
       lines: template.locationLines.isEmpty ? ["-"] : template.locationLines,
       y: y,
+      topMargin: 4,
+      bottomMargin: -8,
+      titleBoxGap: 2,
       minBoxHeight: 10,
-      titleFont: khmerFont(size: 11.5, weight: .bold),
+      titleFont: khmerFont(size: 11, weight: .bold),
       bodyFont: khmerFont(size: 8.8, weight: .bold),
       contentX: contentX,
       contentWidth: contentWidth
     )
 
-    let amountRect = NSRect(x: contentX, y: y, width: contentWidth, height: 24)
+    let amountRect = NSRect(x: contentX, y: y + 4, width: contentWidth, height: 22)
     drawRoundedBox(amountRect)
-    drawLeadingIcon("truck.box.fill", rect: NSRect(x: amountRect.minX + 8, y: amountRect.minY + 5, width: 12, height: 12))
+    drawLeadingIcon("truck.box.fill", rect: NSRect(x: amountRect.minX + 8, y: amountRect.minY + 8, width: 12, height: 12))
+   
     _ = drawText(
       "សេវាដឹក",
-      rect: NSRect(x: amountRect.minX + 23, y: amountRect.minY + 2, width: 60, height: 16),
+      rect: NSRect(x: amountRect.minX + 23, y: amountRect.minY + 8, width: 60, height: 10),
       font: khmerFont(size: 10.2, weight: .bold)
     )
     _ = drawText(
       "តម្លៃ: \(template.amountText)",
-      rect: NSRect(x: amountRect.minX + 84, y: amountRect.minY + 2, width: amountRect.width - 84, height: 16),
+      rect: NSRect(x: amountRect.minX + 84, y: amountRect.minY + 8, width: amountRect.width - 84, height: 15),
       font: khmerFont(size: 9.8, weight: .bold),
       alignment: .right
     )
@@ -285,12 +294,15 @@ final class NativeTemplatePrintView: NSView {
 
     let chipGap: CGFloat = 6
     let chipWidth = (contentWidth - chipGap * 2) / 3
-    let chipHeight: CGFloat = 22
     let chips = [
       (label: "សេវាខាងភ្ញៀវ", selected: template.guestServiceChecked),
-      (label: "វីរៈប៊ុនថាំ", selected: template.virakChecked),
+      (label: "VAT", selected: template.virakChecked),
       (label: "J&T", selected: template.jtChecked),
     ]
+    let chipLabelFont = khmerFont(size: 8.5, weight: .bold)
+    let chipLabelWidth = chipWidth - 26
+    let rawChipLabelHeight = chips.map { textHeight($0.label, width: chipLabelWidth, font: chipLabelFont) }.max() ?? 12
+    let chipHeight = max(22, rawChipLabelHeight + 10)
 
     for (index, chip) in chips.enumerated() {
       let chipRect = NSRect(
@@ -307,21 +319,20 @@ final class NativeTemplatePrintView: NSView {
     }
     y += chipHeight + 3
 
-    let footerHeight: CGFloat = 13
-    let footerBottomPadding: CGFloat = 6
+    let footerFont = khmerFont(size: 9.2, weight: .bold)
+    let footerText = "សូមអរគុណសម្រាប់ការគាំទ្រ"
+    let footerHeight = textHeight(footerText, width: contentWidth, font: footerFont) + 2
     let borderBottomPadding: CGFloat = 10
-    var contentBottom = y
-    if y + footerHeight <= outerBottomLimit - footerBottomPadding {
-      _ = drawText(
-        "សូមអរគុណសម្រាប់ការគាំទ្រ និងជួយចែករំលែកផង",
-        rect: NSRect(x: contentX, y: y, width: contentWidth, height: footerHeight),
-        font: khmerFont(size: 9.2, weight: .bold),
-        alignment: .center
-      )
-      contentBottom = y + footerHeight
-    }
+    _ = drawText(
+      footerText,
+      rect: NSRect(x: contentX, y: y, width: contentWidth, height: footerHeight),
+      font: footerFont,
+      alignment: .center
+    )
+    let contentBottom = y + footerHeight
 
-    let outerHeight = bounds.height - (outerTop * 2)
+    let outerHeight = max(minOuterHeight, contentBottom - outerTop + borderBottomPadding)
+    neededPageHeight = outerTop * 2 + outerHeight
     let outerRect = NSRect(
       x: outerSideInset,
       y: outerTop,
@@ -339,22 +350,28 @@ final class NativeTemplatePrintView: NSView {
     title: String,
     lines: [String],
     y: CGFloat,
+    topMargin: CGFloat = 4,
+    bottomMargin: CGFloat = -8,
+    titleBoxGap: CGFloat = 2,
     minBoxHeight: CGFloat,
     titleFont: NSFont,
     bodyFont: NSFont,
     contentX: CGFloat,
     contentWidth: CGFloat
   ) -> CGFloat {
+    let startY = y + topMargin
     drawLeadingIcon(
       iconName,
-      rect: NSRect(x: contentX, y: y + 1, width: 13, height: 13)
+      rect: NSRect(x: contentX, y: startY + 1, width: 13, height: 13)
     )
 
-    var currentY = drawText(
+    let titleRectHeight: CGFloat = 13
+    _ = drawText(
       title,
-      rect: NSRect(x: contentX + 18, y: y - 1, width: contentWidth - 18, height: 15),
+      rect: NSRect(x: contentX + 18, y: startY, width: contentWidth - 18, height: titleRectHeight),
       font: titleFont
-    ) + 0.5
+    )
+    var currentY = startY + titleRectHeight + titleBoxGap
 
     for line in lines {
       let innerWidth = contentWidth - 16
@@ -363,18 +380,18 @@ final class NativeTemplatePrintView: NSView {
         width: innerWidth,
         font: bodyFont
       )
-      let boxHeight = max(minBoxHeight, measuredHeight + 6)
+      let boxHeight = max(minBoxHeight, measuredHeight + 5)
       let lineRect = NSRect(x: contentX, y: currentY, width: contentWidth, height: boxHeight)
       drawRoundedBox(lineRect)
       _ = drawText(
         line,
-        rect: lineRect.insetBy(dx: 8, dy: 3),
+        rect: lineRect.insetBy(dx: 8, dy: 2),
         font: bodyFont
       )
       currentY = lineRect.maxY + 1
     }
 
-    return currentY + 1.5
+    return currentY + bottomMargin
   }
 
   private func drawRoundedBox(_ rect: NSRect) {
@@ -469,7 +486,13 @@ final class NativeTemplatePrintView: NSView {
   ) {
     drawRoundedBox(rect)
 
-    let checkRect = NSRect(x: rect.minX + 7, y: rect.minY + 5, width: 14, height: 14)
+    let checkSize: CGFloat = 12
+    let checkRect = NSRect(
+      x: rect.minX + 5,
+      y: rect.minY + (rect.height - checkSize) / 2,
+      width: checkSize,
+      height: checkSize
+    )
     let checkPath = NSBezierPath(roundedRect: checkRect, xRadius: 2, yRadius: 2)
     accentColor.setStroke()
     checkPath.lineWidth = 1
@@ -479,15 +502,19 @@ final class NativeTemplatePrintView: NSView {
       _ = drawText(
         "✓",
         rect: checkRect.offsetBy(dx: 0, dy: -1),
-        font: NSFont.boldSystemFont(ofSize: 13),
+        font: NSFont.boldSystemFont(ofSize: 11),
         alignment: .center
       )
     }
 
+    let labelFont = khmerFont(size: 8.5, weight: .bold)
+    let labelH = max(checkSize, textHeight(label, width: rect.width - 26, font: labelFont))
+    let labelY = rect.minY + (rect.height - labelH) / 2
     _ = drawText(
       label,
-      rect: NSRect(x: rect.minX + 26, y: rect.minY + 4, width: rect.width - 32, height: 16),
-      font: khmerFont(size: 9.2, weight: .bold)
+      rect: NSRect(x: rect.minX + 21, y: labelY, width: rect.width - 26, height: labelH),
+      font: labelFont,
+      alignment: .center
     )
   }
 
