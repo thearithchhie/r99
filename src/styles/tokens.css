@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;1,400&family=Hanken+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Hanken Grotesk", sans-serif;
+  --font-serif: "Newsreader", serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background:         hsl(var(--background));
+  --color-foreground:         hsl(var(--foreground));
+  --color-card:               hsl(var(--card));
+  --color-card-foreground:    hsl(var(--card-foreground));
+  --color-primary:            hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary:          hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted:              hsl(var(--muted));
+  --color-muted-foreground:   hsl(var(--muted-foreground));
+  --color-accent:             hsl(var(--accent));
+  --color-accent-foreground:  hsl(var(--accent-foreground));
+  --color-destructive:        hsl(var(--destructive));
+  --color-border:             hsl(var(--border));
+  --color-input:              hsl(var(--input));
+  --color-ring:               hsl(var(--ring));
+  --color-sidebar:            hsl(var(--sidebar));
+}
+
+:root {
+  --radius: 0.5rem;
+
+  --background:          0 0% 100%;
+  --foreground:          240 10% 3.9%;
+  --card:                0 0% 100%;
+  --card-foreground:     240 10% 3.9%;
+  --popover:             0 0% 100%;
+  --popover-foreground:  240 10% 3.9%;
+  --primary:             240 5.9% 10%;
+  --primary-foreground:  0 0% 98%;
+  --secondary:           240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted:               240 4.8% 95.9%;
+  --muted-foreground:    240 3.8% 46.1%;
+  --accent:              240 4.8% 95.9%;
+  --accent-foreground:   240 5.9% 10%;
+  --destructive:         0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border:              240 5.9% 90%;
+  --input:               240 5.9% 90%;
+  --ring:                240 5.9% 10%;
+  --sidebar:             240 4.8% 97%;
+
+  /* Status colours */
+  --green:      hsl(142 71% 35%);
+  --green-bg:   hsl(142 71% 95%);
+  --red:        hsl(0 72% 51%);
+  --red-bg:     hsl(0 72% 96%);
+  --amber:      hsl(38 92% 40%);
+  --amber-bg:   hsl(38 92% 95%);
+  --blue:       hsl(217 91% 45%);
+  --blue-bg:    hsl(217 91% 95%);
+  --violet:     hsl(262 70% 50%);
+  --violet-bg:  hsl(262 70% 96%);
+
+  /* Storefront palette */
+  --bg:           oklch(0.969 0.008 82);
+  --surface:      oklch(0.993 0.004 85);
+  --surface-2:    oklch(0.945 0.013 80);
+  --line:         oklch(0.885 0.012 78);
+  --tan:          oklch(0.74 0.045 64);
+  --ink:          oklch(0.255 0.012 62);
+  --ink-soft:     oklch(0.34 0.012 64);
+  --sans:         "Hanken Grotesk", sans-serif;
+  --serif:        "Newsreader", serif;
+  --mono-font:    "JetBrains Mono", monospace;
+}
+
+@layer base {
+  /* Tailwind v4 already resets box-sizing/margin/padding in its own base layer.
+     Element overrides go here so they don't beat @layer utilities. */
+  html, body { height: 100%; }
+  body {
+    font-family: var(--sans);
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+    -webkit-font-smoothing: antialiased;
+  }
+  #app { height: 100%; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea { font-family: inherit; font-size: inherit; }
+  a { color: inherit; text-decoration: none; }
+}
+
+@layer components {
+  .mono  { font-family: var(--mono-font); }
+
+  /* Scrollbar */
+  .scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+  .scroll::-webkit-scrollbar-track { background: transparent; }
+  .scroll::-webkit-scrollbar-thumb { background: hsl(240 5% 82%); border-radius: 10px; }
+
+  /* Table */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  .tbl th {
+    padding: 8px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground) / 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid hsl(var(--border));
+    white-space: nowrap;
+  }
+  .tbl td {
+    padding: 10px 16px;
+    border-bottom: 1px solid hsl(var(--border) / 0.5);
+    vertical-align: middle;
+  }
+  .tbl tbody tr:last-child td { border-bottom: none; }
+  .tbl tbody tr:hover { background: hsl(240 5% 97%); }
+  /* Status badge dot */
+  .status-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: currentColor;
+    display: inline-block; margin-right: 4px;
+  }
+
+  /* Fade animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade { animation: fadeIn 0.2s ease; }
+}
+
+/* KPI grid responsive */
+@media (max-width: 900px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .dash-2col { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 540px) {
+  .kpi-grid { grid-template-columns: 1fr !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+}
