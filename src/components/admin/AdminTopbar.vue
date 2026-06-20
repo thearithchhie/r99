@@ -9,6 +9,7 @@
       <Search :size="15" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
       <Input v-model="searchModel" class="pl-8 h-8 text-sm" placeholder="Search orders, products…" />
     </div>
+    <ModeToggle />
     <Button variant="outline" size="icon" class="relative h-8 w-8" aria-label="Notifications">
       <Bell :size="16" />
       <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-destructive border border-card" />
@@ -24,6 +25,7 @@ import { Menu, Search, Bell } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useUIStore } from '@/stores/ui'
+import ModeToggle from '@/components/admin/ModeToggle.vue'
 
 const props = defineProps<{ search?: string }>()
 const emit = defineEmits<{ 'update:search': [v: string] }>()

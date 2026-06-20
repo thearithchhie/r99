@@ -1,5 +1,5 @@
 <template>
-  <aside class="hidden md:flex flex-col w-[244px] shrink-0 border-r border-border bg-sidebar sticky top-0 h-screen">
+  <aside :class="mobile ? 'flex' : 'hidden md:flex'" class="flex-col w-[244px] shrink-0 border-r border-border bg-sidebar sticky top-0 h-screen">
     <!-- Logo -->
     <div class="flex items-center gap-2.5 px-4 py-[18px]">
       <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold text-[15px] tracking-tight shrink-0">R</div>
@@ -92,6 +92,8 @@ import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/stores/session'
 import { ROLE_NAV_PERMISSIONS } from '@/data/permissions'
 import UserAvatar from './UserAvatar.vue'
+
+defineProps<{ mobile?: boolean }>()
 
 const route = useRoute()
 const router = useRouter()

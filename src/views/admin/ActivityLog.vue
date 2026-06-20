@@ -2,7 +2,7 @@
   <AdminLayout>
     <div class="fade p-5">
       <div class="flex gap-3 mb-4 flex-wrap items-center">
-        <Tabs v-model="typeFilter">
+        <Tabs :model-value="activeTab" @update:model-value="onTab">
           <TabsList>
             <TabsTrigger v-for="type in TYPE_FILTERS" :key="type.value" :value="type.value">{{ type.label }}</TabsTrigger>
           </TabsList>
@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Search } from '@lucide/vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
 import UserAvatar from '@/components/admin/UserAvatar.vue'
@@ -55,7 +55,7 @@ import { ACTIVITY_LOG } from '@/data/permissions'
 import { fmtDate, fmtDateShort, timeAgo } from '@/utils/format'
 
 const route = useRoute()
-const typeFilter = ref((route.params.type as string) || 'all')
+const router = useRouter()
 const query = ref('')
 
 const TYPE_FILTERS = [
@@ -64,10 +64,16 @@ const TYPE_FILTERS = [
 ]
 
 const ROUTE_TYPE_MAP: Record<string, string> = { users: 'user', orders: 'order', products: 'product', stock: 'stock', log: 'all', discounts: 'discount' }
+const TAB_ROUTE_MAP: Record<string, string> = { all: 'log', order: 'orders', product: 'products', stock: 'stock', user: 'users', login: 'log', discount: 'discounts' }
+
+const activeTab = computed(() => ROUTE_TYPE_MAP[route.params.type as string] ?? 'all')
+
+function onTab(value: string | number) {
+  router.push(`/admin/activity/${TAB_ROUTE_MAP[String(value)] ?? 'log'}`)
+}
 
 const filtered = computed(() => {
-  const routeType = ROUTE_TYPE_MAP[route.params.type as string]
-  const type = routeType || typeFilter.value
+  const type = activeTab.value
   let r = ACTIVITY_LOG
   if (type && type !== 'all') r = r.filter(e => e.type === type)
   const q = query.value.toLowerCase()

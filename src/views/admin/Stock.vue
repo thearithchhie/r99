@@ -29,7 +29,7 @@
             <TableBody>
               <template v-for="sv in m.sizes" :key="sv.size">
                 <TableRow v-for="cv in filteredColors(sv.colors)" :key="sv.size + cv.color"
-                  :class="cv.stock === 0 ? 'bg-red-50' : cv.stock < 10 ? 'bg-amber-50' : ''">
+                  :class="cv.stock === 0 ? 'bg-red-50 dark:bg-red-950/50' : cv.stock < 10 ? 'bg-amber-50 dark:bg-amber-950/50' : ''">
                   <TableCell class="font-semibold">{{ sv.size }}</TableCell>
                   <TableCell>
                     <div class="flex items-center gap-2">
