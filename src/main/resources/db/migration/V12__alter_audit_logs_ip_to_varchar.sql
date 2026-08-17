@@ -1,0 +1,1 @@
+ALTER TABLE audit_logs ALTER COLUMN ip TYPE VARCHAR(45) USING ip::text;
