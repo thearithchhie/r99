@@ -90,6 +90,8 @@ flutter:
     - family: Siemreap
       fonts:
         - asset: assets/fonts/Siemreap-Regular.ttf
+  config:
+    enable-swift-package-manager: false
 
   # To add assets to your application, add an assets section, like this:
   # assets:

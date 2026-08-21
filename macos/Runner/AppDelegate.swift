@@ -221,7 +221,7 @@ final class NativeTemplatePrintView: NSView {
         x: contentX
       )
       y = drawSenderPhoneHeader(
-        title: "លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ",
+        title: "លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ វេរលុយ",
         phone: "097 71 56 486",
         y: y + 2,
         width: contentWidth,

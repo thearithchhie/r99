@@ -21,48 +21,54 @@ class DeliveryImportResult {
 class GoogleSheetDeliveryImportService {
   const GoogleSheetDeliveryImportService._();
 
-  static Future<DeliveryImportResult> importFromShareUrl(
-    String shareUrl,
-  ) async {
+  static const String _shopPhoneNumber = '0977156486';
+
+  static Future<DeliveryImportResult> importFromShareUrl(String shareUrl) async {
     final resolvedShareUrl = resolveShareUrl(shareUrl);
     final exportUri = buildCsvExportUri(resolvedShareUrl);
     final csvText = await downloadCsv(exportUri);
-    final rows = const CsvToListConverter(
-      shouldParseNumbers: false,
-      eol: '\n',
-    ).convert(csvText);
+    final rows = const CsvToListConverter(shouldParseNumbers: false, eol: '\n').convert(csvText);
 
     if (rows.isEmpty) {
       throw const FormatException('The Google Sheet has no rows.');
     }
 
-    final headers = rows.first
-        .map((value) => sanitizeCell(value).toLowerCase())
-        .toList();
+    final headers = rows.first.map((value) => sanitizeCell(value).toLowerCase()).toList();
     final columnMap = <String, int>{
       ColumMapHeader.shop.key: headers.indexOf(ColumMapHeader.shop.key),
-      ColumMapHeader.customername.key: headers.indexOf(
-        ColumMapHeader.customername.key,
-      ),
+      ColumMapHeader.customername.key: headers.indexOf(ColumMapHeader.customername.key),
       ColumMapHeader.phone.key: headers.indexOf(ColumMapHeader.phone.key),
       ColumMapHeader.location.key: headers.indexOf(ColumMapHeader.location.key),
-      ColumMapHeader.totalprice.key: headers.indexOf(
-        ColumMapHeader.totalprice.key,
-      ),
-      ColumMapHeader.deliverService.key: headers.indexOf(
-        ColumMapHeader.deliverService.key,
-      ),
+      ColumMapHeader.totalprice.key: headers.indexOf(ColumMapHeader.totalprice.key),
+      ColumMapHeader.deliverService.key: headers.indexOf(ColumMapHeader.deliverService.key),
+      ColumMapHeader.status.key: headers.indexOf(ColumMapHeader.status.key),
+      ColumMapHeader.chatRespondentName.key: headers.indexOf(ColumMapHeader.chatRespondentName.key),
+      ColumMapHeader.link.key: headers.indexOf(ColumMapHeader.link.key),
+      ColumMapHeader.outlet.key: headers.indexOf(ColumMapHeader.outlet.key),
+      ColumMapHeader.createdBy.key: headers.indexOf(ColumMapHeader.createdBy.key),
     };
 
-    final missingColumns = columnMap.entries
-        .where((entry) => entry.value < 0)
-        .map((entry) => entry.key)
-        .toList();
+    final missingColumns = columnMap.entries.where((entry) => entry.value < 0).map((entry) => entry.key).toList();
     if (missingColumns.isNotEmpty) {
-      throw FormatException(
-        'Missing required columns: ${missingColumns.join(', ')}',
-      );
+      throw FormatException('Missing required columns: ${missingColumns.join(', ')}');
     }
+
+    final stickerColumnIndex = headers.indexOf(ColumMapHeader.sticker.key);
+
+    // Required fields in Excel column order — add/remove entries here to maintain validation.
+    const requiredFields = [
+      (ColumMapHeader.shop, 'shop'),
+      (ColumMapHeader.phone, 'phone number'),
+      (ColumMapHeader.location, 'location'),
+      (ColumMapHeader.status, 'status'),
+      (ColumMapHeader.chatRespondentName, 'chat respondent name'),
+      (ColumMapHeader.link, 'link'),
+      (ColumMapHeader.outlet, 'outlet'),
+      (ColumMapHeader.createdBy, 'created by'),
+    ];
+
+    final missingRows = <ColumMapHeader, List<String>>{for (final (header, _) in requiredFields) header: []};
+    final shopPhoneRows = <String>[];
 
     final importedAt = DateTime.now();
     final records = <DeliveryRecord>[];
@@ -79,20 +85,68 @@ class GoogleSheetDeliveryImportService {
       }
 
       final customerName = valueOf(ColumMapHeader.customername.key);
-      final phone = valueOf(ColumMapHeader.phone.key);
+      final phone = valueOf(ColumMapHeader.phone.key).replaceAll(' ', '');
       final location = valueOf(ColumMapHeader.location.key);
-      final price = valueOf(ColumMapHeader.totalprice.key);
+      final rawPrice = valueOf(ColumMapHeader.totalprice.key);
       final deliverService = valueOf(ColumMapHeader.deliverService.key);
       final shop = valueOf(ColumMapHeader.shop.key);
+      final status = valueOf(ColumMapHeader.status.key);
+      final chatRespondentName = valueOf(ColumMapHeader.chatRespondentName.key);
+      final link = valueOf(ColumMapHeader.link.key);
+      final outlet = valueOf(ColumMapHeader.outlet.key);
+      final createdBy = valueOf(ColumMapHeader.createdBy.key);
 
       if (customerName.isEmpty &&
           phone.isEmpty &&
           location.isEmpty &&
-          price.isEmpty &&
+          rawPrice.isEmpty &&
           deliverService.isEmpty &&
-          shop.isEmpty) {
+          shop.isEmpty &&
+          status.isEmpty &&
+          chatRespondentName.isEmpty &&
+          link.isEmpty &&
+          outlet.isEmpty &&
+          createdBy.isEmpty) {
         skippedRows++;
         continue;
+      }
+
+      String rowLabel() => customerName.isNotEmpty ? '"$customerName"' : 'Row ${index + 1}';
+
+      final fieldValues = {
+        ColumMapHeader.shop: shop,
+        ColumMapHeader.phone: phone,
+        ColumMapHeader.location: location,
+        ColumMapHeader.status: status,
+        ColumMapHeader.chatRespondentName: chatRespondentName,
+        ColumMapHeader.link: link,
+        ColumMapHeader.outlet: outlet,
+        ColumMapHeader.createdBy: createdBy,
+      };
+
+      bool rowHasError = false;
+      for (final (header, _) in requiredFields) {
+        if (fieldValues[header]!.isEmpty) {
+          missingRows[header]!.add(rowLabel());
+          rowHasError = true;
+          break;
+        }
+      }
+      if (rowHasError) continue;
+
+      if (phone == _shopPhoneNumber) {
+        shopPhoneRows.add(rowLabel());
+        continue;
+      }
+
+      final price = status == OrderStatus.alradyPaid ? r'$0' : rawPrice;
+
+      if (stickerColumnIndex >= 0) {
+        final sticker = stickerColumnIndex < row.length ? sanitizeCell(row[stickerColumnIndex]) : '';
+        if (sticker != StickerValue.ok) {
+          skippedRows++;
+          continue;
+        }
       }
 
       records.add(
@@ -104,8 +158,19 @@ class GoogleSheetDeliveryImportService {
           ..location = location
           ..price = price
           ..deliverService = deliverService
-          ..shop = shop.isEmpty ? ShopType.r99.key : shop,
+          ..shop = shop,
       );
+    }
+
+    if (shopPhoneRows.isNotEmpty) {
+      throw FormatException('This is phone number of shop in: ${shopPhoneRows.join(', ')}');
+    }
+
+    for (final (header, label) in requiredFields) {
+      final rows = missingRows[header]!;
+      if (rows.isNotEmpty) {
+        throw FormatException('Missing $label in: ${rows.join(', ')}');
+      }
     }
 
     return DeliveryImportResult(
@@ -148,20 +213,14 @@ class GoogleSheetDeliveryImportService {
     final sheetId = segments[idIndex + 1];
     final gid = source.queryParameters['gid'] ?? '0';
 
-    return Uri.https('docs.google.com', '/spreadsheets/d/$sheetId/export', {
-      'format': 'csv',
-      'gid': gid,
-    });
+    return Uri.https('docs.google.com', '/spreadsheets/d/$sheetId/export', {'format': 'csv', 'gid': gid});
   }
 
   static Future<String> downloadCsv(Uri exportUri) async {
     final client = HttpClient();
     try {
       final request = await client.getUrl(exportUri);
-      request.headers.set(
-        HttpHeaders.userAgentHeader,
-        'Mozilla/5.0 Flutter GoogleSheet Import',
-      );
+      request.headers.set(HttpHeaders.userAgentHeader, 'Mozilla/5.0 Flutter GoogleSheet Import');
       final response = await request.close();
       if (response.statusCode != HttpStatus.ok) {
         throw HttpException(
@@ -181,9 +240,6 @@ class GoogleSheetDeliveryImportService {
   }
 
   static String sanitizeCell(Object? value) {
-    return (value?.toString() ?? '')
-        .replaceAll('\uFEFF', '')
-        .replaceAll('\u00A0', ' ')
-        .trim();
+    return (value?.toString() ?? '').replaceAll('\uFEFF', '').replaceAll('\u00A0', ' ').trim();
   }
 }

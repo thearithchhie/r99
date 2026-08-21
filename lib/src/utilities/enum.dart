@@ -54,12 +54,32 @@ enum ColumMapHeader {
   phone(key: 'phone', value: 'Phone'),
   location(key: 'location', value: 'Location'),
   totalprice(key: 'totalprice', value: 'Total Price'),
-  deliverService(key: 'deliver_service', value: 'Deliver Service');
+  deliverService(key: 'deliver_service', value: 'Deliver Service'),
+  sticker(key: 'sticker', value: 'Sticker'),
+  status(key: 'status', value: 'Status'),
+  chatRespondentName(key: 'chat_respondent_name', value: 'Chat Respondent Name'),
+  link(key: 'link', value: 'Link'),
+  outlet(key: 'outlet', value: 'Outlet'),
+  createdBy(key: 'created_by', value: 'Created By');
 
   const ColumMapHeader({required this.key, required this.value});
 
   final String key;
   final String value;
+}
+
+class StickerValue {
+  const StickerValue._();
+
+  static const String ok   = 'ok 👌';
+  static const String love = 'love ❤️';
+}
+
+class OrderStatus {
+  const OrderStatus._();
+
+  static const String alradyPaid = 'ALRADY_PAID';
+  static const String padding    = 'PADDING';
 }
 
 enum ShopType {

@@ -88,7 +88,7 @@ class PrintTemplateCard extends StatelessWidget {
                             alignment: WrapAlignment.center,
                             children: [
                               const Icon(Icons.phone, size: 22, fontWeight: FontWeight.w500),
-                              Text('លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ', style: khmerBodyStyle),
+                              Text('លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ វេរលុយ', style: khmerBodyStyle),
                               Text(
                                 '097 71 56 486',
                                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColor.pureBlack),
