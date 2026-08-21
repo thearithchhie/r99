@@ -36,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
-        return new AuthResponse(jwtUtil.generateToken(user));
+        return toAuthResponse(user);
     }
 
     @Override
@@ -48,6 +48,16 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByPhone(request.getPhone())
                 .orElseThrow(() -> new AppException("User not found"));
 
-        return new AuthResponse(jwtUtil.generateToken(user));
+        return toAuthResponse(user);
+    }
+
+    private AuthResponse toAuthResponse(User user) {
+        return AuthResponse.builder()
+                .token(jwtUtil.generateToken(user))
+                .uuid(user.getUuid())
+                .name(user.getName())
+                .phone(user.getPhone())
+                .role(user.getPrimaryRole())
+                .build();
     }
 }

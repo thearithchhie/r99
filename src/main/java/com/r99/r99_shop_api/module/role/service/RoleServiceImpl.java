@@ -102,6 +102,8 @@ public class RoleServiceImpl implements RoleService {
                 .uuid(role.getUuid())
                 .name(role.getName())
                 .description(role.getDescription())
+                .userCount(roleRepository.countUsersByRoleId(role.getId()))
+                .permissionCount(roleRepository.countPermissionsByRoleId(role.getId()))
                 .status(role.getStatus())
                 .createdBy(role.getCreatedBy())
                 .createdAt(role.getCreatedAt())

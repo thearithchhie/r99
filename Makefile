@@ -1,6 +1,14 @@
 start:
 	./mvnw spring-boot:run
 
+# Docker
+minio-up:
+	docker compose up -d minio minio-init
+minio-down:
+	docker compose down minio minio-init
+minio-log:
+	docker compose logs -f minio
+
 # Migration
 migration:
 	@read -p "Migration name: " name; ./make-migration.sh $$name

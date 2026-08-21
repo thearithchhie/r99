@@ -1,0 +1,70 @@
+1 - Page 
+    - For now i have 2 page on Facebook (name: R99 and R99-I)
+    - I have 3 staff for reply message on Facebook page so
+        after he chat with customer success , staff will get commission $0.5 (if Saturday and Sunday $0.75) for each successful order (noted: Saturday and Sunday is special days).
+    - process: (Product-Paid)
+        - 
+    - process: (Product-unpaid)
+        - if Customer is stay at province (not Phnom Penh) and he/she want to delivery the product, so we will deliver the product from store (Phnom Penh) to customer by our delivery partner (R-Express) and customer will pay by delivery.
+            - so partner deliver the product to customer, he/she will pay by delivery and we will get commission $1.5 for each successful order 
+                - Noted: commission is only for successful order (customer pay by delivery) and if customer cancel the order, we will not get commission. 
+                - Commission :
+                    - He pay back to store sometime 1 day or 2 day or 3 day the store not require the commission from partner, so we will get commission from partner after he pay back to store.
+                    - Noted(case it happen only with personal delivery): commission of delivery he charge from store it depend on the distance from store to customer. sometime (1.5$ or 2$ or 3$ or 4$ or 5$) it depend on the distance from store to customer.
+                    - Note: if R-express deliver he charge only 1.25$
+
+    - Process Customer change product
+        - If customer want to change the product, he/she will contact to our staff and we will ask him/her to send back the product to store (Phnom Penh) and we will send the new product to customer after we receive the product from customer. So the product staff not get commission from the order. but delivery he get commission but customer he change the product yourself.
+
+    - Process Store prepare wrong product to customer: 
+        - If store prepare wrong product to customer, we will ask customer to send back the product to store (Phnom Penh) and we will send the correct product to customer after we receive the product from customer. So the product staff  get commission from the order and delivery he get commission .
+    
+    - Process: (Customer cancels)
+        -  Delivery keep get commission from store the same, but staff not get commission from the order.
+    - Process: (Customer returns product)
+        - Delivery keep get commission from store the same, but staff not get commission from the order.
+  
+
+2 - Return Process
+    - If customer want to return the product, he/she will contact to our staff and we will ask him/her to send back the product to store (Phnom Penh) and we will refund the money back to customer after we receive the product from customer. So the product staff not get commission from the order. we will deduct the commission from staff if he/she get commission from the order.
+        
+    - pay commission to staff:
+        - every 1-week store will pay commission to staff for successful order (customer pay by delivery) and we will pay commission to staff for successful order (customer pay by delivery).
+
+3 - Promotion
+    - Process charge money for  $2 from customer if not all promotion (noted: it normal rule of store)
+    - But sometime we have promotion for customer, so we will not charge money from customer for promotion. So the staff  get commission from the order the same and delivery he get commission too.
+
+- Payment Method: 
+    - if customer he live in province (not Phnom Penh) he alway pay by any Bank it depend on customer we not require bank.
+    - if customer he live in Phnom Penh we require customer pay on delivery (sometime he pay by any bank it depend on customer we not require bank and sometime with cash too).
+
+-  Customer
+    - Q: Are customers stored in the system or just tracked as a name + phone number on the order?
+        - Answer: we should store in the system.
+    - Q: Do they have accounts or is it always walk-in/Facebook chat?
+        - Answer: customer he just walk-in fb chat the same , but we store info in the system for future reference.
+- Delivery Partner
+    - Q:  Are personal drivers your own staff/drivers, or third-party individuals? 
+        - Answer: we have 2 type of delivery partner, 1. personal driver (he/she is our staff) and 2. R-express (he/she is third-party individuals).
+    - Q:  And do you track multiple drivers or just one at a time?
+        - Answer: it just noted to the system. admin manually update on the system for each order. we not track multiple drivers at the same time.
+4. The $2 fee
+Is the $2 always a delivery fee charged to the customer, or is it something else (handling fee, packaging)? And who collects it — driver or store?
+    - Answer: it is delivery fee charged to the customer and store collect it.
+
+5. Order source
+Orders come from Facebook (R99 and R99-I pages). Do you need to track which page the order came from, and which staff handled it?
+    - Answer: yes, we need to track which page the order came from, and which staff handled it.
+
+6. Stock on order
+When an order is created, should stock be deducted immediately, or only after delivery is confirmed?
+    
+    Answer: - Order Created → deduct stock
+            - Order Cancelled → add stock back
+7. Payroll
+You mentioned weekly commission payout. Does the system need to generate a payroll report, or just track commissions and you calculate manually?
+    - Answer: we need to generate a payroll report for staff and delivery partner.
+8. 
+    process: (Product-Paid) is empty on line 6 — what is the flow when customer pays upfront (bank transfer before delivery)? Does delivery still happen the same way, or is it different from pay-on-delivery?
+    - Answer: we use other service to deliver the product to customer (not R-express) and we will not pay commission to delivery partner. but staff he/she get commission from the order.

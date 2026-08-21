@@ -1,11 +1,14 @@
 package com.r99.r99_shop_api.module.auth.entity;
 
 import com.r99.r99_shop_api.common.entity.AuditBase;
+import com.r99.r99_shop_api.module.role.entity.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +43,15 @@ public class User extends AuditBase implements UserDetails {
     @Builder.Default
     private String status = "active";
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @Builder.Default
+    private List<Role> roles = new ArrayList<>();
+
     @Override
     public String getUsername() {
         return phone;
@@ -47,6 +59,12 @@ public class User extends AuditBase implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return roles.stream()
+                .map(r -> new SimpleGrantedAuthority("ROLE_" + r.getName()))
+                .toList();
+    }
+
+    public String getPrimaryRole() {
+        return roles.isEmpty() ? null : roles.get(0).getName();
     }
 }

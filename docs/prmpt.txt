@@ -1,0 +1,247 @@
+---
+Customers
+
+┌────────┬──────────────────────────┬─────────────────────────┐
+│ Method │         Endpoint         │       Description       │
+├────────┼──────────────────────────┼─────────────────────────┤
+│ GET    │ /customers               │ List (?page=0&size=20)  │
+├────────┼──────────────────────────┼─────────────────────────┤
+│ GET    │ /customers/search?q=john │ Search by name or phone │
+├────────┼──────────────────────────┼─────────────────────────┤
+│ GET    │ /customers/{uuid}        │ Detail                  │
+├────────┼──────────────────────────┼─────────────────────────┤
+│ POST   │ /customers               │ Create                  │
+├────────┼──────────────────────────┼─────────────────────────┤
+│ PATCH  │ /customers/{uuid}        │ Update                  │
+├────────┼──────────────────────────┼─────────────────────────┤
+│ DELETE │ /customers/{uuid}        │ Soft delete             │
+└────────┴──────────────────────────┴─────────────────────────┘
+
+// POST /customers
+{
+  "name": "John Doe",
+  "phone": "012345678",
+  "address": "St 123",
+  "province": "Phnom Penh",
+  "facebookName": "john.doe"
+}
+
+// Response
+{
+  "id": 1, "uuid": "...", "name": "John Doe", "phone": "012345678",
+  "address": "St 123", "province": "Phnom Penh", "facebookName": "john.doe",
+  "createdAt": "..."
+}
+
+---
+Drivers
+
+┌────────┬─────────────────┬─────────────┐
+│ Method │    Endpoint     │ Description │
+├────────┼─────────────────┼─────────────┤
+│ GET    │ /drivers        │ List        │
+├────────┼─────────────────┼─────────────┤
+│ GET    │ /drivers/{uuid} │ Detail      │
+├────────┼─────────────────┼─────────────┤
+│ POST   │ /drivers        │ Create      │
+├────────┼─────────────────┼─────────────┤
+│ DELETE │ /drivers/{uuid} │ Soft delete │
+└────────┴─────────────────┴─────────────┘
+
+// POST /drivers
+{ "name": "Dara", "phone": "095123456", "note": "R-Express driver" }
+
+// Response
+{ "id": 1, "uuid": "...", "name": "Dara", "phone": "095123456", "note": "...", "createdAt": "..." }
+
+---
+Orders
+
+┌────────┬───────────────────────┬────────────────────────┐
+│ Method │       Endpoint        │      Description       │
+├────────┼───────────────────────┼────────────────────────┤
+│ GET    │ /orders               │ List (?page=0&size=20) │
+├────────┼───────────────────────┼────────────────────────┤
+│ GET    │ /orders/{uuid}        │ Detail with items      │
+├────────┼───────────────────────┼────────────────────────┤
+│ POST   │ /orders               │ Create order           │
+├────────┼───────────────────────┼────────────────────────┤
+│ PATCH  │ /orders/{uuid}/status │ Update status          │
+└────────┴───────────────────────┴────────────────────────┘
+
+// POST /orders
+{
+  "customerUuid": "...",
+  "pageSource": "R99",          // R99 | R99_I
+  "paymentType": "PAY_ON_DELIVERY",  // PAID_UPFRONT | PAY_ON_DELIVERY
+  "paymentMethod": "CASH",      // BANK | CASH  (optional if PAY_ON_DELIVERY)
+  "isPromotion": false,          // true = no delivery fee ($2 waived)
+  "note": "Handle with care",
+  "items": [
+    { "productUuid": "...", "quantity": 2 },
+    { "productUuid": "...", "quantity": 1 }
+  ]
+}
+
+// PATCH /orders/{uuid}/status
+{
+  "status": "CANCELLED",        // PENDING | CONFIRMED | DELIVERING | DELIVERED | CANCELLED | RETURNED
+  "returnReason": "CUSTOMER_CHANGE",  // only when status=RETURNED: CUSTOMER_CHANGE | STORE_ERROR | CUSTOMER_RETURN
+  "note": "Customer changed mind"
+}
+
+// Order response
+{
+  "id": 1, "uuid": "...",
+  "status": "PENDING",
+  "returnReason": null,
+  "customerId": 1, "customerName": "John Doe", "customerPhone": "012345678",
+  "staffId": 2, "staffName": "staff1",
+  "pageSource": "R99",
+  "paymentType": "PAY_ON_DELIVERY",
+  "paymentMethod": "CASH",
+  "isPromotion": false,
+  "subtotal": 30.00,
+  "deliveryFee": 2.00,
+  "totalAmount": 32.00,
+  "note": "Handle with care",
+  "items": [
+    {
+      "productId": 1, "productCode": "PRD-001", "productName": "Polo Shirt",
+      "quantity": 2, "unitPrice": 15.00, "unitCost": 8.00, "subtotal": 30.00
+    }
+  ],
+  "createdAt": "...", "updatedAt": "..."
+}
+
+Business rules (display in UI):
+- Stock deducted automatically on create
+- Stock restored automatically on CANCELLED
+- Staff commission auto-created: $0.50 weekday / $0.75 weekend
+- Promotion orders have deliveryFee = 0 (it depend on the promotion)
+
+---
+Deliveries
+
+┌────────┬───────────────────────────┬──────────────────────────────┐
+│ Method │         Endpoint          │         Description          │
+├────────┼───────────────────────────┼──────────────────────────────┤
+│ GET    │ /deliveries               │ List                         │
+├────────┼───────────────────────────┼──────────────────────────────┤
+│ GET    │ /deliveries/{uuid}        │ Detail                       │
+├────────┼───────────────────────────┼──────────────────────────────┤
+│ POST   │ /deliveries               │ Create delivery for an order │
+├────────┼───────────────────────────┼──────────────────────────────┤
+│ PATCH  │ /deliveries/{uuid}/status │ Update status                │
+└────────┴───────────────────────────┴──────────────────────────────┘
+
+// POST /deliveries
+{
+  "orderUuid": "...",
+  "driverUuid": "...",          // optional (null if R-Express handles it externally)
+  "partnerType": "R_EXPRESS",   // R_EXPRESS | PERSONAL | OTHER
+  "deliveryCost": 1.25,
+  "note": "Deliver before 5pm"
+}
+
+// PATCH /deliveries/{uuid}/status
+{
+  "status": "DELIVERED",   // PENDING | PICKING | DELIVERING | DELIVERED | FAILED | RETURNED
+  "note": "Delivered successfully"
+}
+
+// Response
+{
+  "id": 1, "uuid": "...",
+  "orderUuid": "...",
+  "customerName": "John Doe", "customerPhone": "012345678",
+  "driverId": 1, "driverName": "Dara", "driverPhone": "095123456",
+  "partnerType": "R_EXPRESS",
+  "status": "PENDING",
+  "deliveryCost": 1.25,
+  "commissionEarned": 0.00,
+  "commissionReceivedAt": null,
+  "note": "...",
+  "createdAt": "...", "updatedAt": "..."
+}
+
+Business rule: Driver commission is created automatically when status → DELIVERED.
+
+---
+Payroll
+
+┌────────┬───────────────────────┬─────────────────────────┐
+│ Method │       Endpoint        │       Description       │
+├────────┼───────────────────────┼─────────────────────────┤
+│ GET    │ /payrolls             │ List payrolls           │
+├────────┼───────────────────────┼─────────────────────────┤
+│ GET    │ /payrolls/{uuid}      │ Detail with line items  │
+├────────┼───────────────────────┼─────────────────────────┤
+│ POST   │ /payrolls/generate    │ Generate weekly payroll │
+├────────┼───────────────────────┼─────────────────────────┤
+│ PATCH  │ /payrolls/{uuid}/paid │ Mark payroll as paid    │
+└────────┴───────────────────────┴─────────────────────────┘
+
+// POST /payrolls/generate
+{
+  "weekStart": "2026-08-11",
+  "weekEnd": "2026-08-17",
+  "note": "Week 33"
+}
+
+// Response
+{
+  "id": 1, "uuid": "...",
+  "weekStart": "2026-08-11", "weekEnd": "2026-08-17",
+  "totalAmount": 12.50,
+  "status": "DRAFT",    // DRAFT | PAID
+  "paidAt": null,
+  "note": "Week 33",
+  "items": [
+    {
+      "id": 1,
+      "recipientType": "STAFF",   // STAFF | DRIVER
+      "recipientId": 2,
+      "recipientName": "staff1",
+      "commissionCount": 18,
+      "totalAmount": 9.00
+    },
+    {
+      "id": 2,
+      "recipientType": "DRIVER",
+      "recipientId": 1,
+      "recipientName": "Dara",
+      "commissionCount": 3,
+      "totalAmount": 3.75
+    }
+  ],
+  "createdAt": "...", "updatedAt": "..."
+}
+
+Generate flow: Collects all PENDING commissions in the date range → groups by staff/driver → marks them PAID → returns summary. Safe to call once per week.
+
+---
+
+Enum Reference
+
+PageSource:     R99, R99_I
+PaymentType:    PAID_UPFRONT, PAY_ON_DELIVERY
+PaymentMethod:  BANK, CASH
+OrderStatus:    PENDING, CONFIRMED, DELIVERING, DELIVERED, CANCELLED, RETURNED
+ReturnReason:   CUSTOMER_CHANGE, STORE_ERROR, CUSTOMER_RETURN
+DeliveryPartnerType: R_EXPRESS, PERSONAL, OTHER
+DeliveryStatus: PENDING, PICKING, DELIVERING, DELIVERED, FAILED, RETURNED
+PayrollStatus:  DRAFT, PAID
+RecipientType:  STAFF, DRIVER
+ProductStatus:  ACTIVE, INACTIVE
+
+---
+Notes for Frontend
+
+- All IDs exposed externally use UUID (use these for API calls), internal id (Long) is for display only
+- All timestamps are ISO 8601 UTC (2026-08-18T03:00:00Z) — convert to local time for display
+- Dates in payroll (weekStart, weekEnd) are YYYY-MM-DD
+- Pagination params: ?page=0&size=20 (page is 0-indexed)
+- Product search (/products/search) is lightweight — use for order item autocomplete with 500+ products, not the full list endpoint
+- Image upload: multipart/form-data, field name must be files, supports multiple files in one request
+- One delivery per order — API returns error if you try to create a second one

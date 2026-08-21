@@ -24,6 +24,10 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByUuid(UUID uuid);
 
+    @EntityGraph(attributePaths = {"variant", "variant.model", "stockLevel"})
+    @Query("SELECT p FROM Product p WHERE p.uuid = :uuid AND p.deletedAt IS NULL")
+    Optional<Product> findWithVariantAndStockByUuid(@Param("uuid") UUID uuid);
+
     @EntityGraph(attributePaths = {"variant", "stockLevel"})
     @Query("""
             SELECT p FROM Product p
