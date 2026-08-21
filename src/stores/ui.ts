@@ -1,19 +1,39 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { useDialog } from "@/composables/useDialog";
 
-export const useUIStore = defineStore('ui', () => {
-  const toast = ref('')
-  const sidebarOpen = ref(false)
-  let toastTimer = 0
+export type ToastType = "info" | "success" | "warning" | "danger";
 
-  function showToast(msg: string, duration = 2500) {
-    toast.value = msg
-    clearTimeout(toastTimer)
-    toastTimer = window.setTimeout(() => { toast.value = '' }, duration)
+export interface ToastState {
+  msg: string;
+  type: ToastType;
+}
+
+export const useUIStore = defineStore("ui", () => {
+  const toast = ref<ToastState | null>(null);
+  const sidebarOpen = ref(false);
+  let toastTimer = 0;
+
+  function showToast(msg: string, type: ToastType = "success", duration = 2500) {
+    if (type === "danger") {
+      useDialog().open({
+        type: "danger",
+        title: "Something went wrong",
+        message: msg,
+        confirmLabel: "OK",
+        noCancel: true,
+      });
+      return;
+    }
+    toast.value = { msg, type };
+    clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(() => {
+      toast.value = null;
+    }, duration);
   }
 
-  function openSidebar()  { sidebarOpen.value = true }
-  function closeSidebar() { sidebarOpen.value = false }
+  function openSidebar() { sidebarOpen.value = true; }
+  function closeSidebar() { sidebarOpen.value = false; }
 
-  return { toast, sidebarOpen, showToast, openSidebar, closeSidebar }
-})
+  return { toast, sidebarOpen, showToast, openSidebar, closeSidebar };
+});

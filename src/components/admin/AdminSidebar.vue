@@ -67,11 +67,11 @@
 
     <!-- Footer -->
     <div class="p-3 border-t border-border shrink-0">
-      <div class="flex items-center gap-2 px-1.5 py-2">
-        <UserAvatar :name="session.user!.name" :size="30" />
+      <div v-if="session.user" class="flex items-center gap-2 px-1.5 py-2">
+        <UserAvatar :name="session.user.name" :size="30" />
         <div class="leading-tight flex-1 min-w-0">
-          <div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{{ session.user!.name }}</div>
-          <div class="text-muted-foreground text-[11.5px]">{{ session.user!.role }}</div>
+          <div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{{ session.user.name }}</div>
+          <div class="text-muted-foreground text-[11.5px]">{{ session.user.phone }}</div>
         </div>
         <Button variant="ghost" size="icon" class="h-8 w-8" title="Sign out" @click="handleLogout">
           <LogOut :size="15" />
@@ -86,10 +86,12 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   LayoutDashboard, ShoppingBag, Tag, Users, BarChart2, Package,
-  Shield, Clock, Settings, ChevronDown, LogOut,
+  Shield, Clock, Settings, ChevronDown, LogOut, Banknote, Truck, Warehouse,
 } from '@lucide/vue'
 import { Button } from '@/components/ui/button'
 import { useSessionStore } from '@/stores/session'
+import { useDialog } from '@/composables/useDialog'
+import { ADMIN_ROUTES } from '@/router/admin-routes'
 import { ROLE_NAV_PERMISSIONS } from '@/data/permissions'
 import UserAvatar from './UserAvatar.vue'
 
@@ -100,8 +102,10 @@ const router = useRouter()
 const session = useSessionStore()
 
 const navPerms = computed(() => {
-  const role = session.user?.role ?? 'Viewer'
-  return session.user?.customPerms ?? ROLE_NAV_PERMISSIONS[role] ?? {}
+  if (session.user?.customPerms) return session.user.customPerms
+  const role = (session.user?.role ?? '').toUpperCase()
+  const key = role === 'STAFF' ? 'Staff' : role === 'MANAGER' ? 'Manager' : role === 'VIEWER' ? 'Viewer' : 'Owner'
+  return ROLE_NAV_PERMISSIONS[key] ?? {}
 })
 
 const NAV_GROUPS = [
@@ -109,37 +113,50 @@ const NAV_GROUPS = [
   { key: 'orders',      label: 'Orders',           icon: ShoppingBag, badge: 3 },
   { key: 'promotional', label: 'Promotional Deals',icon: Tag, children: [{ key: 'discounts', label: 'Discounts' }] },
   { key: 'customers',   label: 'Customers',        icon: Users },
-  { key: 'reports',     label: 'Reports',          icon: BarChart2 },
-  { key: 'catalogue',   label: 'Catalogue',        icon: Package, children: [
+  { key: 'report-mgmt', label: 'Report Management', icon: BarChart2, children: [
+    { key: 'reports', label: 'Reports' },
+  ]},
+  { key: 'product-mgmt', label: 'Product Management', icon: Package, children: [
     { key: 'products', label: 'Products' },
     { key: 'models', label: 'Models' },
-    { key: 'stock', label: 'Stock' },
+  ]},
+  { key: 'stock-mgmt', label: 'Stock Management', icon: Warehouse, children: [
+    { key: 'stock',           label: 'Stock' },
+    { key: 'stock-movements', label: 'Stock Movements' },
   ]},
   { key: 'team',        label: 'User Management',  icon: Shield, children: [
     { key: 'users', label: 'Users' },
     { key: 'roles', label: 'Roles' },
     { key: 'permissions', label: 'Permissions' },
   ]},
-  { key: 'activity',    label: 'Activity',         icon: Clock, children: [
-    { key: 'act-users', label: 'Users' },
-    { key: 'act-orders', label: 'Orders' },
-    { key: 'act-products', label: 'Products' },
-    { key: 'act-stock', label: 'Stocks' },
-    { key: 'act-log', label: 'Log' },
-    { key: 'act-discounts', label: 'Discounts' },
+  { key: 'act-log', label: 'Activity',  icon: Clock },
+  { key: 'delivery-mgmt', label: 'Delivery Management', icon: Truck, children: [
+    { key: 'deliveries', label: 'Deliveries' },
+    { key: 'drivers',    label: 'Drivers' },
   ]},
-  { key: 'settings',    label: 'Settings',         icon: Settings },
+  { key: 'payroll',     label: 'Payroll',          icon: Banknote },
+  { key: 'settings',   label: 'Settings',         icon: Settings },
 ]
 
+const R = ADMIN_ROUTES
 const NAV_PATH_MAP: Record<string, string> = {
-  dashboard: '/admin', orders: '/admin/orders', discounts: '/admin/discounts',
-  customers: '/admin/customers', reports: '/admin/reports', products: '/admin/products',
-  models: '/admin/models', stock: '/admin/stock', users: '/admin/users',
-  roles: '/admin/roles', permissions: '/admin/permissions',
-  'act-users': '/admin/activity/users', 'act-orders': '/admin/activity/orders',
-  'act-products': '/admin/activity/products', 'act-stock': '/admin/activity/stock',
-  'act-log': '/admin/activity/log', 'act-discounts': '/admin/activity/discounts',
-  settings: '/admin/settings',
+  dashboard:   R.dashboard,
+  orders:      R.orders,
+  discounts:   R.discounts,
+  customers:   R.customers,
+  reports:     R.reports.list,
+  products:    R.products.list,
+  models:      R.models.list,
+  stock:            R.stock.list,
+  'stock-movements': R.stock.movements,
+  users:       R.users.list,
+  roles:       R.roles.list,
+  permissions: R.permissions,
+  'act-log':   R.auditLogs,
+  deliveries:  R.deliveries,
+  drivers:     R.drivers,
+  payroll:     R.payroll,
+  settings:    R.settings,
 }
 
 function navPath(key: string): string { return NAV_PATH_MAP[key] ?? '/admin' }
@@ -173,9 +190,19 @@ autoOpen()
 watch(() => route.path, autoOpen)
 function toggleGroup(key: string) { openGroups.value[key] = !openGroups.value[key] }
 
-async function handleLogout() {
-  session.logout()
-  await router.push('/admin/login')
+const { open: openDialog } = useDialog()
+
+function handleLogout() {
+  openDialog({
+    type: 'warning',
+    title: 'Sign out',
+    message: 'Are you sure you want to sign out?',
+    confirmLabel: 'Sign out',
+    onConfirm: async () => {
+      session.logout()
+      await router.push(ADMIN_ROUTES.login)
+    },
+  })
 }
 </script>
 

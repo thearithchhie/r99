@@ -24,6 +24,8 @@
         <slot />
       </main>
     </div>
+
+    <AppDialog />
   </div>
 </template>
 
@@ -32,6 +34,7 @@ import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import AdminSidebar from "./AdminSidebar.vue";
 import AdminTopbar from "./AdminTopbar.vue";
+import AppDialog from "./AppDialog.vue";
 import { useUIStore } from "@/stores/ui";
 
 const ui = useUIStore();

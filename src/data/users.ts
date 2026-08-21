@@ -27,10 +27,11 @@ export interface Discount {
 
 export const SYSTEM_USERS: SystemUser[] = [
   { id: 'u1', name: 'Avery Quinn',   email: 'admin@r99.studio',  password: 'admin123',  role: 'Owner',   status: 'Active',   lastLogin: new Date(2026, 5, 19, 9, 14) },
-  { id: 'u2', name: 'Jordan Lee',    email: 'staff@r99.studio',  password: 'staff123',  role: 'Staff',   status: 'Active',   lastLogin: new Date(2026, 5, 18, 14, 32) },
-  { id: 'u3', name: 'Sam Rivera',    email: 'viewer@r99.studio', password: 'viewer123', role: 'Viewer',  status: 'Active',   lastLogin: null },
-  { id: 'u4', name: 'Mia Thornton',  email: 'mia@r99.studio',   password: 'mia12345',  role: 'Manager', status: 'Active',   lastLogin: new Date(2026, 5, 17, 11, 5) },
-  { id: 'u5', name: 'Kai Nakamura',  email: 'kai@r99.studio',   password: 'kai12345',  role: 'Staff',   status: 'Inactive', lastLogin: new Date(2026, 4, 30, 16, 48) },
+  { id: 'u2', name: 'Chhay Tharen',  email: 'chhay@r99.studio',  password: 'staff123',  role: 'Staff',   status: 'Active',   lastLogin: new Date(2026, 5, 20, 9, 0) },
+  { id: 'u3', name: 'Chhie Navi',    email: 'chhie@r99.studio',  password: 'staff123',  role: 'Staff',   status: 'Active',   lastLogin: new Date(2026, 5, 20, 8, 30) },
+  { id: 'u4', name: 'Srean Muoyhuo', email: 'srean@r99.studio',  password: 'staff123',  role: 'Staff',   status: 'Active',   lastLogin: new Date(2026, 5, 19, 14, 0) },
+  { id: 'u5', name: 'Nin Bunrima',   email: 'nin@r99.studio',    password: 'staff123',  role: 'Staff',   status: 'Active',   lastLogin: new Date(2026, 5, 20, 10, 15) },
+  { id: 'u6', name: 'Son Srey Nich', email: 'srey@r99.studio',   password: 'staff123',  role: 'Staff',   status: 'Active',   lastLogin: new Date(2026, 5, 19, 16, 0) },
 ]
 
 export const DISCOUNTS: Discount[] = [

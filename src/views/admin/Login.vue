@@ -46,15 +46,15 @@
         </div>
 
         <form @submit="onSubmit" class="flex flex-col gap-4">
-          <FormField v-slot="{ componentField }" name="email">
+          <FormField v-slot="{ componentField }" name="phone">
             <FormItem>
-              <FormLabel>Email address</FormLabel>
+              <FormLabel>Phone number</FormLabel>
               <FormControl>
                 <Input
                   v-bind="componentField"
-                  type="email"
-                  placeholder="you@r99.studio"
-                  autocomplete="email"
+                  type="tel"
+                  placeholder="+855 12 345 678"
+                  autocomplete="tel"
                   autofocus
                   class="h-10"
                   @input="serverError = ''"
@@ -110,9 +110,7 @@
             >
               <Check v-if="remember" :size="11" />
             </button>
-            <span class="text-[13.5px] text-muted-foreground"
-              >Remember me for 30 days</span
-            >
+            <span class="text-[13.5px] text-muted-foreground">Remember me for 30 days</span>
           </div>
 
           <Button
@@ -123,152 +121,65 @@
             {{ loading ? "Signing in…" : "Sign in →" }}
           </Button>
         </form>
-
-        <!-- Demo credentials -->
-        <div class="mt-7 rounded-xl border bg-card p-4 text-[12.5px]">
-          <div
-            class="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2"
-          >
-            Demo credentials
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <button
-              v-for="u in DEMO_USERS"
-              :key="u.email"
-              type="button"
-              class="flex justify-between items-center px-2.5 py-1.5 rounded-[7px] border border-border bg-muted hover:bg-muted/80 transition-colors cursor-pointer text-left font-inherit"
-              @click="fillDemo(u)"
-            >
-              <div>
-                <span class="font-medium text-[13px]">{{ u.email }}</span>
-                <span class="text-muted-foreground ml-2 text-[11.5px]"
-                  >/ {{ u.password }}</span
-                >
-              </div>
-              <span
-                class="inline-flex items-center rounded-md bg-secondary text-secondary-foreground px-2 py-0.5 text-[11px] font-semibold"
-                >{{ u.role }}</span
-              >
-            </button>
-          </div>
-          <p class="text-muted-foreground text-[11.5px] mt-2">
-            Click a row to auto-fill credentials.
-          </p>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { toTypedSchema } from "@vee-validate/zod";
-import { useForm } from "vee-validate";
-import { z } from "zod";
-import { AlertTriangle, Check } from "@lucide/vue";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { toTypedSchema } from '@vee-validate/zod'
+import { useForm } from 'vee-validate'
+import { z } from 'zod'
+import { AlertTriangle, Check } from '@lucide/vue'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import { useSessionStore } from "@/stores/session";
-import type { SessionUser } from "@/stores/session";
+  FormField, FormItem, FormLabel, FormControl, FormMessage,
+} from '@/components/ui/form'
+import { useSessionStore } from '@/stores/session'
+import type { SessionUser } from '@/stores/session'
+import { loginApi } from '@/api/auth'
+import { ADMIN_ROUTES } from '@/router/admin-routes'
 
-const router = useRouter();
-const session = useSessionStore();
+const router = useRouter()
+const session = useSessionStore()
 
-const remember = ref(false);
-const serverError = ref("");
-const loading = ref(false);
-const showPw = ref(false);
+const remember = ref(false)
+const serverError = ref('')
+const loading = ref(false)
+const showPw = ref(false)
 
 const formSchema = toTypedSchema(
   z.object({
-    email: z.string().email("Please enter a valid email address."),
-    password: z.string().min(1, "Password is required."),
+    phone: z.string().min(1, 'Phone number is required.'),
+    password: z.string().min(1, 'Password is required.'),
   }),
-);
+)
 
-const DEMO_USERS = [
-  { email: "admin@r99.studio", password: "admin123", role: "Owner" },
-  { email: "staff@r99.studio", password: "staff123", role: "Staff" },
-  { email: "viewer@r99.studio", password: "viewer123", role: "Viewer" },
-  { email: "mia@r99.studio", password: "mia12345", role: "Manager" },
-];
+const { handleSubmit } = useForm({ validationSchema: formSchema })
 
-const USERS = [
-  {
-    email: "admin@r99.studio",
-    password: "admin123",
-    id: "u1",
-    name: "Avery Quinn",
-    role: "Owner" as const,
-  },
-  {
-    email: "staff@r99.studio",
-    password: "staff123",
-    id: "u2",
-    name: "Jordan Lee",
-    role: "Staff" as const,
-  },
-  {
-    email: "viewer@r99.studio",
-    password: "viewer123",
-    id: "u3",
-    name: "Sam Rivera",
-    role: "Viewer" as const,
-  },
-  {
-    email: "mia@r99.studio",
-    password: "mia12345",
-    id: "u4",
-    name: "Mia Thornton",
-    role: "Manager" as const,
-  },
-  {
-    email: "kai@r99.studio",
-    password: "kai12345",
-    id: "u5",
-    name: "Kai Nakamura",
-    role: "Staff" as const,
-  },
-];
+const onSubmit = handleSubmit(async (values) => {
+  serverError.value = ''
+  loading.value = true
+  try {
+    const authData = await loginApi({ phone: values.phone, password: values.password })
 
-const { handleSubmit, setValues } = useForm({ validationSchema: formSchema });
-
-const onSubmit = handleSubmit((values) => {
-  serverError.value = "";
-  loading.value = true;
-  setTimeout(() => {
-    const found = USERS.find(
-      (u) =>
-        u.email.toLowerCase() === values.email.trim().toLowerCase() &&
-        u.password === values.password,
-    );
-    if (found) {
-      const user: SessionUser = {
-        id: found.id,
-        name: found.name,
-        email: found.email,
-        role: found.role,
-        loginAt: Date.now(),
-      };
-      session.login(user, remember.value);
-      router.push("/admin");
-    } else {
-      serverError.value = "Incorrect email or password. Please try again.";
-      loading.value = false;
+    const user: SessionUser = {
+      uuid: authData.uuid,
+      name: authData.name,
+      phone: authData.phone,
+      role: authData.role,
+      loginAt: Date.now(),
+      token: authData.token,
     }
-  }, 600);
-});
-
-function fillDemo(u: { email: string; password: string }) {
-  setValues({ email: u.email, password: u.password });
-  serverError.value = "";
-}
+    session.login(user, remember.value)
+    router.push(ADMIN_ROUTES.dashboard)
+  } catch (e: unknown) {
+    serverError.value = e instanceof Error ? e.message : 'Incorrect phone or password.'
+  } finally {
+    loading.value = false
+  }
+})
 </script>

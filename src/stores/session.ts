@@ -1,13 +1,15 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import type { UserRole } from '../data/users'
+import { ref, computed } from 'vue'
+
+export type AppRole = 'ADMIN' | 'STAFF'
 
 export interface SessionUser {
-  id: string
+  uuid: string
   name: string
-  email: string
-  role: UserRole
+  phone: string
+  role: AppRole
   loginAt: number
+  token?: string
   customPerms?: Record<string, boolean>
 }
 
@@ -15,6 +17,8 @@ const KEY = 'r99-session'
 
 export const useSessionStore = defineStore('session', () => {
   const user = ref<SessionUser | null>(null)
+
+  const token = computed(() => user.value?.token ?? null)
 
   function init() {
     const raw = localStorage.getItem(KEY) || sessionStorage.getItem(KEY)
@@ -36,5 +40,5 @@ export const useSessionStore = defineStore('session', () => {
     sessionStorage.removeItem(KEY)
   }
 
-  return { user, init, login, logout }
+  return { user, token, init, login, logout }
 })

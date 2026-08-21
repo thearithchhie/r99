@@ -5,7 +5,8 @@ import localizedFormat from 'dayjs/plugin/localizedFormat'
 dayjs.extend(relativeTime)
 dayjs.extend(localizedFormat)
 
-export function money(n: number): string {
+export function money(n: number | null | undefined): string {
+  if (n == null) return '$0'
   return '$' + n.toLocaleString('en-US')
 }
 
