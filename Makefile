@@ -1,5 +1,5 @@
 # Command-only targets.
-.PHONY: get clean clean_cache build b macos m macos_staging ms macos_prod mp macos_build mb macos_build_staging mbs macos_build_prod mbp android_release ar ios_release ir windows_release wr fix_gradle c
+.PHONY: get clean clean_cache build b macos m macos_staging ms macos_prod mp macos_build mb macos_build_staging mbs macos_build_prod mbp android_release ar ios_release ir windows_release wr fix_gradle c shrink shrink_dry
 
 # Flutter commands
 get: 
@@ -82,6 +82,13 @@ fix_gradle:
 c: 
 	clear
 
+
+# Compress image assets
+shrink:
+	dart run asset_shrink
+
+shrink_dry:
+	dart run asset_shrink --dry-run
 
 # Auto export
 ex:

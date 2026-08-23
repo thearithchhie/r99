@@ -65,6 +65,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.0"
+  asset_shrink:
+    dependency: "direct dev"
+    description:
+      name: asset_shrink
+      sha256: ae9f6cbf75203062974ceee0401f6a52d04e2f660371119d81d078440ebe1674
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.0"
   async:
     dependency: transitive
     description:
