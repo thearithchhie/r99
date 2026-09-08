@@ -259,7 +259,8 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
     final parsedPrice = parsePrice(record.price);
     final serviceLabel = record.deliverService.trim();
     final isJt = serviceLabel.toUpperCase() == 'J&T' || serviceLabel.toUpperCase() == 'J & T';
-    final hasOtherService = serviceLabel.isNotEmpty && !isJt;
+    final isServicePaidByCustomer = serviceLabel.toLowerCase() == DeliverServiceValue.servicePaidByCustomer;
+    final hasOtherService = serviceLabel.isNotEmpty && !isJt && !isServicePaidByCustomer;
 
     return PrintTemplateData(
       customerName: normalizeShopValue(record.shop),
@@ -269,7 +270,7 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
       selectedOption: '0',
       totalPrice: parsedPrice.amount,
       currency: parsedPrice.currency,
-      guestServiceChecked: false,
+      guestServiceChecked: isServicePaidByCustomer,
       virakChecked: false,
       jtChecked: isJt,
       otherChecked: hasOtherService,

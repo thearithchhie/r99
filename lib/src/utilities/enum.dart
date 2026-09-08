@@ -83,6 +83,12 @@ class OrderStatus {
   static const String paidByShop = 'PAID_BY_SHOP';
 }
 
+class DeliverServiceValue {
+  const DeliverServiceValue._();
+
+  static const String servicePaidByCustomer = 'service_paid_by_customer';
+}
+
 enum ShopType {
   r99(key: 'key_R99', value: 'R99'),
   r99II(key: 'key_R99_II', value: 'R99-II');
