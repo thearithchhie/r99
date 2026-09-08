@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:csv/csv.dart';
 import 'package:r99/export.dart';
 
 class DeliveryImportResult {
@@ -27,33 +26,42 @@ class GoogleSheetDeliveryImportService {
     final resolvedShareUrl = resolveShareUrl(shareUrl);
     final exportUri = buildCsvExportUri(resolvedShareUrl);
     final csvText = await downloadCsv(exportUri);
-    final rows = const CsvToListConverter(shouldParseNumbers: false, eol: '\n').convert(csvText);
+    final rows = _parseCsv(csvText);
 
     if (rows.isEmpty) {
       throw const FormatException('The Google Sheet has no rows.');
     }
 
     final headers = rows.first.map((value) => sanitizeCell(value).toLowerCase()).toList();
-    final columnMap = <String, int>{
-      ColumMapHeader.shop.key: headers.indexOf(ColumMapHeader.shop.key),
-      ColumMapHeader.customername.key: headers.indexOf(ColumMapHeader.customername.key),
-      ColumMapHeader.phone.key: headers.indexOf(ColumMapHeader.phone.key),
-      ColumMapHeader.location.key: headers.indexOf(ColumMapHeader.location.key),
-      ColumMapHeader.totalprice.key: headers.indexOf(ColumMapHeader.totalprice.key),
-      ColumMapHeader.deliverService.key: headers.indexOf(ColumMapHeader.deliverService.key),
-      ColumMapHeader.status.key: headers.indexOf(ColumMapHeader.status.key),
-      ColumMapHeader.chatRespondentName.key: headers.indexOf(ColumMapHeader.chatRespondentName.key),
-      ColumMapHeader.link.key: headers.indexOf(ColumMapHeader.link.key),
-      ColumMapHeader.outlet.key: headers.indexOf(ColumMapHeader.outlet.key),
-      ColumMapHeader.createdBy.key: headers.indexOf(ColumMapHeader.createdBy.key),
-    };
 
-    final missingColumns = columnMap.entries.where((entry) => entry.value < 0).map((entry) => entry.key).toList();
+    // Only columns in the ColumMapHeader enum are mapped. Any column not in the enum
+    // (e.g. telegram_link, map, or any future addition) is completely ignored.
+    final columnMap = <ColumMapHeader, int>{};
+    for (final header in ColumMapHeader.values) {
+      final index = headers.indexOf(header.key);
+      if (index >= 0) columnMap[header] = index;
+    }
+
+    const mustHaveHeaders = [
+      ColumMapHeader.shop,
+      ColumMapHeader.customername,
+      ColumMapHeader.phone,
+      ColumMapHeader.location,
+      ColumMapHeader.totalprice,
+      ColumMapHeader.deliverService,
+      ColumMapHeader.status,
+      ColumMapHeader.chatRespondentName,
+      ColumMapHeader.link,
+      ColumMapHeader.outlet,
+      ColumMapHeader.createdBy,
+    ];
+    final missingColumns = mustHaveHeaders
+        .where((h) => !columnMap.containsKey(h))
+        .map((h) => h.key)
+        .toList();
     if (missingColumns.isNotEmpty) {
       throw FormatException('Missing required columns: ${missingColumns.join(', ')}');
     }
-
-    final stickerColumnIndex = headers.indexOf(ColumMapHeader.sticker.key);
 
     // Required fields in Excel column order — add/remove entries here to maintain validation.
     const requiredFields = [
@@ -78,23 +86,23 @@ class GoogleSheetDeliveryImportService {
     for (var index = 1; index < rows.length; index++) {
       final row = rows[index];
 
-      String valueOf(String key) {
-        final columnIndex = columnMap[key]!;
-        if (columnIndex >= row.length) return '';
+      String valueOf(ColumMapHeader header) {
+        final columnIndex = columnMap[header];
+        if (columnIndex == null || columnIndex >= row.length) return '';
         return sanitizeCell(row[columnIndex]);
       }
 
-      final customerName = valueOf(ColumMapHeader.customername.key);
-      final phone = valueOf(ColumMapHeader.phone.key).replaceAll(' ', '');
-      final location = valueOf(ColumMapHeader.location.key);
-      final rawPrice = valueOf(ColumMapHeader.totalprice.key);
-      final deliverService = valueOf(ColumMapHeader.deliverService.key);
-      final shop = valueOf(ColumMapHeader.shop.key);
-      final status = valueOf(ColumMapHeader.status.key);
-      final chatRespondentName = valueOf(ColumMapHeader.chatRespondentName.key);
-      final link = valueOf(ColumMapHeader.link.key);
-      final outlet = valueOf(ColumMapHeader.outlet.key);
-      final createdBy = valueOf(ColumMapHeader.createdBy.key);
+      final customerName = valueOf(ColumMapHeader.customername);
+      final phone = valueOf(ColumMapHeader.phone).replaceAll(' ', '');
+      final location = valueOf(ColumMapHeader.location);
+      final rawPrice = valueOf(ColumMapHeader.totalprice);
+      final deliverService = valueOf(ColumMapHeader.deliverService);
+      final shop = valueOf(ColumMapHeader.shop);
+      final status = valueOf(ColumMapHeader.status);
+      final chatRespondentName = valueOf(ColumMapHeader.chatRespondentName);
+      final link = valueOf(ColumMapHeader.link);
+      final outlet = valueOf(ColumMapHeader.outlet);
+      final createdBy = valueOf(ColumMapHeader.createdBy);
 
       if (customerName.isEmpty &&
           phone.isEmpty &&
@@ -111,7 +119,7 @@ class GoogleSheetDeliveryImportService {
         continue;
       }
 
-      String rowLabel() => customerName.isNotEmpty ? '"$customerName"' : 'Row ${index + 1}';
+      String rowLabel() => customerName.isNotEmpty ? '"$customerName" (row ${index + 1})' : 'Row ${index + 1}';
 
       final fieldValues = {
         ColumMapHeader.shop: shop,
@@ -125,9 +133,10 @@ class GoogleSheetDeliveryImportService {
       };
 
       bool rowHasError = false;
-      for (final (header, _) in requiredFields) {
+      for (final (header, label) in requiredFields) {
         if (fieldValues[header]!.isEmpty) {
           missingRows[header]!.add(rowLabel());
+          messages.add('${rowLabel()}: skipped — missing $label');
           rowHasError = true;
           break;
         }
@@ -139,11 +148,15 @@ class GoogleSheetDeliveryImportService {
         continue;
       }
 
-      final price = status == OrderStatus.alradyPaid ? r'$0' : rawPrice;
+      final price = (status == OrderStatus.alradyPaid || status == OrderStatus.paidByShop) ? r'$0' : rawPrice;
 
-      if (stickerColumnIndex >= 0) {
-        final sticker = stickerColumnIndex < row.length ? sanitizeCell(row[stickerColumnIndex]) : '';
+      final stickerIndex = columnMap[ColumMapHeader.sticker];
+      if (stickerIndex != null) {
+        final rawSticker = stickerIndex < row.length ? row[stickerIndex] : '';
+        final sticker = sanitizeCell(rawSticker);
         if (sticker != StickerValue.ok) {
+          final stickerDisplay = sticker.isEmpty ? '(empty)' : sticker;
+          messages.add('${rowLabel()}: skipped — sticker "$stickerDisplay"');
           skippedRows++;
           continue;
         }
@@ -240,6 +253,97 @@ class GoogleSheetDeliveryImportService {
   }
 
   static String sanitizeCell(Object? value) {
-    return (value?.toString() ?? '').replaceAll('\uFEFF', '').replaceAll('\u00A0', ' ').trim();
+    return (value?.toString() ?? '')
+        .replaceAll('\uFEFF', '')   // BOM
+        .replaceAll('\u00A0', ' ')  // non-breaking space
+        .replaceAll('\uFE0F', '')   // emoji variation selector-16 (e.g. \uD83D\uDC4C vs \uD83D\uDC4C\uFE0E)
+        .trim();
+  }
+
+  // Lenient CSV parser: splits on newlines first, then rejoins lines that
+  // belong to a quoted multiline cell (e.g. a location field with an embedded
+  // \n). Rejoining is capped at 10 lines per row so a malformed last-column
+  // quoted field (e.g. an unclosed maps URL) cannot consume all subsequent rows.
+  static List<List<Object>> _parseCsv(String csvText) {
+    final rows = <List<Object>>[];
+    final lines = csvText.split(RegExp(r'\r?\n'));
+    var i = 0;
+    while (i < lines.length) {
+      var line = lines[i];
+      i++;
+      // Rejoin continuation lines for RFC4180 multiline cells (quoted fields
+      // that span multiple physical lines). Cap at 10 to bound damage from a
+      // malformed last-column quote that never closes.
+      var joins = 0;
+      while (joins < 10 && i < lines.length && _hasOpenQuote(line)) {
+        line = '$line\n${lines[i]}';
+        i++;
+        joins++;
+      }
+      if (line.isNotEmpty) rows.add(_parseCsvRow(line));
+    }
+    return rows;
+  }
+
+  // Returns true if [line] has an odd number of unescaped double-quote
+  // characters, meaning we are still inside a quoted field at end-of-line.
+  static bool _hasOpenQuote(String line) {
+    var inQuote = false;
+    for (var j = 0; j < line.length; j++) {
+      if (line[j] == '"') {
+        if (inQuote && j + 1 < line.length && line[j + 1] == '"') {
+          j++; // skip escaped ""
+        } else {
+          inQuote = !inQuote;
+        }
+      }
+    }
+    return inQuote;
+  }
+
+  static List<Object> _parseCsvRow(String rowText) {
+    final fields = <Object>[];
+    var i = 0;
+    final len = rowText.length;
+
+    do {
+      if (i < len && rowText[i] == '"') {
+        // Quoted field \u2014 consume until unescaped closing quote.
+        i++;
+        final sb = StringBuffer();
+        while (i < len) {
+          final c = rowText[i];
+          if (c == '"') {
+            i++;
+            if (i < len && rowText[i] == '"') {
+              sb.write('"'); // doubled quote = literal "
+              i++;
+            } else {
+              break; // closing quote
+            }
+          } else {
+            sb.write(c);
+            i++;
+          }
+        }
+        // Skip any stray characters between the closing quote and the next comma
+        // (handles malformed CSV where text follows the closing quote).
+        while (i < len && rowText[i] != ',') i++;
+        fields.add(sb.toString());
+      } else {
+        // Unquoted field.
+        final start = i;
+        while (i < len && rowText[i] != ',') i++;
+        fields.add(rowText.substring(start, i));
+      }
+
+      if (i < len && rowText[i] == ',') {
+        i++; // consume delimiter and continue
+      } else {
+        break;
+      }
+    } while (true);
+
+    return fields;
   }
 }

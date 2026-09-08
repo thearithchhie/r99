@@ -63,3 +63,6 @@ CLAUDE.md
 
 # Ignore _.dart files in lib folder
 lib/**/_.dart
+
+# Gradle build caches inside vendor packages
+vendor/**/.gradle/

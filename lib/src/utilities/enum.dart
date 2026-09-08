@@ -80,6 +80,7 @@ class OrderStatus {
 
   static const String alradyPaid = 'ALRADY_PAID';
   static const String padding    = 'PADDING';
+  static const String paidByShop = 'PAID_BY_SHOP';
 }
 
 enum ShopType {

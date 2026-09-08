@@ -15,15 +15,24 @@ This can cause the order/delivery to remain waiting indefinitely because the act
 
 ---
 
-Implementation (google_sheet_delivery_import_service.dart):
+Process:
 
 1. Shop phone validation:
-   - Reserved constant: `_shopPhoneNumber = '0977156486'`
-   - After required-field checks pass, if the phone matches the shop number, the row is collected and skipped.
-   - After the full loop, throws: `FormatException('This is phone number of shop in: <row labels>')`
-   - Lists all affected row labels (customer name or "Row N") in the error message.
+   - During import, each row's phone number is checked against the reserved shop number 0977156486.
+   - If a match is found, that row is skipped and collected.
+   - After all rows are processed, the import fails with an error listing every row that used the shop number.
 
 2. Phone number space stripping:
-   - Phone value is normalized with `.replaceAll(' ', '')` immediately after reading from the sheet.
-   - Example: `093 54 565 45` → `0935456545`
-   - Ensures spaces entered in the sheet do not bypass the shop phone check or cause mismatches.
+   - Before any validation, all spaces are removed from the phone number.
+   - Example: 093 54 565 45 becomes 0935456545.
+   - This prevents staff from accidentally bypassing the shop phone check by adding spaces.
+
+---
+
+Total Price — Zero-Price Statuses
+
+When a row's status indicates the order has already been paid, the imported price is set to $0 regardless of what is written in the total price column.
+
+Statuses that set price to $0:
+- ALRADY_PAID — customer already paid
+- PAID_BY_SHOP — shop covered the payment
