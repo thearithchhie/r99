@@ -24,6 +24,7 @@ class TemplateCheckboxChip extends StatelessWidget {
         border: Border.all(color: AppColor.borderLight),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
             width: 20,
@@ -38,7 +39,7 @@ class TemplateCheckboxChip extends StatelessWidget {
                 : null,
           ),
           const SizedBox(width: 8),
-          Expanded(
+          Flexible(
             child: Text(
               label,
               style: const TextStyle(

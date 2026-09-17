@@ -54,6 +54,9 @@ class GoogleSheetDeliveryImportService {
       ColumMapHeader.link,
       ColumMapHeader.outlet,
       ColumMapHeader.createdBy,
+      ColumMapHeader.currency,
+      ColumMapHeader.currentRate,
+      ColumMapHeader.convertedTotal,
     ];
     final missingColumns = mustHaveHeaders
         .where((h) => !columnMap.containsKey(h))
@@ -73,6 +76,9 @@ class GoogleSheetDeliveryImportService {
       (ColumMapHeader.link, 'link'),
       (ColumMapHeader.outlet, 'outlet'),
       (ColumMapHeader.createdBy, 'created by'),
+      (ColumMapHeader.currency, 'currency'),
+      (ColumMapHeader.currentRate, 'current rate'),
+      (ColumMapHeader.convertedTotal, 'converted total'),
     ];
 
     final missingRows = <ColumMapHeader, List<String>>{for (final (header, _) in requiredFields) header: []};
@@ -103,6 +109,9 @@ class GoogleSheetDeliveryImportService {
       final link = valueOf(ColumMapHeader.link);
       final outlet = valueOf(ColumMapHeader.outlet);
       final createdBy = valueOf(ColumMapHeader.createdBy);
+      final currency = valueOf(ColumMapHeader.currency);
+      final currentRate = valueOf(ColumMapHeader.currentRate);
+      final convertedTotal = valueOf(ColumMapHeader.convertedTotal);
 
       if (customerName.isEmpty &&
           phone.isEmpty &&
@@ -114,7 +123,10 @@ class GoogleSheetDeliveryImportService {
           chatRespondentName.isEmpty &&
           link.isEmpty &&
           outlet.isEmpty &&
-          createdBy.isEmpty) {
+          createdBy.isEmpty &&
+          currency.isEmpty &&
+          currentRate.isEmpty &&
+          convertedTotal.isEmpty) {
         skippedRows++;
         continue;
       }
@@ -130,6 +142,9 @@ class GoogleSheetDeliveryImportService {
         ColumMapHeader.link: link,
         ColumMapHeader.outlet: outlet,
         ColumMapHeader.createdBy: createdBy,
+        ColumMapHeader.currency: currency,
+        ColumMapHeader.currentRate: currentRate,
+        ColumMapHeader.convertedTotal: convertedTotal,
       };
 
       bool rowHasError = false;
@@ -171,7 +186,8 @@ class GoogleSheetDeliveryImportService {
           ..location = location
           ..price = price
           ..deliverService = deliverService
-          ..shop = shop,
+          ..shop = shop
+          ..convertedTotal = convertedTotal,
       );
     }
 

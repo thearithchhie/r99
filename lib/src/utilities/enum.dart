@@ -60,7 +60,10 @@ enum ColumMapHeader {
   chatRespondentName(key: 'chat_respondent_name', value: 'Chat Respondent Name'),
   link(key: 'link', value: 'Link'),
   outlet(key: 'outlet', value: 'Outlet'),
-  createdBy(key: 'created_by', value: 'Created By');
+  createdBy(key: 'created_by', value: 'Created By'),
+  currency(key: 'currency', value: 'Currency'),
+  currentRate(key: 'current_rate', value: 'Current Rate'),
+  convertedTotal(key: 'converted_total', value: 'Converted Total');
 
   const ColumMapHeader({required this.key, required this.value});
 
@@ -87,6 +90,8 @@ class DeliverServiceValue {
   const DeliverServiceValue._();
 
   static const String servicePaidByCustomer = 'service_paid_by_customer';
+  static const String jtCod                 = 'J&T-COD';
+  static const String vetCod                = 'VET-COD';
 }
 
 enum ShopType {

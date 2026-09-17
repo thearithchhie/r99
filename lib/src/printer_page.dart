@@ -114,6 +114,7 @@ class _PrinterPageState extends State<PrinterPage>
                   guestServiceChecked: guestServiceChecked.value,
                   virakChecked: virakChecked.value,
                   jtChecked: jtChecked.value,
+                  jtCod: templateData.jtCod,
                   otherChecked: otherChecked.value,
                   onAddPhone: addPhoneField,
                   onAddLocation: addLocationField,

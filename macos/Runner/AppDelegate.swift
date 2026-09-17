@@ -130,6 +130,8 @@ struct MacOSPrintTemplate {
   let guestServiceChecked: Bool
   let virakChecked: Bool
   let jtChecked: Bool
+  let jtCod: Bool
+  let jtLabel: String
   let otherChecked: Bool
 
   init(map: [String: Any]) throws {
@@ -147,6 +149,8 @@ struct MacOSPrintTemplate {
     guestServiceChecked = bool("guestServiceChecked")
     virakChecked = bool("virakChecked")
     jtChecked = bool("jtChecked")
+    jtCod = bool("jtCod")
+    jtLabel = string("jtLabel")
     otherChecked = bool("otherChecked")
   }
 
@@ -260,10 +264,13 @@ final class NativeTemplatePrintView: NSView {
       contentWidth: contentWidth
     )
 
+    // For J&T-COD the first location line is the Khmer converted-total; it stays as the first
+    // line inside the location section (above the address) and is rendered bold, same size.
+    let locationLines = template.locationLines.isEmpty ? ["-"] : template.locationLines
     y = drawSection(
       iconName: "mappin.circle.fill",
       title: "ទីតាំង",
-      lines: template.locationLines.isEmpty ? ["-"] : template.locationLines,
+      lines: locationLines,
       y: y,
       topMargin: 4,
       bottomMargin: -8,
@@ -271,6 +278,7 @@ final class NativeTemplatePrintView: NSView {
       minBoxHeight: 10,
       titleFont: khmerFont(size: 11, weight: .bold),
       bodyFont: khmerFont(size: 8.8, weight: .bold),
+      firstLineFont: template.jtCod ? NSFont.boldSystemFont(ofSize: 8.8) : nil,
       contentX: contentX,
       contentWidth: contentWidth
     )
@@ -290,46 +298,59 @@ final class NativeTemplatePrintView: NSView {
       font: khmerFont(size: 9.8, weight: .bold),
       alignment: .right
     )
-    y = amountRect.maxY + 3
+    y = amountRect.maxY + 9 // gap between shipping section and chips row
 
     let chipGap: CGFloat = 6
-    let chipWidth = (contentWidth - chipGap * 2) / 3
-    let chips = [
-      (label: "សេវាខាងភ្ញៀវ", selected: template.guestServiceChecked),
-      (label: "VAT", selected: template.virakChecked),
-      (label: "J&T", selected: template.jtChecked),
-    ]
-    let chipLabelFont = khmerFont(size: 8.5, weight: .bold)
-    let chipLabelWidth = chipWidth - 26
-    let rawChipLabelHeight = chips.map { textHeight($0.label, width: chipLabelWidth, font: chipLabelFont) }.max() ?? 12
-    let chipHeight = max(22, rawChipLabelHeight + 10)
-
-    for (index, chip) in chips.enumerated() {
-      let chipRect = NSRect(
-        x: contentX + CGFloat(index) * (chipWidth + chipGap),
-        y: y,
-        width: chipWidth,
-        height: chipHeight
-      )
-      drawCheckboxChip(
-        rect: chipRect,
-        label: chip.label,
-        selected: chip.selected
-      )
+    // The guest-service chip is hidden for J&T-COD.
+    var chips: [(label: String, selected: Bool)] = []
+    if !template.jtCod {
+      chips.append((label: "សេវាខាងភ្ញៀវ", selected: template.guestServiceChecked))
     }
-    y += chipHeight + 3
+    chips.append((label: "VAT", selected: template.virakChecked))
+    chips.append((label: template.jtLabel, selected: template.jtChecked))
+    let chipLabelFont = khmerFont(size: 8.5, weight: .bold)
+    let chipHeight = max(22, (chips.map { textHeight($0.label, width: contentWidth, font: chipLabelFont) }.max() ?? 12) + 10)
 
-    let footerFont = khmerFont(size: 9.2, weight: .bold)
-    let footerText = "សូមអរគុណសម្រាប់ការគាំទ្រ"
-    let footerHeight = textHeight(footerText, width: contentWidth, font: footerFont) + 2
+    if template.jtCod {
+      // Size each chip to its content (checkbox + label) and center the group, so the
+      // remaining two chips don't stretch to fill the row and leave a large inner gap.
+      let chipContentWidths = chips.map { attributedTextSize($0.label, font: chipLabelFont).width + 34 }
+      let totalWidth = chipContentWidths.reduce(0, +) + chipGap * CGFloat(chips.count - 1)
+      var chipX = contentX + max(0, (contentWidth - totalWidth) / 2)
+      for (index, chip) in chips.enumerated() {
+        let chipRect = NSRect(x: chipX, y: y, width: chipContentWidths[index], height: chipHeight)
+        drawCheckboxChip(rect: chipRect, label: chip.label, selected: chip.selected)
+        chipX += chipContentWidths[index] + chipGap
+      }
+    } else {
+      let chipWidth = (contentWidth - chipGap * CGFloat(chips.count - 1)) / CGFloat(chips.count)
+      for (index, chip) in chips.enumerated() {
+        let chipRect = NSRect(
+          x: contentX + CGFloat(index) * (chipWidth + chipGap),
+          y: y,
+          width: chipWidth,
+          height: chipHeight
+        )
+        drawCheckboxChip(rect: chipRect, label: chip.label, selected: chip.selected)
+      }
+    }
+    y += chipHeight + 9 // gap between chips row and thank-you footer
+
     let borderBottomPadding: CGFloat = 10
-    _ = drawText(
-      footerText,
-      rect: NSRect(x: contentX, y: y, width: contentWidth, height: footerHeight),
-      font: footerFont,
-      alignment: .center
-    )
-    let contentBottom = y + footerHeight
+    var contentBottom = y
+    // Thank-you footer is hidden for J&T-COD, matching the Flutter template card.
+    if !template.jtCod {
+      let footerFont = khmerFont(size: 9.2, weight: .bold)
+      let footerText = "សូមអរគុណសម្រាប់ការគាំទ្រ"
+      let footerHeight = textHeight(footerText, width: contentWidth, font: footerFont) + 2
+      _ = drawText(
+        footerText,
+        rect: NSRect(x: contentX, y: y, width: contentWidth, height: footerHeight),
+        font: footerFont,
+        alignment: .center
+      )
+      contentBottom = y + footerHeight
+    }
 
     let outerHeight = max(minOuterHeight, contentBottom - outerTop + borderBottomPadding)
     neededPageHeight = outerTop * 2 + outerHeight
@@ -356,6 +377,7 @@ final class NativeTemplatePrintView: NSView {
     minBoxHeight: CGFloat,
     titleFont: NSFont,
     bodyFont: NSFont,
+    firstLineFont: NSFont? = nil,
     contentX: CGFloat,
     contentWidth: CGFloat
   ) -> CGFloat {
@@ -373,12 +395,13 @@ final class NativeTemplatePrintView: NSView {
     )
     var currentY = startY + titleRectHeight + titleBoxGap
 
-    for line in lines {
+    for (index, line) in lines.enumerated() {
+      let lineFont = (index == 0 ? firstLineFont : nil) ?? bodyFont
       let innerWidth = contentWidth - 16
       let measuredHeight = textHeight(
         line,
         width: innerWidth,
-        font: bodyFont
+        font: lineFont
       )
       let boxHeight = max(minBoxHeight, measuredHeight + 5)
       let lineRect = NSRect(x: contentX, y: currentY, width: contentWidth, height: boxHeight)
@@ -386,7 +409,7 @@ final class NativeTemplatePrintView: NSView {
       _ = drawText(
         line,
         rect: lineRect.insetBy(dx: 8, dy: 2),
-        font: bodyFont
+        font: lineFont
       )
       currentY = lineRect.maxY + 1
     }

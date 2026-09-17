@@ -258,21 +258,32 @@ mixin DeliveryImportPageControllerMixin on State<DeliveryImportPage> {
   PrintTemplateData templateDataFromRecord(DeliveryRecord record) {
     final parsedPrice = parsePrice(record.price);
     final serviceLabel = record.deliverService.trim();
-    final isJt = serviceLabel.toUpperCase() == 'J&T' || serviceLabel.toUpperCase() == 'J & T';
-    final isServicePaidByCustomer = serviceLabel.toLowerCase() == DeliverServiceValue.servicePaidByCustomer;
-    final hasOtherService = serviceLabel.isNotEmpty && !isJt && !isServicePaidByCustomer;
+    // Normalize: uppercase and strip whitespace + all separators (hyphen, en/em dash, underscore)
+    // so spreadsheet variants like "J&T – COD", "J&T_COD", "VET COD", "VET_COD" etc. all match.
+    final compact = serviceLabel.toUpperCase().replaceAll(RegExp(r'[\s\-–—_]'), '');
+    final isJtCod = compact == 'J&TCOD';
+    final isVetCod = compact == 'VETCOD';
+    final isCod = isJtCod || isVetCod;
+    final isJt = !isCod && compact == 'J&T';
+    final isServicePaidByCustomer =
+        compact == DeliverServiceValue.servicePaidByCustomer.toUpperCase().replaceAll('_', '');
+    final hasOtherService = serviceLabel.isNotEmpty && !isJt && !isCod && !isServicePaidByCustomer;
+
+    // COD first line encodes the courier name so the chip label survives a reprint round-trip.
+    final codPrefix = isJtCod ? 'J&T' : 'VET';
+    final locationLines = [if (isCod) '$codPrefix | លុយខ្មែរ = ${record.convertedTotal}', record.location];
 
     return PrintTemplateData(
       customerName: normalizeShopValue(record.shop),
       pageName: record.customerName,
       phoneLines: [record.phone],
-      locationLines: [record.location],
+      locationLines: locationLines,
       selectedOption: '0',
       totalPrice: parsedPrice.amount,
       currency: parsedPrice.currency,
       guestServiceChecked: isServicePaidByCustomer,
       virakChecked: false,
-      jtChecked: isJt,
+      jtChecked: isJt || isCod,
       otherChecked: hasOtherService,
     );
   }

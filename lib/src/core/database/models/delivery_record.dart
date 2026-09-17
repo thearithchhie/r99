@@ -16,6 +16,7 @@ class DeliveryRecord {
   String price = '';
   String deliverService = '';
   String shop = ShopType.r99.key;
+  String convertedTotal = '';
   int printCount = 0;
   DateTime? lastPrintedAt;
 }

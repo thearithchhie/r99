@@ -38,6 +38,13 @@ class PrintTemplateCard extends StatelessWidget {
 
   TextStyle get bodyStylePhone => const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColor.pureBlack);
 
+  TextStyle get convertedTotalStyle => TextStyle(
+    fontSize: Platform.isAndroid ? 20 : 24,
+    fontWeight: FontWeight.bold,
+    color: AppColor.pureBlack,
+    height: 1.25,
+  );
+
   TextStyle get khmerBodyStyle => const TextStyle(
     fontFamily: FontFamily.siemreap,
     fontSize: 22,
@@ -121,6 +128,8 @@ class PrintTemplateCard extends StatelessWidget {
                           lines: data.locationLines.isEmpty ? const ['-'] : data.locationLines,
                           titleStyle: khmerTitleStyle,
                           bodyStyle: khmerBodyStyleLocation,
+                          // For J&T-COD the first line is the Khmer converted-total; render it bold.
+                          firstLineStyle: data.jtCod ? convertedTotalStyle : null,
                           tall: true,
                         ),
                         const SizedBox(height: 10),
@@ -135,38 +144,55 @@ class PrintTemplateCard extends StatelessWidget {
                             children: [
                               const Icon(Icons.local_shipping_outlined, size: 24, fontWeight: FontWeight.w500),
                               const SizedBox(width: 8),
-                              Expanded(child: Text('សេវាដឹក', style: khmerTitleStyle)),
-                              Text(
-                                data.totalPrice.isEmpty
-                                    ? 'តម្លៃសរុប៖ ${data.currency}${data.selectedOption}'
-                                    : 'តម្លៃសរុប៖ ${data.currency}${data.totalPrice}',
-                                style: khmerTitleStyle,
+                              Text('សេវាដឹក', style: khmerTitleStyle),
+                              Expanded(
+                                child: Text(
+                                  data.totalPrice.isEmpty
+                                      ? 'តម្លៃសរុប៖ ${data.currency}${data.selectedOption}'
+                                      : 'តម្លៃសរុប៖ ${data.currency}${data.totalPrice}',
+                                  style: khmerTitleStyle,
+                                  textAlign: TextAlign.right,
+                                ),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TemplateCheckboxChip(label: 'សេវាខាងភ្ញៀវ', selected: data.guestServiceChecked),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: data.virakChecked),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TemplateCheckboxChip(label: 'J&T', selected: data.jtChecked),
-                            ),
-                          ],
-                        ),
+                        // J&T-COD hides the guest-service chip. The remaining two chips size to
+                        // their content and center, instead of stretching to fill half the row.
+                        if (data.jtCod)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: data.virakChecked),
+                              const SizedBox(width: 8),
+                              TemplateCheckboxChip(label: data.jtLabel, selected: data.jtChecked),
+                            ],
+                          )
+                        else
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TemplateCheckboxChip(label: 'សេវាខាងភ្ញៀវ', selected: data.guestServiceChecked),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TemplateCheckboxChip(label: 'វីរៈប៊ុនថាំ', selected: data.virakChecked),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TemplateCheckboxChip(label: data.jtLabel, selected: data.jtChecked),
+                              ),
+                            ],
+                          ),
                         const SizedBox(height: 12),
-                        Text(
-                          'សូមអរគុណសម្រាប់ការគាំទ្រ និងជួយចែករំលែកផង',
-                          textAlign: TextAlign.center,
-                          style: _khmerSmallStyle,
-                        ),
+                        //* Show thank you message only if JT COD is not selected
+                        if (!data.jtCod)
+                          Text(
+                            'សូមអរគុណសម្រាប់ការគាំទ្រ និងជួយចែករំលែកផង',
+                            textAlign: TextAlign.center,
+                            style: _khmerSmallStyle,
+                          ),
                       ],
                     ),
                   ),
@@ -187,6 +213,7 @@ class _InfoBox extends StatelessWidget {
     required this.lines,
     required this.titleStyle,
     required this.bodyStyle,
+    this.firstLineStyle,
     this.tall = false,
   });
 
@@ -195,6 +222,7 @@ class _InfoBox extends StatelessWidget {
   final List<String> lines;
   final TextStyle titleStyle;
   final TextStyle bodyStyle;
+  final TextStyle? firstLineStyle;
   final bool tall;
 
   @override
@@ -226,7 +254,7 @@ class _InfoBox extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: AppColor.borderSubtle, width: 1.4),
               ),
-              child: Text(lines[index], style: bodyStyle),
+              child: Text(lines[index], style: index == 0 && firstLineStyle != null ? firstLineStyle : bodyStyle),
             ),
             // if (index != lines.length - 1) const SizedBox(height: 0),
           ],

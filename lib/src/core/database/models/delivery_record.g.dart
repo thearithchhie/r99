@@ -17,41 +17,46 @@ const DeliveryRecordSchema = CollectionSchema(
   name: r'DeliveryRecord',
   id: -8233966962468054066,
   properties: {
-    r'customerName': PropertySchema(
+    r'convertedTotal': PropertySchema(
       id: 0,
+      name: r'convertedTotal',
+      type: IsarType.string,
+    ),
+    r'customerName': PropertySchema(
+      id: 1,
       name: r'customerName',
       type: IsarType.string,
     ),
     r'deliverService': PropertySchema(
-      id: 1,
+      id: 2,
       name: r'deliverService',
       type: IsarType.string,
     ),
     r'importedAt': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'importedAt',
       type: IsarType.dateTime,
     ),
     r'lastPrintedAt': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastPrintedAt',
       type: IsarType.dateTime,
     ),
     r'location': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'location',
       type: IsarType.string,
     ),
-    r'phone': PropertySchema(id: 5, name: r'phone', type: IsarType.string),
-    r'price': PropertySchema(id: 6, name: r'price', type: IsarType.string),
+    r'phone': PropertySchema(id: 6, name: r'phone', type: IsarType.string),
+    r'price': PropertySchema(id: 7, name: r'price', type: IsarType.string),
     r'printCount': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'printCount',
       type: IsarType.long,
     ),
-    r'shop': PropertySchema(id: 8, name: r'shop', type: IsarType.string),
+    r'shop': PropertySchema(id: 9, name: r'shop', type: IsarType.string),
     r'sourceUrl': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'sourceUrl',
       type: IsarType.string,
     ),
@@ -92,6 +97,7 @@ int _deliveryRecordEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.convertedTotal.length * 3;
   bytesCount += 3 + object.customerName.length * 3;
   bytesCount += 3 + object.deliverService.length * 3;
   bytesCount += 3 + object.location.length * 3;
@@ -108,16 +114,17 @@ void _deliveryRecordSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.customerName);
-  writer.writeString(offsets[1], object.deliverService);
-  writer.writeDateTime(offsets[2], object.importedAt);
-  writer.writeDateTime(offsets[3], object.lastPrintedAt);
-  writer.writeString(offsets[4], object.location);
-  writer.writeString(offsets[5], object.phone);
-  writer.writeString(offsets[6], object.price);
-  writer.writeLong(offsets[7], object.printCount);
-  writer.writeString(offsets[8], object.shop);
-  writer.writeString(offsets[9], object.sourceUrl);
+  writer.writeString(offsets[0], object.convertedTotal);
+  writer.writeString(offsets[1], object.customerName);
+  writer.writeString(offsets[2], object.deliverService);
+  writer.writeDateTime(offsets[3], object.importedAt);
+  writer.writeDateTime(offsets[4], object.lastPrintedAt);
+  writer.writeString(offsets[5], object.location);
+  writer.writeString(offsets[6], object.phone);
+  writer.writeString(offsets[7], object.price);
+  writer.writeLong(offsets[8], object.printCount);
+  writer.writeString(offsets[9], object.shop);
+  writer.writeString(offsets[10], object.sourceUrl);
 }
 
 DeliveryRecord _deliveryRecordDeserialize(
@@ -127,17 +134,18 @@ DeliveryRecord _deliveryRecordDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = DeliveryRecord();
-  object.customerName = reader.readString(offsets[0]);
-  object.deliverService = reader.readString(offsets[1]);
+  object.convertedTotal = reader.readString(offsets[0]);
+  object.customerName = reader.readString(offsets[1]);
+  object.deliverService = reader.readString(offsets[2]);
   object.id = id;
-  object.importedAt = reader.readDateTime(offsets[2]);
-  object.lastPrintedAt = reader.readDateTimeOrNull(offsets[3]);
-  object.location = reader.readString(offsets[4]);
-  object.phone = reader.readString(offsets[5]);
-  object.price = reader.readString(offsets[6]);
-  object.printCount = reader.readLong(offsets[7]);
-  object.shop = reader.readString(offsets[8]);
-  object.sourceUrl = reader.readString(offsets[9]);
+  object.importedAt = reader.readDateTime(offsets[3]);
+  object.lastPrintedAt = reader.readDateTimeOrNull(offsets[4]);
+  object.location = reader.readString(offsets[5]);
+  object.phone = reader.readString(offsets[6]);
+  object.price = reader.readString(offsets[7]);
+  object.printCount = reader.readLong(offsets[8]);
+  object.shop = reader.readString(offsets[9]);
+  object.sourceUrl = reader.readString(offsets[10]);
   return object;
 }
 
@@ -153,20 +161,22 @@ P _deliveryRecordDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readDateTime(offset)) as P;
-    case 3:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 4:
       return (reader.readString(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
+    case 4:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
-      return (reader.readLong(offset)) as P;
-    case 8:
       return (reader.readString(offset)) as P;
+    case 8:
+      return (reader.readLong(offset)) as P;
     case 9:
+      return (reader.readString(offset)) as P;
+    case 10:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -383,6 +393,147 @@ extension DeliveryRecordQueryWhere
 
 extension DeliveryRecordQueryFilter
     on QueryBuilder<DeliveryRecord, DeliveryRecord, QFilterCondition> {
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'convertedTotal',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'convertedTotal',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'convertedTotal',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'convertedTotal',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'convertedTotal',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'convertedTotal',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'convertedTotal',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'convertedTotal',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'convertedTotal', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  convertedTotalIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'convertedTotal', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
   customerNameEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
@@ -1618,6 +1769,20 @@ extension DeliveryRecordQueryLinks
 extension DeliveryRecordQuerySortBy
     on QueryBuilder<DeliveryRecord, DeliveryRecord, QSortBy> {
   QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  sortByConvertedTotal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'convertedTotal', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  sortByConvertedTotalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'convertedTotal', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
   sortByCustomerName() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'customerName', Sort.asc);
@@ -1752,6 +1917,20 @@ extension DeliveryRecordQuerySortBy
 
 extension DeliveryRecordQuerySortThenBy
     on QueryBuilder<DeliveryRecord, DeliveryRecord, QSortThenBy> {
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  thenByConvertedTotal() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'convertedTotal', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  thenByConvertedTotalDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'convertedTotal', Sort.desc);
+    });
+  }
+
   QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
   thenByCustomerName() {
     return QueryBuilder.apply(this, (query) {
@@ -1900,6 +2079,16 @@ extension DeliveryRecordQuerySortThenBy
 extension DeliveryRecordQueryWhereDistinct
     on QueryBuilder<DeliveryRecord, DeliveryRecord, QDistinct> {
   QueryBuilder<DeliveryRecord, DeliveryRecord, QDistinct>
+  distinctByConvertedTotal({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(
+        r'convertedTotal',
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QDistinct>
   distinctByCustomerName({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'customerName', caseSensitive: caseSensitive);
@@ -1983,6 +2172,13 @@ extension DeliveryRecordQueryProperty
   QueryBuilder<DeliveryRecord, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, String, QQueryOperations>
+  convertedTotalProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'convertedTotal');
     });
   }
 

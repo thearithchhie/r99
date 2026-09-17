@@ -25,6 +25,14 @@ class PrintTemplateData {
   final bool jtChecked;
   final bool otherChecked;
 
+  // Derived from locationLines — true when the first line is a COD converted-total line.
+  // Format: "<Service> | លុយខ្មែរ = <amount>"  e.g. "J&T | លុយខ្មែរ = 4000"
+  bool get jtCod => locationLines.isNotEmpty && locationLines[0].contains(' | លុយខ្មែរ');
+  String get jtLabel {
+    if (!jtCod) return 'J&T';
+    return '${locationLines[0].split(' | ').first.trim()}(COD)';
+  }
+
   Map<String, Object?> toMacOSPrintMap() {
     return {
       'customerName': customerName,
@@ -37,6 +45,8 @@ class PrintTemplateData {
       'guestServiceChecked': guestServiceChecked,
       'virakChecked': virakChecked,
       'jtChecked': jtChecked,
+      'jtCod': jtCod,
+      'jtLabel': jtLabel,
       'otherChecked': otherChecked,
     };
   }
