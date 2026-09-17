@@ -83,7 +83,6 @@ flutter:
   assets:
     - .env
     - assets/logo/logo.jpg
-    - assets/images/
     - assets/pngs/
     - assets/tessdata/
     - assets/tessdata_config.json
