@@ -344,12 +344,16 @@ class GoogleSheetDeliveryImportService {
         }
         // Skip any stray characters between the closing quote and the next comma
         // (handles malformed CSV where text follows the closing quote).
-        while (i < len && rowText[i] != ',') i++;
+        while (i < len && rowText[i] != ',') {
+          i++;
+        }
         fields.add(sb.toString());
       } else {
         // Unquoted field.
         final start = i;
-        while (i < len && rowText[i] != ',') i++;
+        while (i < len && rowText[i] != ',') {
+          i++;
+        }
         fields.add(rowText.substring(start, i));
       }
 
