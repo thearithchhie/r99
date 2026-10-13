@@ -68,6 +68,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
+    public PagedResponse<OrderResponse> findAllByCustomer(UUID customerUuid, OrderStatus status, Pageable pageable) {
+        var page = status != null
+                ? orderRepository.findAllByCustomer_UuidAndStatusAndDeletedAtIsNull(customerUuid, status, pageable)
+                : orderRepository.findAllByCustomer_UuidAndDeletedAtIsNull(customerUuid, pageable);
+        return PagedResponse.of(page.map(this::toResponse), "orders");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public OrderResponse findOne(UUID uuid) {
         return toResponse(orderRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new AppException("Order not found")));

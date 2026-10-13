@@ -5,10 +5,18 @@ import com.r99.r99_shop_api.common.response.PagedResponse;
 import com.r99.r99_shop_api.common.util.PageableUtil;
 import com.r99.r99_shop_api.module.customer.dto.request.CustomerCreateRequest;
 import com.r99.r99_shop_api.module.customer.dto.request.CustomerUpdateRequest;
+import com.r99.r99_shop_api.module.customer.dto.response.CustomerDetailResponse;
 import com.r99.r99_shop_api.module.customer.dto.response.CustomerResponse;
 import com.r99.r99_shop_api.module.customer.service.CustomerService;
+import com.r99.r99_shop_api.module.delivery.dto.response.DeliveryResponse;
+import com.r99.r99_shop_api.module.delivery.service.DeliveryService;
+import com.r99.r99_shop_api.module.order.dto.response.OrderResponse;
+import com.r99.r99_shop_api.module.order.entity.OrderStatus;
+import com.r99.r99_shop_api.module.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -24,6 +32,8 @@ import java.util.UUID;
 public class CustomerController {
 
     private final CustomerService customerService;
+    private final OrderService orderService;
+    private final DeliveryService deliveryService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<CustomerResponse>>> list(
@@ -42,7 +52,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{uuid}")
-    public ResponseEntity<ApiResponse<CustomerResponse>> findOne(@PathVariable UUID uuid) {
+    public ResponseEntity<ApiResponse<CustomerDetailResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(customerService.findOne(uuid)));
     }
 
@@ -66,5 +76,28 @@ public class CustomerController {
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         customerService.delete(uuid);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{uuid}/orders")
+    public ResponseEntity<ApiResponse<PagedResponse<OrderResponse>>> orderHistory(
+            @PathVariable UUID uuid,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) OrderStatus status
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(
+                orderService.findAllByCustomer(uuid, status,
+                        PageRequest.of(page, size, Sort.by("createdAt").descending()))));
+    }
+
+    @GetMapping("/{uuid}/deliveries")
+    public ResponseEntity<ApiResponse<PagedResponse<DeliveryResponse>>> deliveryHistory(
+            @PathVariable UUID uuid,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(
+                deliveryService.findAllByCustomer(uuid,
+                        PageRequest.of(page, size, Sort.by("createdAt").descending()))));
     }
 }

@@ -14,6 +14,8 @@ public interface OrderService {
 
     PagedResponse<OrderResponse> findAll(OrderStatus status, Pageable pageable);
 
+    PagedResponse<OrderResponse> findAllByCustomer(UUID customerUuid, OrderStatus status, Pageable pageable);
+
     OrderResponse findOne(UUID uuid);
 
     OrderResponse create(OrderCreateRequest request);

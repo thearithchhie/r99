@@ -3,6 +3,7 @@ package com.r99.r99_shop_api.module.customer.service;
 import com.r99.r99_shop_api.common.response.PagedResponse;
 import com.r99.r99_shop_api.module.customer.dto.request.CustomerCreateRequest;
 import com.r99.r99_shop_api.module.customer.dto.request.CustomerUpdateRequest;
+import com.r99.r99_shop_api.module.customer.dto.response.CustomerDetailResponse;
 import com.r99.r99_shop_api.module.customer.dto.response.CustomerResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -13,7 +14,7 @@ public interface CustomerService {
 
     PagedResponse<CustomerResponse> findAll(Pageable pageable);
 
-    CustomerResponse findOne(UUID uuid);
+    CustomerDetailResponse findOne(UUID uuid);
 
     List<CustomerResponse> search(String q, int size);
 

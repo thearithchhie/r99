@@ -12,6 +12,8 @@ public interface DeliveryService {
 
     PagedResponse<DeliveryResponse> findAll(Pageable pageable);
 
+    PagedResponse<DeliveryResponse> findAllByCustomer(UUID customerUuid, Pageable pageable);
+
     DeliveryResponse findOne(UUID uuid);
 
     DeliveryResponse create(DeliveryCreateRequest request);

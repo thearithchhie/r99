@@ -22,4 +22,8 @@ public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
     Optional<Delivery> findByUuidAndDeletedAtIsNull(@Param("uuid") UUID uuid);
 
     Optional<Delivery> findByOrderId(Long orderId);
+
+    @EntityGraph(attributePaths = {"order", "order.customer", "driver"})
+    @Query("SELECT d FROM Delivery d WHERE d.order.customer.uuid = :customerUuid AND d.deletedAt IS NULL")
+    Page<Delivery> findAllByCustomerUuid(@Param("customerUuid") UUID customerUuid, Pageable pageable);
 }

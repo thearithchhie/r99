@@ -43,6 +43,14 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     @Override
     @Transactional(readOnly = true)
+    public PagedResponse<DeliveryResponse> findAllByCustomer(UUID customerUuid, Pageable pageable) {
+        return PagedResponse.of(
+                deliveryRepository.findAllByCustomerUuid(customerUuid, pageable).map(this::toResponse),
+                "deliveries");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public DeliveryResponse findOne(UUID uuid) {
         return toResponse(deliveryRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new AppException("Delivery not found")));
