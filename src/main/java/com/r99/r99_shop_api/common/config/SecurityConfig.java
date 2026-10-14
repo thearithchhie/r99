@@ -51,6 +51,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/error").permitAll()
+                        .requestMatchers("/api/v1/cache-test/**").permitAll()
                         .requestMatchers("/ws/**", "/ws-plain/**").permitAll()  // WebSocket handshake; JWT validated by ChannelInterceptor
                         .anyRequest().authenticated()
                 )

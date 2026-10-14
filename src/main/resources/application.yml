@@ -10,6 +10,12 @@ spring:
     web:
       pageable:
         one-indexed-parameters: true
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      password: ${SPRING_DATA_REDIS_PASSWORD:}
+  cache:
+    type: redis
   jackson:
     property-naming-strategy: SNAKE_CASE
   jpa:
