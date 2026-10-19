@@ -63,7 +63,8 @@ enum ColumMapHeader {
   createdBy(key: 'created_by', value: 'Created By'),
   currency(key: 'currency', value: 'Currency'),
   currentRate(key: 'current_rate', value: 'Current Rate'),
-  convertedTotal(key: 'converted_total', value: 'Converted Total');
+  convertedTotal(key: 'converted_total', value: 'Converted Total'),
+  deliveryType(key: 'deliver_type', value: 'Deliver Type');
 
   const ColumMapHeader({required this.key, required this.value});
 

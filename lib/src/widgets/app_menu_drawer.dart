@@ -4,7 +4,7 @@ import 'package:r99/src/core/services/supabase_auth_service.dart';
 import 'package:r99/src/core/view/auth/login_page.dart';
 import 'package:r99/src/printer_page.dart';
 
-enum AppMenuDestination { printer, textScanner, invoices, deliveries, logs }
+enum AppMenuDestination { printer, textScanner, invoices, deliveries, logs, templates }
 
 class AppMenuDrawer extends StatefulWidget {
   const AppMenuDrawer({
@@ -156,6 +156,12 @@ class _AppMenuDrawerState extends State<AppMenuDrawer> {
               title: const Text('Health Logs'),
               selected: widget.currentDestination == AppMenuDestination.logs,
               onTap: () => widget.onSelectDestination(AppMenuDestination.logs),
+            ),
+            ListTile(
+              leading: const Icon(Icons.dashboard_customize_outlined),
+              title: const Text('Templates'),
+              selected: widget.currentDestination == AppMenuDestination.templates,
+              onTap: () => widget.onSelectDestination(AppMenuDestination.templates),
             ),
             const Divider(height: 24),
             SwitchListTile(

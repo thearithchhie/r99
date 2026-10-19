@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:r99/src/core/view/template/template_list_page.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tesseract_ocr/flutter_tesseract_ocr.dart';
 import 'package:image_picker/image_picker.dart';
@@ -84,6 +85,10 @@ mixin TextScannerPageControllerMixin on State<TextScannerPage> {
       case AppMenuDestination.logs:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HealthLogPage()),
+        );
+      case AppMenuDestination.templates:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const TemplateListPage()),
         );
     }
   }

@@ -1,4 +1,5 @@
 import 'package:r99/export.dart';
+import 'package:r99/src/core/view/template/template_list_page.dart';
 
 mixin HealthLogPageControllerMixin on State<HealthLogPage> {
   final isLoading = signal<bool>(true);
@@ -81,6 +82,8 @@ mixin HealthLogPageControllerMixin on State<HealthLogPage> {
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const InvoiceListPage()));
       case AppMenuDestination.deliveries:
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const DeliveryImportPage()));
+      case AppMenuDestination.templates:
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const TemplateListPage()));
     }
   }
 

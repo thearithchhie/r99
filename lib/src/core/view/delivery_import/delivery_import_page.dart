@@ -1,4 +1,5 @@
 import 'package:r99/export.dart';
+import 'package:r99/src/core/view/template/template_list_page.dart';
 
 class DeliveryImportPage extends StatefulWidget {
   const DeliveryImportPage({super.key});
@@ -41,6 +42,8 @@ class _DeliveryImportPageState extends State<DeliveryImportPage> with DeliveryIm
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const InvoiceListPage()));
       case AppMenuDestination.logs:
         Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HealthLogPage()));
+      case AppMenuDestination.templates:
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const TemplateListPage()));
     }
   }
 

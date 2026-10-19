@@ -32,31 +32,36 @@ const DeliveryRecordSchema = CollectionSchema(
       name: r'deliverService',
       type: IsarType.string,
     ),
-    r'importedAt': PropertySchema(
+    r'deliveryType': PropertySchema(
       id: 3,
+      name: r'deliveryType',
+      type: IsarType.string,
+    ),
+    r'importedAt': PropertySchema(
+      id: 4,
       name: r'importedAt',
       type: IsarType.dateTime,
     ),
     r'lastPrintedAt': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'lastPrintedAt',
       type: IsarType.dateTime,
     ),
     r'location': PropertySchema(
-      id: 5,
+      id: 6,
       name: r'location',
       type: IsarType.string,
     ),
-    r'phone': PropertySchema(id: 6, name: r'phone', type: IsarType.string),
-    r'price': PropertySchema(id: 7, name: r'price', type: IsarType.string),
+    r'phone': PropertySchema(id: 7, name: r'phone', type: IsarType.string),
+    r'price': PropertySchema(id: 8, name: r'price', type: IsarType.string),
     r'printCount': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'printCount',
       type: IsarType.long,
     ),
-    r'shop': PropertySchema(id: 9, name: r'shop', type: IsarType.string),
+    r'shop': PropertySchema(id: 10, name: r'shop', type: IsarType.string),
     r'sourceUrl': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'sourceUrl',
       type: IsarType.string,
     ),
@@ -100,6 +105,7 @@ int _deliveryRecordEstimateSize(
   bytesCount += 3 + object.convertedTotal.length * 3;
   bytesCount += 3 + object.customerName.length * 3;
   bytesCount += 3 + object.deliverService.length * 3;
+  bytesCount += 3 + object.deliveryType.length * 3;
   bytesCount += 3 + object.location.length * 3;
   bytesCount += 3 + object.phone.length * 3;
   bytesCount += 3 + object.price.length * 3;
@@ -117,14 +123,15 @@ void _deliveryRecordSerialize(
   writer.writeString(offsets[0], object.convertedTotal);
   writer.writeString(offsets[1], object.customerName);
   writer.writeString(offsets[2], object.deliverService);
-  writer.writeDateTime(offsets[3], object.importedAt);
-  writer.writeDateTime(offsets[4], object.lastPrintedAt);
-  writer.writeString(offsets[5], object.location);
-  writer.writeString(offsets[6], object.phone);
-  writer.writeString(offsets[7], object.price);
-  writer.writeLong(offsets[8], object.printCount);
-  writer.writeString(offsets[9], object.shop);
-  writer.writeString(offsets[10], object.sourceUrl);
+  writer.writeString(offsets[3], object.deliveryType);
+  writer.writeDateTime(offsets[4], object.importedAt);
+  writer.writeDateTime(offsets[5], object.lastPrintedAt);
+  writer.writeString(offsets[6], object.location);
+  writer.writeString(offsets[7], object.phone);
+  writer.writeString(offsets[8], object.price);
+  writer.writeLong(offsets[9], object.printCount);
+  writer.writeString(offsets[10], object.shop);
+  writer.writeString(offsets[11], object.sourceUrl);
 }
 
 DeliveryRecord _deliveryRecordDeserialize(
@@ -137,15 +144,16 @@ DeliveryRecord _deliveryRecordDeserialize(
   object.convertedTotal = reader.readString(offsets[0]);
   object.customerName = reader.readString(offsets[1]);
   object.deliverService = reader.readString(offsets[2]);
+  object.deliveryType = reader.readString(offsets[3]);
   object.id = id;
-  object.importedAt = reader.readDateTime(offsets[3]);
-  object.lastPrintedAt = reader.readDateTimeOrNull(offsets[4]);
-  object.location = reader.readString(offsets[5]);
-  object.phone = reader.readString(offsets[6]);
-  object.price = reader.readString(offsets[7]);
-  object.printCount = reader.readLong(offsets[8]);
-  object.shop = reader.readString(offsets[9]);
-  object.sourceUrl = reader.readString(offsets[10]);
+  object.importedAt = reader.readDateTime(offsets[4]);
+  object.lastPrintedAt = reader.readDateTimeOrNull(offsets[5]);
+  object.location = reader.readString(offsets[6]);
+  object.phone = reader.readString(offsets[7]);
+  object.price = reader.readString(offsets[8]);
+  object.printCount = reader.readLong(offsets[9]);
+  object.shop = reader.readString(offsets[10]);
+  object.sourceUrl = reader.readString(offsets[11]);
   return object;
 }
 
@@ -163,20 +171,22 @@ P _deliveryRecordDeserializeProp<P>(
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readDateTime(offset)) as P;
-    case 4:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 5:
       return (reader.readString(offset)) as P;
+    case 4:
+      return (reader.readDateTime(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     case 7:
       return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readLong(offset)) as P;
-    case 9:
       return (reader.readString(offset)) as P;
+    case 9:
+      return (reader.readLong(offset)) as P;
     case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -812,6 +822,147 @@ extension DeliveryRecordQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'deliverService', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeEqualTo(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'deliveryType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'deliveryType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'deliveryType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'deliveryType',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'deliveryType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'deliveryType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'deliveryType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'deliveryType',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'deliveryType', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterFilterCondition>
+  deliveryTypeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'deliveryType', value: ''),
       );
     });
   }
@@ -1811,6 +1962,20 @@ extension DeliveryRecordQuerySortBy
   }
 
   QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  sortByDeliveryType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deliveryType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  sortByDeliveryTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deliveryType', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
   sortByImportedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'importedAt', Sort.asc);
@@ -1956,6 +2121,20 @@ extension DeliveryRecordQuerySortThenBy
   thenByDeliverServiceDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'deliverService', Sort.desc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  thenByDeliveryType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deliveryType', Sort.asc);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QAfterSortBy>
+  thenByDeliveryTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'deliveryType', Sort.desc);
     });
   }
 
@@ -2106,6 +2285,13 @@ extension DeliveryRecordQueryWhereDistinct
   }
 
   QueryBuilder<DeliveryRecord, DeliveryRecord, QDistinct>
+  distinctByDeliveryType({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'deliveryType', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, DeliveryRecord, QDistinct>
   distinctByImportedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'importedAt');
@@ -2193,6 +2379,13 @@ extension DeliveryRecordQueryProperty
   deliverServiceProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'deliverService');
+    });
+  }
+
+  QueryBuilder<DeliveryRecord, String, QQueryOperations>
+  deliveryTypeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'deliveryType');
     });
   }
 

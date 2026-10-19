@@ -10,6 +10,7 @@ class PrintTemplateData {
     required this.guestServiceChecked,
     required this.virakChecked,
     required this.jtChecked,
+    required this.jtCod,
     required this.otherChecked,
   });
 
@@ -23,13 +24,12 @@ class PrintTemplateData {
   final bool guestServiceChecked;
   final bool virakChecked;
   final bool jtChecked;
+  final bool jtCod;
   final bool otherChecked;
 
-  // Derived from locationLines — true when the first line is a COD converted-total line.
-  // Format: "<Service> | លុយខ្មែរ = <amount>"  e.g. "J&T | លុយខ្មែរ = 4000"
-  bool get jtCod => locationLines.isNotEmpty && locationLines[0].contains(' | លុយខ្មែរ');
   String get jtLabel {
     if (!jtCod) return 'J&T';
+    if (locationLines.isEmpty) return 'J&T(COD)';
     return '${locationLines[0].split(' | ').first.trim()}(COD)';
   }
 

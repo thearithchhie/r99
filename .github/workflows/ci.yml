@@ -29,6 +29,13 @@ jobs:
           key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock', 'project_tool/pubspec.lock') }}
           restore-keys: pub-${{ runner.os }}-
 
+      - name: Create .env from secrets
+        run: |
+          cp .env.example .env
+          echo "GOOGLE_SHEET_LINK=${{ secrets.GOOGLE_SHEET_LINK }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
       - name: Install app dependencies
         run: flutter pub get
 
@@ -76,6 +83,13 @@ jobs:
           key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock', 'project_tool/pubspec.lock') }}
           restore-keys: pub-${{ runner.os }}-
 
+      - name: Create .env from secrets
+        run: |
+          cp .env.example .env
+          echo "GOOGLE_SHEET_LINK=${{ secrets.GOOGLE_SHEET_LINK }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
       - name: Install app dependencies
         run: flutter pub get
 
@@ -121,6 +135,13 @@ jobs:
             project_tool/.dart_tool
           key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.lock', 'project_tool/pubspec.lock') }}
           restore-keys: pub-${{ runner.os }}-
+
+      - name: Create .env from secrets
+        run: |
+          cp .env.example .env
+          echo "GOOGLE_SHEET_LINK=${{ secrets.GOOGLE_SHEET_LINK }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
 
       - name: Install app dependencies
         run: flutter pub get

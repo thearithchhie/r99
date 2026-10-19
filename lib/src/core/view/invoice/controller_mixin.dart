@@ -6,6 +6,7 @@ import 'package:r99/src/core/view/delivery_import/delivery_import_page.dart';
 import 'package:r99/src/core/view/health_log/health_log_page.dart';
 import 'package:r99/src/core/view/invoice/invoice_list_page.dart';
 import 'package:r99/src/core/view/ocr/text_scanner_page.dart';
+import 'package:r99/src/core/view/template/template_list_page.dart';
 import 'package:r99/src/printer_page.dart';
 import 'package:r99/src/widgets/app_menu_drawer.dart';
 import 'package:signals_flutter/signals_flutter.dart';
@@ -159,6 +160,10 @@ mixin InvoiceListPageControllerMixin on State<InvoiceListPage> {
       case AppMenuDestination.logs:
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HealthLogPage()),
+        );
+      case AppMenuDestination.templates:
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const TemplateListPage()),
         );
     }
   }

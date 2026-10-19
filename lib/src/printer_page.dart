@@ -1,4 +1,5 @@
 import 'package:r99/export.dart';
+import 'package:r99/src/core/view/template/template_list_page.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 class PrinterPage extends StatefulWidget {
@@ -33,6 +34,10 @@ class _PrinterPageState extends State<PrinterPage>
         Navigator.of(
           context,
         ).push(MaterialPageRoute(builder: (_) => const HealthLogPage()));
+      case AppMenuDestination.templates:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const TemplateListPage()));
     }
   }
 

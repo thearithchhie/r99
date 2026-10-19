@@ -104,17 +104,20 @@ mixin PrinterPageControllerMixin on State<PrinterPage> {
 
   PrintTemplateData get templateData {
     templateTick.value;
+    final lines = collectLines(locationControllers.value);
+    final isJtCod = lines.isNotEmpty && RegExp(r'^(J&T|VET) \| ').hasMatch(lines[0]);
     return PrintTemplateData(
       customerName: normalizedCustomerName(customerNameController.text),
       pageName: pageNameController.text.trim(),
       phoneLines: collectLines(phoneControllers.value),
-      locationLines: collectLines(locationControllers.value),
+      locationLines: lines,
       selectedOption: selectedOption.value,
       totalPrice: totalPriceController.text.trim(),
       currency: currency.value,
       guestServiceChecked: guestServiceChecked.value,
       virakChecked: virakChecked.value,
       jtChecked: jtChecked.value,
+      jtCod: isJtCod,
       otherChecked: otherChecked.value,
     );
   }

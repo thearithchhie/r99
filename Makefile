@@ -1,8 +1,12 @@
 # Command-only targets.
-.PHONY: get clean clean_cache build b macos m macos_staging ms macos_prod mp macos_build mb macos_build_staging mbs macos_build_prod mbp android_release ar ios_release ir windows_release wr fix_gradle c shrink shrink_dry
+.PHONY: get clean clean_cache build b macos m macos_staging ms macos_prod mp macos_build mb macos_build_staging mbs macos_build_prod mbp android_release ar ios_release ir windows_release wr fix_gradle c shrink shrink_dry env
+
+# Bootstrap: copy .env.example → .env if .env is missing
+env:
+	@if [ ! -f .env ]; then cp .env.example .env && echo "Created .env — fill in your values."; else echo ".env already exists."; fi
 
 # Flutter commands
-get: 
+get:
 	flutter pub get
 
 clean:

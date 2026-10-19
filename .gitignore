@@ -48,6 +48,14 @@ app.*.map.json
 credentials.json
 project_tool/credentials.json
 
+# Environment secrets — never commit the real .env
+.env
+.env.*
+!.env.example
+
+# Local docs (PRs, notes, etc.)
+docs/
+
 # Local scripts
 /.firebaserc
 ios/build/ios/

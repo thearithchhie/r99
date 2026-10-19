@@ -57,6 +57,7 @@ class GoogleSheetDeliveryImportService {
       ColumMapHeader.currency,
       ColumMapHeader.currentRate,
       ColumMapHeader.convertedTotal,
+      ColumMapHeader.deliveryType,
     ];
     final missingColumns = mustHaveHeaders
         .where((h) => !columnMap.containsKey(h))
@@ -79,6 +80,7 @@ class GoogleSheetDeliveryImportService {
       (ColumMapHeader.currency, 'currency'),
       (ColumMapHeader.currentRate, 'current rate'),
       (ColumMapHeader.convertedTotal, 'converted total'),
+      (ColumMapHeader.deliveryType, 'delivery type'),
     ];
 
     final missingRows = <ColumMapHeader, List<String>>{for (final (header, _) in requiredFields) header: []};
@@ -112,6 +114,7 @@ class GoogleSheetDeliveryImportService {
       final currency = valueOf(ColumMapHeader.currency);
       final currentRate = valueOf(ColumMapHeader.currentRate);
       final convertedTotal = valueOf(ColumMapHeader.convertedTotal);
+      final deliveryType = valueOf(ColumMapHeader.deliveryType);
 
       if (customerName.isEmpty &&
           phone.isEmpty &&
@@ -126,7 +129,8 @@ class GoogleSheetDeliveryImportService {
           createdBy.isEmpty &&
           currency.isEmpty &&
           currentRate.isEmpty &&
-          convertedTotal.isEmpty) {
+          convertedTotal.isEmpty &&
+          deliveryType.isEmpty) {
         skippedRows++;
         continue;
       }
@@ -145,6 +149,7 @@ class GoogleSheetDeliveryImportService {
         ColumMapHeader.currency: currency,
         ColumMapHeader.currentRate: currentRate,
         ColumMapHeader.convertedTotal: convertedTotal,
+        ColumMapHeader.deliveryType: deliveryType,
       };
 
       bool rowHasError = false;
@@ -187,7 +192,8 @@ class GoogleSheetDeliveryImportService {
           ..price = price
           ..deliverService = deliverService
           ..shop = shop
-          ..convertedTotal = convertedTotal,
+          ..convertedTotal = convertedTotal
+          ..deliveryType = deliveryType,
       );
     }
 
