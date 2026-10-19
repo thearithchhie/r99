@@ -1,5 +1,4 @@
 import 'package:r99/export.dart';
-import 'package:r99/src/core/view/template/template_list_page.dart';
 import 'package:unified_esc_pos_printer/unified_esc_pos_printer.dart';
 
 class PrinterPage extends StatefulWidget {

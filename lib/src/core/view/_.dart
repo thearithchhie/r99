@@ -1,5 +1,6 @@
 export 'health_log/_.dart';
 export 'auth/_.dart';
+export 'template/_.dart';
 export 'ocr/_.dart';
 export 'delivery_import/_.dart';
 export 'invoice/_.dart';
