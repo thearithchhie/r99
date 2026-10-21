@@ -1,6 +1,8 @@
 <template>
   <AdminLayout>
-    <div class="fade p-5 flex flex-col gap-4">
+    <ComingSoon feature="Reports" />
+
+    <div v-if="false" class="fade p-5 flex flex-col gap-4">
       <div class="kpi-grid grid grid-cols-4 gap-4">
         <Card v-for="k in kpiCards" :key="k.label">
           <CardContent class="pt-5">
@@ -169,6 +171,7 @@
 import { computed } from 'vue'
 import { Download } from '@lucide/vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
+import ComingSoon from '@/components/admin/ComingSoon.vue'
 import PlaceholderThumb from '@/components/admin/PlaceholderThumb.vue'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

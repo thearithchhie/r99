@@ -139,8 +139,7 @@ import {
   FormField, FormItem, FormLabel, FormControl, FormMessage,
 } from '@/components/ui/form'
 import { useSessionStore } from '@/stores/session'
-import type { SessionUser } from '@/stores/session'
-import { loginApi } from '@/api/auth'
+import { loginApi, getCurrentUserApi } from '@/api/auth'
 import { ADMIN_ROUTES } from '@/router/admin-routes'
 
 const router = useRouter()
@@ -164,17 +163,17 @@ const onSubmit = handleSubmit(async (values) => {
   serverError.value = ''
   loading.value = true
   try {
-    const authData = await loginApi({ phone: values.phone, password: values.password })
+    const { access_token } = await loginApi({ phone: values.phone, password: values.password })
+    const me = await getCurrentUserApi(access_token)
 
-    const user: SessionUser = {
-      uuid: authData.uuid,
-      name: authData.name,
-      phone: authData.phone,
-      role: authData.role,
+    session.login(access_token, {
+      uuid: me.uuid,
+      name: me.name,
+      phone: me.phone,
+      role: me.role,
       loginAt: Date.now(),
-      token: authData.token,
-    }
-    session.login(user, remember.value)
+      permissions: me.permissions ?? {},
+    })
     router.push(ADMIN_ROUTES.dashboard)
   } catch (e: unknown) {
     serverError.value = e instanceof Error ? e.message : 'Incorrect phone or password.'

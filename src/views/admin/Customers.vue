@@ -70,35 +70,191 @@
       </div>
     </div>
 
-    <!-- Detail / edit sheet -->
-    <Sheet :open="!!selected" @update:open="(v) => !v && (selected = null)">
-      <SheetContent class="overflow-y-auto p-0 w-[440px] sm:max-w-[440px]">
-        <div v-if="selected" class="flex flex-col h-full">
-          <div class="flex items-center justify-between px-5 py-4 border-b sticky top-0 bg-background">
-            <span class="text-[15px] font-semibold">Customer detail</span>
-            <Button variant="ghost" size="icon" class="h-8 w-8" @click="selected = null"><X :size="18" /></Button>
-          </div>
-          <div class="p-5 flex flex-col gap-5">
-            <div class="flex items-center gap-3.5">
-              <UserAvatar :name="selected.name" :size="48" />
-              <div>
-                <div class="text-[17px] font-semibold">{{ selected.name }}</div>
-                <div class="font-mono text-[13px] text-muted-foreground">{{ selected.phone }}</div>
-              </div>
+    <!-- Detail dialog (centered) -->
+    <Dialog :open="!!selected" @update:open="(v) => !v && (selected = null)">
+      <DialogContent class="p-0 gap-0 max-w-5xl w-[92vw] max-h-[88vh] overflow-hidden flex flex-col">
+        <div v-if="selected" class="flex flex-col overflow-hidden">
+          <!-- Header -->
+          <div class="flex items-start gap-4 px-6 py-5 border-b shrink-0">
+            <UserAvatar :name="selected.name" :size="44" />
+            <div class="flex-1 min-w-0">
+              <div class="text-[17px] font-semibold leading-tight">{{ selected.name }}</div>
+              <div class="font-mono text-[13px] text-muted-foreground mt-0.5">{{ selected.phone }}</div>
             </div>
-            <div class="flex flex-col gap-0 rounded-lg border border-border overflow-hidden">
-              <div v-for="row in detailRows" :key="row.label" class="flex items-center px-4 py-3 border-b border-border/50 last:border-0">
-                <span class="w-32 text-[12.5px] text-muted-foreground shrink-0">{{ row.label }}</span>
-                <span class="text-[13px]">{{ row.value }}</span>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" class="self-start" @click="openEdit(selected)">
+            <Button variant="outline" size="sm" class="shrink-0 mt-0.5 mr-7" @click="openEdit(selected)">
               <Pencil :size="13" /> Edit
             </Button>
           </div>
+
+          <!-- Info strip -->
+          <div class="flex flex-wrap gap-x-8 gap-y-1.5 px-6 py-3.5 border-b bg-muted/30 shrink-0">
+            <div v-for="row in detailRows" :key="row.label" class="flex items-center gap-1.5 text-[12.5px]">
+              <span class="text-muted-foreground">{{ row.label }}:</span>
+              <span class="font-medium">{{ row.value }}</span>
+            </div>
+          </div>
+
+          <!-- Summary cards -->
+          <div class="flex flex-col gap-2 px-6 py-4 border-b shrink-0">
+            <!-- Row 1 -->
+            <div class="grid grid-cols-4 gap-2">
+              <div class="rounded-lg border border-border bg-card px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Total Orders</span>
+                <span v-if="statsLoading" class="h-6 w-10 rounded bg-muted animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight">{{ selected.total_orders ?? 0 }}</span>
+              </div>
+              <div class="rounded-lg border border-green-200 bg-green-50 dark:bg-green-950/30 dark:border-green-900 px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-green-700 dark:text-green-400 font-medium uppercase tracking-wide">Completed</span>
+                <span v-if="statsLoading" class="h-6 w-10 rounded bg-green-100 animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight text-green-700 dark:text-green-400">{{ selected.completed_orders ?? 0 }}</span>
+              </div>
+              <div class="rounded-lg border border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-900 px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide">Total Paid</span>
+                <span v-if="statsLoading" class="h-6 w-16 rounded bg-blue-100 animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight text-blue-600 dark:text-blue-400">{{ money(selected.total_paid ?? 0) }}</span>
+              </div>
+              <div class="rounded-lg border border-blue-300 bg-blue-100 dark:bg-blue-900/30 dark:border-blue-800 px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-blue-800 dark:text-blue-300 font-medium uppercase tracking-wide">Net Spent</span>
+                <span v-if="statsLoading" class="h-6 w-16 rounded bg-blue-200 animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight text-blue-800 dark:text-blue-300">{{ money(selected.net_spent ?? 0) }}</span>
+              </div>
+            </div>
+            <!-- Row 2 -->
+            <div class="grid grid-cols-4 gap-2">
+              <div class="rounded-lg border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-900 px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-yellow-700 dark:text-yellow-400 font-medium uppercase tracking-wide">Pending</span>
+                <span v-if="statsLoading" class="h-6 w-8 rounded bg-yellow-100 animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight text-yellow-700 dark:text-yellow-400">{{ selected.pending_orders ?? 0 }}</span>
+              </div>
+              <div class="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 dark:border-red-900 px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-red-600 dark:text-red-400 font-medium uppercase tracking-wide">Cancelled</span>
+                <span v-if="statsLoading" class="h-6 w-8 rounded bg-red-100 animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight text-red-600 dark:text-red-400">{{ selected.cancelled_orders ?? 0 }}</span>
+              </div>
+              <div class="rounded-lg border border-orange-200 bg-orange-50 dark:bg-orange-950/30 dark:border-orange-900 px-4 py-3 flex flex-col gap-0.5">
+                <span class="text-[11px] text-orange-600 dark:text-orange-400 font-medium uppercase tracking-wide">Refunded</span>
+                <span v-if="statsLoading" class="h-6 w-16 rounded bg-orange-100 animate-pulse mt-1" />
+                <span v-else class="text-[22px] font-bold leading-tight text-orange-600 dark:text-orange-400">{{ money(selected.refunded ?? 0) }}</span>
+              </div>
+              <div />
+            </div>
+          </div>
+
+          <!-- Tabs + history -->
+          <div class="flex-1 overflow-y-auto px-6 py-4">
+            <Tabs v-model="historyTab" @update:model-value="onHistoryTabChange">
+              <TabsList class="mb-4">
+                <TabsTrigger value="orders">Order History</TabsTrigger>
+                <TabsTrigger value="deliveries">Delivery History</TabsTrigger>
+              </TabsList>
+
+              <!-- Order History -->
+              <div v-show="historyTab === 'orders'">
+                <div class="mb-3">
+                  <select
+                    v-model="orderHistoryStatus"
+                    class="h-8 rounded-md border border-input bg-background px-3 text-[12.5px] focus:outline-none focus:ring-1 focus:ring-ring"
+                    @change="onOrderStatusChange"
+                  >
+                    <option value="">All status</option>
+                    <option v-for="s in ORDER_STATUSES" :key="s" :value="s">{{ s.replace(/_/g, ' ') }}</option>
+                  </select>
+                </div>
+                <div v-if="orderHistoryLoading" class="flex flex-col gap-2">
+                  <div v-for="n in 5" :key="n" class="h-8 rounded bg-muted animate-pulse" />
+                </div>
+                <div v-else class="rounded-lg border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead class="w-12">#</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Source</TableHead>
+                        <TableHead>Payment Type</TableHead>
+                        <TableHead>Payment Method</TableHead>
+                        <TableHead class="text-right">Total</TableHead>
+                        <TableHead>Staff</TableHead>
+                        <TableHead>Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow v-for="o in orderHistory" :key="o.uuid">
+                        <TableCell class="font-mono text-[11.5px] text-muted-foreground">{{ o.id }}</TableCell>
+                        <TableCell>
+                          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold" :style="orderBadgeStyle(o.status)">
+                            {{ o.status.replace(/_/g, ' ') }}
+                          </span>
+                        </TableCell>
+                        <TableCell class="text-[12.5px]">{{ o.page_source }}</TableCell>
+                        <TableCell class="text-[12px] text-muted-foreground">{{ o.payment_type === 'PAID_UPFRONT' ? 'Paid upfront' : 'Pay on delivery' }}</TableCell>
+                        <TableCell class="text-[12px] text-muted-foreground">{{ o.payment_method ?? '—' }}</TableCell>
+                        <TableCell class="text-right font-medium text-[12.5px]">{{ money(o.total_amount) }}</TableCell>
+                        <TableCell class="text-[12px] text-muted-foreground">{{ o.staff_name }}</TableCell>
+                        <TableCell class="text-[11.5px] text-muted-foreground whitespace-nowrap">{{ fmtDate(o.created_at) }}</TableCell>
+                      </TableRow>
+                      <TableRow v-if="orderHistory.length === 0">
+                        <TableCell colspan="8" class="text-center text-muted-foreground py-8 text-sm">No orders found.</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+                <div v-if="orderHistoryMeta && orderHistoryMeta.total_pages > 1" class="flex justify-center mt-3">
+                  <Pagination :page="orderHistoryPage" :total-pages="orderHistoryMeta.total_pages" @change="onOrderHistoryPage" />
+                </div>
+              </div>
+
+              <!-- Delivery History -->
+              <div v-show="historyTab === 'deliveries'">
+                <div v-if="deliveryHistoryLoading" class="flex flex-col gap-2">
+                  <div v-for="n in 5" :key="n" class="h-8 rounded bg-muted animate-pulse" />
+                </div>
+                <div v-else class="rounded-lg border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead class="w-12">#</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Driver</TableHead>
+                        <TableHead>Partner</TableHead>
+                        <TableHead class="text-right">Cost</TableHead>
+                        <TableHead class="text-right">Commission</TableHead>
+                        <TableHead>Delivered</TableHead>
+                        <TableHead>Date</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow v-for="d in deliveryHistory" :key="d.uuid">
+                        <TableCell class="font-mono text-[11.5px] text-muted-foreground">{{ d.id }}</TableCell>
+                        <TableCell>
+                          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold" :style="deliveryBadgeStyle(d.status)">
+                            {{ d.status.replace(/_/g, ' ') }}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div class="text-[12.5px]">{{ d.driver_name ?? '—' }}</div>
+                          <div v-if="d.driver_phone" class="font-mono text-[11px] text-muted-foreground">{{ d.driver_phone }}</div>
+                        </TableCell>
+                        <TableCell class="text-[12.5px]">{{ PARTNER_LABELS[d.partner_type] ?? d.partner_type }}</TableCell>
+                        <TableCell class="text-right text-[12.5px]">{{ money(d.delivery_cost) }}</TableCell>
+                        <TableCell class="text-right text-[12.5px]">{{ money(d.commission_earned) }}</TableCell>
+                        <TableCell class="text-[11.5px] text-muted-foreground whitespace-nowrap">{{ d.delivered_at ? fmtDate(d.delivered_at) : '—' }}</TableCell>
+                        <TableCell class="text-[11.5px] text-muted-foreground whitespace-nowrap">{{ fmtDate(d.created_at) }}</TableCell>
+                      </TableRow>
+                      <TableRow v-if="deliveryHistory.length === 0">
+                        <TableCell colspan="8" class="text-center text-muted-foreground py-8 text-sm">No deliveries found.</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+                <div v-if="deliveryHistoryMeta && deliveryHistoryMeta.total_pages > 1" class="flex justify-center mt-3">
+                  <Pagination :page="deliveryHistoryPage" :total-pages="deliveryHistoryMeta.total_pages" @change="onDeliveryHistoryPage" />
+                </div>
+              </div>
+            </Tabs>
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
 
     <!-- Create / edit form sheet -->
     <Sheet :open="formOpen" @update:open="(v) => !v && (formOpen = false)">
@@ -110,18 +266,14 @@
           </div>
           <div class="p-5 flex flex-col gap-4 flex-1 overflow-y-auto">
             <div class="flex flex-col gap-1.5">
-              <Label>Name <span class="text-red-500">*</span></Label>
-              <Input v-model="fname" :error="ferrors.name" placeholder="John Doe" />
-              <p v-if="ferrors.name" class="text-[12px] text-red-500">{{ ferrors.name }}</p>
+              <Label>Facebook name <span class="text-red-500">*</span></Label>
+              <Input v-model="ffacebook" :error="ferrors.facebook_name" placeholder="john.doe" />
+              <p v-if="ferrors.facebook_name" class="text-[12px] text-red-500">{{ ferrors.facebook_name }}</p>
             </div>
             <div class="flex flex-col gap-1.5">
               <Label>Phone <span class="text-red-500">*</span></Label>
               <Input v-model="fphone" :error="ferrors.phone" placeholder="012345678" />
               <p v-if="ferrors.phone" class="text-[12px] text-red-500">{{ ferrors.phone }}</p>
-            </div>
-            <div class="flex flex-col gap-1.5">
-              <Label>Facebook name</Label>
-              <Input v-model="ffacebook" placeholder="john.doe" />
             </div>
             <div class="grid grid-cols-2 gap-3">
               <div class="flex flex-col gap-1.5">
@@ -172,18 +324,24 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useUIStore } from "@/stores/ui";
 import {
-  fetchCustomers, searchCustomers, createCustomer, updateCustomer, deleteCustomer,
+  fetchCustomer, fetchCustomers, searchCustomers, createCustomer, updateCustomer, deleteCustomer,
+  fetchCustomerOrders, fetchCustomerDeliveries,
 } from "@/api/customers";
 import type { CustomerResponse } from "@/api/customers";
+import type { OrderResponse, OrderStatus } from "@/api/orders";
+import type { DeliveryResponse } from "@/api/deliveries";
 import type { PageMeta } from "@/api/users";
-import { fmtDate } from "@/utils/format";
+import { fmtDate, money } from "@/utils/format";
 
 const ui = useUIStore();
 
+// ── List ──────────────────────────────────────────────────────
 const customers = ref<CustomerResponse[]>([]);
 const meta = ref<PageMeta | null>(null);
 const loading = ref(false);
@@ -232,8 +390,9 @@ function changePage(page: number) {
 
 onMounted(() => load(1));
 
-// ── Detail sheet ──────────────────────────────────────────────
+// ── Detail dialog ─────────────────────────────────────────────
 const selected = ref<CustomerResponse | null>(null);
+const statsLoading = ref(false);
 
 const detailRows = computed(() => {
   if (!selected.value) return [];
@@ -247,23 +406,147 @@ const detailRows = computed(() => {
   ];
 });
 
-function openDetail(c: CustomerResponse) { selected.value = c; }
+// ── History badges ────────────────────────────────────────────
+const ORDER_STATUS_STYLES: Record<string, string> = {
+  PENDING:            "background:hsl(var(--muted));color:hsl(var(--muted-foreground))",
+  CONFIRMED:          "background:#dbeafe;color:#1d4ed8",
+  DELIVERING:         "background:#fef9c3;color:#a16207",
+  DELIVERED:          "background:#dcfce7;color:#15803d",
+  CANCELLED:          "background:#fee2e2;color:#b91c1c",
+  RETURNED:           "background:#fff7ed;color:#c2410c",
+  PARTIALLY_RETURNED: "background:#ffedd5;color:#ea580c",
+  DELIVERY_FAILED:    "background:#fee2e2;color:#b91c1c",
+};
+
+const DELIVERY_STATUS_STYLES: Record<string, string> = {
+  PENDING:    "background:hsl(var(--muted));color:hsl(var(--muted-foreground))",
+  PICKING:    "background:#dbeafe;color:#1d4ed8",
+  DELIVERING: "background:#fef9c3;color:#a16207",
+  DELIVERED:  "background:#dcfce7;color:#15803d",
+  FAILED:     "background:#fee2e2;color:#b91c1c",
+  RETURNED:   "background:#fff7ed;color:#c2410c",
+};
+
+const PARTNER_LABELS: Record<string, string> = {
+  R_EXPRESS: "R-Express",
+  PERSONAL:  "Personal",
+  OTHER:     "Other",
+};
+
+const ORDER_STATUSES: OrderStatus[] = [
+  "PENDING", "CONFIRMED", "DELIVERING", "DELIVERED",
+  "CANCELLED", "RETURNED", "PARTIALLY_RETURNED",
+];
+
+function orderBadgeStyle(status: string) {
+  return ORDER_STATUS_STYLES[status] ?? ORDER_STATUS_STYLES.PENDING;
+}
+
+function deliveryBadgeStyle(status: string) {
+  return DELIVERY_STATUS_STYLES[status] ?? DELIVERY_STATUS_STYLES.PENDING;
+}
+
+// ── History state ─────────────────────────────────────────────
+const historyTab = ref("orders");
+
+const orderHistory = ref<OrderResponse[]>([]);
+const orderHistoryMeta = ref<PageMeta | null>(null);
+const orderHistoryLoading = ref(false);
+const orderHistoryPage = ref(1);
+const orderHistoryStatus = ref<OrderStatus | "">("");
+
+const deliveryHistory = ref<DeliveryResponse[]>([]);
+const deliveryHistoryMeta = ref<PageMeta | null>(null);
+const deliveryHistoryLoading = ref(false);
+const deliveryHistoryPage = ref(1);
+
+async function loadOrderHistory() {
+  if (!selected.value) return;
+  orderHistoryLoading.value = true;
+  try {
+    const res = await fetchCustomerOrders(
+      selected.value.uuid,
+      orderHistoryPage.value,
+      20,
+      orderHistoryStatus.value || undefined,
+    );
+    orderHistory.value = res.orders;
+    orderHistoryMeta.value = res.meta;
+  } catch (e: unknown) {
+    ui.showToast(e instanceof Error ? e.message : "Failed to load order history.", "danger");
+  } finally {
+    orderHistoryLoading.value = false;
+  }
+}
+
+async function loadDeliveryHistory() {
+  if (!selected.value) return;
+  deliveryHistoryLoading.value = true;
+  try {
+    const res = await fetchCustomerDeliveries(selected.value.uuid, deliveryHistoryPage.value, 20);
+    deliveryHistory.value = res.deliveries;
+    deliveryHistoryMeta.value = res.meta;
+  } catch (e: unknown) {
+    ui.showToast(e instanceof Error ? e.message : "Failed to load delivery history.", "danger");
+  } finally {
+    deliveryHistoryLoading.value = false;
+  }
+}
+
+function onHistoryTabChange(tab: string | number) {
+  if (tab === "orders" && orderHistory.value.length === 0 && !orderHistoryLoading.value) {
+    loadOrderHistory();
+  } else if (tab === "deliveries" && deliveryHistory.value.length === 0 && !deliveryHistoryLoading.value) {
+    loadDeliveryHistory();
+  }
+}
+
+function onOrderStatusChange() {
+  orderHistoryPage.value = 1;
+  loadOrderHistory();
+}
+
+function onOrderHistoryPage(p: number) {
+  orderHistoryPage.value = p;
+  loadOrderHistory();
+}
+
+function onDeliveryHistoryPage(p: number) {
+  deliveryHistoryPage.value = p;
+  loadDeliveryHistory();
+}
+
+function openDetail(c: CustomerResponse) {
+  selected.value = c;
+  historyTab.value = "orders";
+  orderHistory.value = [];
+  orderHistoryMeta.value = null;
+  orderHistoryPage.value = 1;
+  orderHistoryStatus.value = "";
+  deliveryHistory.value = [];
+  deliveryHistoryMeta.value = null;
+  deliveryHistoryPage.value = 1;
+  statsLoading.value = true;
+  fetchCustomer(c.uuid)
+    .then((detail) => { if (selected.value?.uuid === detail.uuid) selected.value = detail; })
+    .catch(() => {})
+    .finally(() => { statsLoading.value = false; });
+  loadOrderHistory();
+}
 
 // ── Create / edit form ────────────────────────────────────────
 const Schema = z.object({
-  name: z.string().min(1, "Name is required"),
   phone: z.string().min(1, "Phone is required"),
-  facebook_name: z.string().optional(),
+  facebook_name: z.string().min(1, "Facebook name is required"),
   province: z.string().optional(),
   address: z.string().optional(),
 });
 
 const { defineField, handleSubmit, errors: ferrors, resetForm, setValues } = useForm({
   validationSchema: toTypedSchema(Schema),
-  initialValues: { name: "", phone: "", facebook_name: "", province: "", address: "" },
+  initialValues: { phone: "", facebook_name: "", province: "", address: "" },
 });
 
-const [fname] = defineField("name");
 const [fphone] = defineField("phone");
 const [ffacebook] = defineField("facebook_name");
 const [fprovince] = defineField("province");
@@ -283,7 +566,7 @@ function openCreate() {
 
 function openEdit(c: CustomerResponse) {
   editTarget.value = c;
-  setValues({ name: c.name, phone: c.phone, facebook_name: c.facebook_name ?? "", province: c.province ?? "", address: c.address ?? "" });
+  setValues({ phone: c.phone, facebook_name: c.facebook_name ?? "", province: c.province ?? "", address: c.address ?? "" });
   formError.value = "";
   formOpen.value = true;
 }
@@ -293,9 +576,9 @@ const save = handleSubmit(async (values) => {
   formError.value = "";
   try {
     const payload = {
-      name: values.name,
+      name: values.facebook_name,
       phone: values.phone,
-      facebook_name: values.facebook_name || undefined,
+      facebook_name: values.facebook_name,
       province: values.province || undefined,
       address: values.address || undefined,
     };

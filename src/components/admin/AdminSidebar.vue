@@ -1,11 +1,18 @@
 <template>
-  <aside :class="mobile ? 'flex' : 'hidden md:flex'" class="flex-col w-[244px] shrink-0 border-r border-border bg-sidebar sticky top-0 h-screen">
+  <aside
+    :class="mobile ? 'flex' : 'hidden md:flex'"
+    class="flex-col w-61 shrink-0 border-r border-border bg-sidebar sticky top-0 h-screen"
+  >
     <!-- Logo -->
-    <div class="flex items-center gap-2.5 px-4 py-[18px]">
-      <div class="w-8 h-8 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold text-[15px] tracking-tight shrink-0">R</div>
+    <div class="flex items-center gap-2.5 px-4 py-4.5">
+      <div
+        class="w-8 h-8 rounded-lg bg-primary text-primary-foreground grid place-items-center font-bold text-[15px] tracking-tight shrink-0"
+      >
+        R
+      </div>
       <div class="leading-tight">
-        <div class="font-semibold text-[14px] whitespace-nowrap">R99 Studio</div>
-        <div class="text-muted-foreground text-[12px]">Commerce</div>
+        <div class="font-semibold text-sm whitespace-nowrap">R99 Studio</div>
+        <div class="text-muted-foreground text-xs">Commerce</div>
       </div>
     </div>
 
@@ -16,46 +23,88 @@
           <!-- Group toggle -->
           <button
             v-if="item.children"
-            class="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-[7px] text-[13.5px] font-medium text-muted-foreground hover:bg-accent/50 transition-colors"
-            :class="isGroupActive(item) ? 'text-foreground font-semibold bg-card shadow-sm' : ''"
+            class="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-1.75 text-[13.5px] font-medium text-muted-foreground hover:bg-accent/50 transition-colors"
+            :class="
+              isGroupActive(item)
+                ? 'text-foreground font-semibold bg-card shadow-sm'
+                : ''
+            "
             @click="toggleGroup(item.key)"
           >
-            <span class="w-[26px] h-[26px] rounded-[6px] grid place-items-center shrink-0 transition-colors"
-              :class="isGroupActive(item) ? 'bg-primary text-primary-foreground' : 'bg-transparent'">
+            <span
+              class="w-6.5 h-6.5 rounded-md grid place-items-center shrink-0 transition-colors"
+              :class="
+                isGroupActive(item)
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-transparent'
+              "
+            >
               <component :is="item.icon" :size="15" />
             </span>
-            <span class="flex-1 text-left" :class="isGroupActive(item) ? 'text-foreground' : ''">{{ item.label }}</span>
-            <ChevronDown :size="14" class="text-muted-foreground transition-transform duration-200"
-              :style="{ transform: openGroups[item.key] ? 'rotate(180deg)' : 'rotate(0)' }" />
+            <span
+              class="flex-1 text-left"
+              :class="isGroupActive(item) ? 'text-foreground' : ''"
+              >{{ item.label }}</span
+            >
+            <ChevronDown
+              :size="14"
+              class="text-muted-foreground transition-transform duration-200"
+              :style="{
+                transform: openGroups[item.key]
+                  ? 'rotate(180deg)'
+                  : 'rotate(0)',
+              }"
+            />
           </button>
 
           <!-- Leaf link -->
           <RouterLink
             v-else
             :to="navPath(item.key)"
-            class="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-[7px] text-[13.5px] font-medium text-muted-foreground hover:bg-accent/50 transition-colors no-underline"
-            :class="isActive(item.key) ? 'bg-card text-foreground font-semibold shadow-sm' : ''"
+            class="flex items-center gap-2.5 w-full px-2.5 py-2 rounded-1.75 text-[13.5px] font-medium text-muted-foreground hover:bg-accent/50 transition-colors no-underline"
+            :class="
+              isActive(item.key)
+                ? 'bg-card text-foreground font-semibold shadow-sm'
+                : ''
+            "
           >
-            <span class="w-[26px] h-[26px] rounded-[6px] grid place-items-center shrink-0 transition-colors"
-              :class="isActive(item.key) ? 'bg-primary text-primary-foreground' : ''">
+            <span
+              class="w-6.5 h-6.5 rounded-md grid place-items-center shrink-0 transition-colors"
+              :class="
+                isActive(item.key) ? 'bg-primary text-primary-foreground' : ''
+              "
+            >
               <component :is="item.icon" :size="15" />
             </span>
             <span class="flex-1">{{ item.label }}</span>
-            <span v-if="item.badge" class="inline-flex items-center rounded-md bg-secondary text-secondary-foreground px-1.5 py-0.5 text-[11px] font-semibold h-[19px]">{{ item.badge }}</span>
+            <span
+              v-if="item.badge"
+              class="inline-flex items-center rounded-md bg-secondary text-secondary-foreground px-1.5 py-0.5 text-[11px] font-semibold h-4.75"
+              >{{ item.badge }}</span
+            >
           </RouterLink>
 
           <!-- Children -->
           <Transition name="expand">
-            <div v-if="item.children && openGroups[item.key]" class="overflow-hidden">
+            <div
+              v-if="item.children && openGroups[item.key]"
+              class="overflow-hidden"
+            >
               <template v-for="child in item.children" :key="child.key">
                 <RouterLink
                   v-if="navPerms[child.key] !== false"
                   :to="navPath(child.key)"
-                  class="flex items-center gap-2.5 w-full pl-9 pr-2.5 py-[7px] rounded-[7px] text-[13px] font-medium text-muted-foreground hover:bg-accent/50 transition-colors no-underline"
-                  :class="isActive(child.key) ? 'text-foreground font-semibold' : ''"
+                  class="flex items-center gap-2.5 w-full pl-9 pr-2.5 py-1.75 rounded-1.75 text-[13px] font-medium text-muted-foreground hover:bg-accent/50 transition-colors no-underline"
+                  :class="
+                    isActive(child.key) ? 'text-foreground font-semibold' : ''
+                  "
                 >
-                  <span class="w-1.5 h-1.5 rounded-full shrink-0 ml-0.5 transition-colors"
-                    :class="isActive(child.key) ? 'bg-primary' : 'bg-muted-foreground'" />
+                  <span
+                    class="w-1.5 h-1.5 rounded-full shrink-0 ml-0.5 transition-colors"
+                    :class="
+                      isActive(child.key) ? 'bg-primary' : 'bg-muted-foreground'
+                    "
+                  />
                   {{ child.label }}
                 </RouterLink>
               </template>
@@ -70,10 +119,22 @@
       <div v-if="session.user" class="flex items-center gap-2 px-1.5 py-2">
         <UserAvatar :name="session.user.name" :size="30" />
         <div class="leading-tight flex-1 min-w-0">
-          <div class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">{{ session.user.name }}</div>
-          <div class="text-muted-foreground text-[11.5px]">{{ session.user.phone }}</div>
+          <div
+            class="text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis"
+          >
+            {{ session.user.name }}
+          </div>
+          <div class="text-muted-foreground text-[11.5px]">
+            {{ session.user.phone }}
+          </div>
         </div>
-        <Button variant="ghost" size="icon" class="h-8 w-8" title="Sign out" @click="handleLogout">
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-8 w-8"
+          title="Sign out"
+          @click="handleLogout"
+        >
           <LogOut :size="15" />
         </Button>
       </div>
@@ -82,131 +143,263 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import {
-  LayoutDashboard, ShoppingBag, Tag, Users, BarChart2, Package,
-  Shield, Clock, Settings, ChevronDown, LogOut, Banknote, Truck, Warehouse,
-} from '@lucide/vue'
-import { Button } from '@/components/ui/button'
-import { useSessionStore } from '@/stores/session'
-import { useDialog } from '@/composables/useDialog'
-import { ADMIN_ROUTES } from '@/router/admin-routes'
-import { ROLE_NAV_PERMISSIONS } from '@/data/permissions'
-import UserAvatar from './UserAvatar.vue'
+  LayoutDashboard,
+  ShoppingBag,
+  Tag,
+  Users,
+  BarChart2,
+  Package,
+  Shield,
+  Clock,
+  Settings,
+  ChevronDown,
+  LogOut,
+  Banknote,
+  Truck,
+  Warehouse,
+  Building2,
+  ShoppingCart,
+  Receipt,
+  Printer,
+} from "@lucide/vue";
+import { Button } from "@/components/ui/button";
+import { useSessionStore } from "@/stores/session";
+import { useDialog } from "@/composables/useDialog";
+import { ADMIN_ROUTES } from "@/router/admin-routes";
+import UserAvatar from "./UserAvatar.vue";
 
-defineProps<{ mobile?: boolean }>()
+defineProps<{ mobile?: boolean }>();
 
-const route = useRoute()
-const router = useRouter()
-const session = useSessionStore()
+const route = useRoute();
+const router = useRouter();
+const session = useSessionStore();
 
-const navPerms = computed(() => {
-  if (session.user?.customPerms) return session.user.customPerms
-  const role = (session.user?.role ?? '').toUpperCase()
-  const key = role === 'STAFF' ? 'Staff' : role === 'MANAGER' ? 'Manager' : role === 'VIEWER' ? 'Viewer' : 'Owner'
-  return ROLE_NAV_PERMISSIONS[key] ?? {}
-})
+const NAV_MODULE: Record<string, string> = {
+  printers:           'PRINT',
+  orders:             'ORDER',
+  discounts:          'DISCOUNT',
+  customers:          'CUSTOMER',
+  reports:            'REPORT',
+  products:           'PRODUCT',
+  models:             'PRODUCT_MODEL',
+  stock:              'STOCK',
+  'stock-movements':  'STOCK',
+  users:              'USER',
+  roles:              'ROLE',
+  permissions:        'PERMISSION',
+  'act-log':          'AUDIT_LOG',
+  settings:           'SETTING',
+  payroll:            'PAYROLL',
+  deliveries:         'DELIVERY',
+  drivers:            'DRIVER',
+  suppliers:          'SUPPLIER',
+  purchases:          'PURCHASE',
+  'expense-categories': 'EXPENSE_CATEGORY',
+  expenses:           'EXPENSE',
+};
 
-const NAV_GROUPS = [
-  { key: 'dashboard',   label: 'Dashboard',        icon: LayoutDashboard },
-  { key: 'orders',      label: 'Orders',           icon: ShoppingBag, badge: 3 },
-  { key: 'promotional', label: 'Promotional Deals',icon: Tag, children: [{ key: 'discounts', label: 'Discounts' }] },
-  { key: 'customers',   label: 'Customers',        icon: Users },
-  { key: 'report-mgmt', label: 'Report Management', icon: BarChart2, children: [
-    { key: 'reports', label: 'Reports' },
-  ]},
-  { key: 'product-mgmt', label: 'Product Management', icon: Package, children: [
-    { key: 'products', label: 'Products' },
-    { key: 'models', label: 'Models' },
-  ]},
-  { key: 'stock-mgmt', label: 'Stock Management', icon: Warehouse, children: [
-    { key: 'stock',           label: 'Stock' },
-    { key: 'stock-movements', label: 'Stock Movements' },
-  ]},
-  { key: 'team',        label: 'User Management',  icon: Shield, children: [
-    { key: 'users', label: 'Users' },
-    { key: 'roles', label: 'Roles' },
-    { key: 'permissions', label: 'Permissions' },
-  ]},
-  { key: 'act-log', label: 'Activity',  icon: Clock },
-  { key: 'delivery-mgmt', label: 'Delivery Management', icon: Truck, children: [
-    { key: 'deliveries', label: 'Deliveries' },
-    { key: 'drivers',    label: 'Drivers' },
-  ]},
-  { key: 'payroll',     label: 'Payroll',          icon: Banknote },
-  { key: 'settings',   label: 'Settings',         icon: Settings },
-]
+const navPerms = computed(() => ({
+  dashboard: true,
+  ...Object.fromEntries(
+    Object.entries(NAV_MODULE).map(([key, mod]) => [key, session.can(mod, 'read')])
+  ),
+}));
 
-const R = ADMIN_ROUTES
-const NAV_PATH_MAP: Record<string, string> = {
-  dashboard:   R.dashboard,
-  orders:      R.orders,
-  discounts:   R.discounts,
-  customers:   R.customers,
-  reports:     R.reports.list,
-  products:    R.products.list,
-  models:      R.models.list,
-  stock:            R.stock.list,
-  'stock-movements': R.stock.movements,
-  users:       R.users.list,
-  roles:       R.roles.list,
-  permissions: R.permissions,
-  'act-log':   R.auditLogs,
-  deliveries:  R.deliveries,
-  drivers:     R.drivers,
-  payroll:     R.payroll,
-  settings:    R.settings,
+interface NavChild {
+  key: string;
+  label: string;
+}
+interface NavItem {
+  key: string;
+  label: string;
+  icon: unknown;
+  badge?: string | number;
+  children?: NavChild[];
 }
 
-function navPath(key: string): string { return NAV_PATH_MAP[key] ?? '/admin' }
+const NAV_GROUPS: NavItem[] = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { key: "printers", label: "Printer Management", icon: Printer },
+  {
+    key: "order-mgmt",
+    label: "Order Management",
+    icon: ShoppingBag,
+    children: [{ key: "orders", label: "Orders" }],
+  },
+  {
+    key: "promotional",
+    label: "Promotional Deals",
+    icon: Tag,
+    children: [{ key: "discounts", label: "Discounts" }],
+  },
+  {
+    key: "customer-mgmt",
+    label: "Customer Management",
+    icon: Users,
+    children: [{ key: "customers", label: "Customers" }],
+  },
+  {
+    key: "report-mgmt",
+    label: "Report Management",
+    icon: BarChart2,
+    children: [{ key: "reports", label: "Reports" }],
+  },
+  {
+    key: "product-mgmt",
+    label: "Product Management",
+    icon: Package,
+    children: [
+      { key: "products", label: "Products" },
+      { key: "models", label: "Models" },
+    ],
+  },
+  {
+    key: "stock-mgmt",
+    label: "Stock Management",
+    icon: Warehouse,
+    children: [
+      { key: "stock", label: "Stock" },
+      { key: "stock-movements", label: "Stock Movements" },
+    ],
+  },
+  {
+    key: "team",
+    label: "User Management",
+    icon: Shield,
+    children: [
+      { key: "users", label: "Users" },
+      { key: "roles", label: "Roles" },
+      { key: "permissions", label: "Permissions" },
+    ],
+  },
+  {
+    key: "delivery-mgmt",
+    label: "Delivery Management",
+    icon: Truck,
+    children: [
+      { key: "deliveries", label: "Deliveries" },
+      { key: "drivers", label: "Drivers" },
+    ],
+  },
+  {
+    key: "supplier-mgmt",
+    label: "Supplier Management",
+    icon: Building2,
+    children: [{ key: "suppliers", label: "Suppliers" }],
+  },
+  {
+    key: "purchase-mgmt",
+    label: "Purchase Management",
+    icon: ShoppingCart,
+    children: [{ key: "purchases", label: "Purchases" }],
+  },
+  {
+    key: "expense-mgmt",
+    label: "Expense Management",
+    icon: Receipt,
+    children: [
+      { key: "expense-categories", label: "Categories" },
+      { key: "expenses", label: "Expenses" },
+    ],
+  },
+  { key: "payroll", label: "Payroll", icon: Banknote },
+  { key: "act-log", label: "Activity", icon: Clock },
+  { key: "settings", label: "Settings", icon: Settings },
+];
+
+const R = ADMIN_ROUTES;
+const NAV_PATH_MAP: Record<string, string> = {
+  dashboard: R.dashboard,
+  orders: R.orders.list,
+  discounts: R.discounts,
+  customers: R.customers.list,
+  reports: R.reports.list,
+  products: R.products.list,
+  models: R.models.list,
+  stock: R.stock.list,
+  "stock-movements": R.stock.movements,
+  users: R.users.list,
+  roles: R.roles.list,
+  permissions: R.permissions,
+  "act-log": R.auditLogs,
+  deliveries: R.deliveries,
+  drivers: R.drivers,
+  suppliers: R.suppliers.list,
+  purchases: R.purchases.list,
+  "expense-categories": R.expenses.categories,
+  expenses: R.expenses.list,
+  payroll: R.payroll,
+  printers: R.printers,
+  settings: R.settings,
+};
+
+function navPath(key: string): string {
+  return NAV_PATH_MAP[key] ?? "/admin";
+}
 
 function currentKey(): string {
-  const path = route.path
-  if (path === '/admin') return 'dashboard'
-  const entries = Object.entries(NAV_PATH_MAP).sort((a, b) => b[1].length - a[1].length)
-  for (const [key, p] of entries) { if (path.startsWith(p)) return key }
-  return 'dashboard'
+  const path = route.path;
+  if (path === "/admin") return "dashboard";
+  const entries = Object.entries(NAV_PATH_MAP).sort(
+    (a, b) => b[1].length - a[1].length,
+  );
+  for (const [key, p] of entries) {
+    if (path.startsWith(p)) return key;
+  }
+  return "dashboard";
 }
 
-function isActive(key: string) { return currentKey() === key }
-function isGroupActive(item: typeof NAV_GROUPS[0]) {
-  return !!(item.children?.some(c => isActive(c.key)))
+function isActive(key: string) {
+  return currentKey() === key;
 }
-function canSee(item: typeof NAV_GROUPS[0]) {
+function isGroupActive(item: (typeof NAV_GROUPS)[0]) {
+  return !!item.children?.some((c) => isActive(c.key));
+}
+function canSee(item: (typeof NAV_GROUPS)[0]) {
   return item.children
-    ? item.children.some(c => navPerms.value[c.key] !== false)
-    : navPerms.value[item.key] !== false
+    ? item.children.some((c) => navPerms.value[c.key] !== false)
+    : navPerms.value[item.key] !== false;
 }
 
-const openGroups = ref<Record<string, boolean>>({})
+const openGroups = ref<Record<string, boolean>>({});
 function autoOpen() {
-  const key = currentKey()
+  const key = currentKey();
   for (const g of NAV_GROUPS) {
-    if (g.children?.some(c => c.key === key)) openGroups.value[g.key] = true
+    if (g.children?.some((c) => c.key === key)) openGroups.value[g.key] = true;
   }
 }
-autoOpen()
-watch(() => route.path, autoOpen)
-function toggleGroup(key: string) { openGroups.value[key] = !openGroups.value[key] }
+autoOpen();
+watch(() => route.path, autoOpen);
+function toggleGroup(key: string) {
+  openGroups.value[key] = !openGroups.value[key];
+}
 
-const { open: openDialog } = useDialog()
+const { open: openDialog } = useDialog();
 
 function handleLogout() {
   openDialog({
-    type: 'warning',
-    title: 'Sign out',
-    message: 'Are you sure you want to sign out?',
-    confirmLabel: 'Sign out',
+    type: "warning",
+    title: "Sign out",
+    message: "Are you sure you want to sign out?",
+    confirmLabel: "Sign out",
     onConfirm: async () => {
-      session.logout()
-      await router.push(ADMIN_ROUTES.login)
+      session.logout();
+      await router.push(ADMIN_ROUTES.login);
     },
-  })
+  });
 }
 </script>
 
 <style scoped>
-.expand-enter-active, .expand-leave-active { transition: opacity 0.15s ease; }
-.expand-enter-from, .expand-leave-to { opacity: 0; }
+.expand-enter-active,
+.expand-leave-active {
+  transition: opacity 0.15s ease;
+}
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+}
 </style>

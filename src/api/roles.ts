@@ -47,7 +47,7 @@ export function fetchRole(uuid: string): Promise<RoleDetailResponse> {
 export function updateRolePermissions(uuid: string, permissionUuids: string[]): Promise<RoleDetailResponse> {
   return apiFetch<RoleDetailResponse>(ROUTES.roles.updatePermissions(uuid), {
     method: "PATCH",
-    data: { permissionUuids },
+    data: { permission_uuids: permissionUuids },
   });
 }
 

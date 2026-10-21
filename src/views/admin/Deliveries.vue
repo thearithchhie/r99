@@ -47,7 +47,11 @@
                 <TableCell><DeliveryStatusBadge :status="d.status" /></TableCell>
                 <TableCell class="text-muted-foreground text-[12.5px]">{{ fmtDate(d.created_at) }}</TableCell>
                 <TableCell class="text-right" @click.stop>
-                  <Button variant="outline" size="sm" class="h-7 text-[12px]" @click="openStatusUpdate(d)">
+                  <Button
+                    variant="outline" size="sm" class="h-7 text-[12px]"
+                    :disabled="(DELIVERY_TRANSITIONS[d.status] ?? []).length === 0"
+                    @click="openStatusUpdate(d)"
+                  >
                     Update status
                   </Button>
                 </TableCell>
@@ -177,23 +181,32 @@
               <span class="text-muted-foreground">Current:</span>
               <DeliveryStatusBadge :status="statusTarget.status" />
             </div>
-            <div class="flex flex-col gap-1.5">
-              <Label>New status <span class="text-red-500">*</span></Label>
-              <select v-model="newStatus" class="h-9 rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
-                <option v-for="s in DELIVERY_STATUSES" :key="s" :value="s">{{ s.replace(/_/g,' ') }}</option>
-              </select>
+
+            <!-- Final status — no further updates -->
+            <div v-if="isFinal" class="rounded-lg border border-border bg-muted/40 px-4 py-3 text-[13px] text-muted-foreground text-center">
+              Final status — no further updates allowed.
             </div>
-            <div class="flex flex-col gap-1.5">
-              <Label>Note</Label>
-              <Input v-model="statusNote" placeholder="Delivered successfully" />
-            </div>
-            <div v-if="statusError" class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
-              <AlertTriangle :size="14" class="shrink-0" />{{ statusError }}
-            </div>
-            <Button class="w-full" :disabled="statusUpdating" @click="doStatusUpdate">
-              <Loader2 v-if="statusUpdating" :size="14" class="animate-spin" />
-              {{ statusUpdating ? "Saving…" : "Save" }}
-            </Button>
+
+            <!-- Allowed transitions -->
+            <template v-else>
+              <div class="flex flex-col gap-1.5">
+                <Label>New status <span class="text-red-500">*</span></Label>
+                <select v-model="newStatus" class="h-9 rounded-md border border-input bg-background px-3 text-[13px] focus:outline-none focus:ring-1 focus:ring-ring">
+                  <option v-for="s in allowedStatuses" :key="s" :value="s">{{ s.replace(/_/g, ' ') }}</option>
+                </select>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <Label>Note</Label>
+                <Input v-model="statusNote" placeholder="Delivered successfully" />
+              </div>
+              <div v-if="statusError" class="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-[13px] text-red-600">
+                <AlertTriangle :size="14" class="shrink-0" />{{ statusError }}
+              </div>
+              <Button class="w-full" :disabled="statusUpdating" @click="doStatusUpdate">
+                <Loader2 v-if="statusUpdating" :size="14" class="animate-spin" />
+                {{ statusUpdating ? "Saving…" : "Save" }}
+              </Button>
+            </template>
           </div>
         </div>
       </SheetContent>
@@ -222,7 +235,14 @@ import type { DriverResponse } from "@/api/drivers";
 import type { PageMeta } from "@/api/users";
 import { money, fmtDate } from "@/utils/format";
 
-const DELIVERY_STATUSES: DeliveryStatus[] = ["PENDING", "PICKING", "DELIVERING", "DELIVERED", "FAILED", "RETURNED"];
+const DELIVERY_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]> = {
+  PENDING:    ["PICKING", "FAILED"],
+  PICKING:    ["DELIVERING", "FAILED"],
+  DELIVERING: ["DELIVERED", "FAILED"],
+  FAILED:     ["RETURNED", "PICKING"],
+  DELIVERED:  [],
+  RETURNED:   [],
+};
 
 const DELIVERY_STATUS_STYLES: Record<string, string> = {
   PENDING:    "background:var(--amber-bg);color:var(--amber)",
@@ -362,9 +382,13 @@ const statusNote = ref("");
 const statusError = ref("");
 const statusUpdating = ref(false);
 
+const allowedStatuses = computed(() => DELIVERY_TRANSITIONS[statusTarget.value?.status ?? "PENDING"] ?? []);
+const isFinal = computed(() => allowedStatuses.value.length === 0);
+
 function openStatusUpdate(d: DeliveryResponse) {
   statusTarget.value = d;
-  newStatus.value = d.status;
+  const allowed = DELIVERY_TRANSITIONS[d.status] ?? [];
+  newStatus.value = allowed[0] ?? d.status;
   statusNote.value = "";
   statusError.value = "";
 }

@@ -2,7 +2,7 @@ import { apiFetch } from "./http";
 import { ROUTES } from "./routes";
 import type { PageMeta } from "./users";
 
-export type OrderStatus = "PENDING" | "CONFIRMED" | "DELIVERING" | "DELIVERED" | "CANCELLED" | "RETURNED" | "PARTIALLY_RETURNED";
+export type OrderStatus = "PENDING" | "CONFIRMED" | "DELIVERING" | "DELIVERED" | "CANCELLED" | "RETURNED" | "PARTIALLY_RETURNED" | "DELIVERY_FAILED";
 export type ReturnReason = "CUSTOMER_CHANGE" | "SIZE_CHANGE" | "STORE_ERROR" | "CUSTOMER_RETURN";
 export type PageSource = "R99" | "R99_I";
 export type PaymentType = "PAID_UPFRONT" | "PAY_ON_DELIVERY";
@@ -42,6 +42,8 @@ export interface OrderResponse {
   subtotal: number;
   delivery_fee: number;
   total_amount: number;
+  delivery_address: string | null;
+  delivery_province: string | null;
   note: string | null;
   items: OrderItem[];
   created_at: string;
@@ -60,6 +62,8 @@ export interface CreateOrderRequest {
   payment_type: PaymentType;
   payment_method?: PaymentMethod;
   is_promotion: boolean;
+  delivery_address?: string;
+  delivery_province?: string;
   note?: string;
   items: { product_uuid: string; quantity: number }[];
 }

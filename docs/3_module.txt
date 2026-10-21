@@ -1,0 +1,397 @@
+s style `- PO-20260822-0001 — date-based, resets daily`                 mpl.java)
+Wrote 114 lines to src/main/java/com/r99/r99_shop_api/module/expense/service/ExpenseServiceImpl.java
+package com.r99.r99_shop_api.module.expense.service;
+import com.r99.r99_shop_api.common.exception.AppException;
+import com.r99.r99_shop_api.common.response.PagedResponse;
+ateRequest;
+import com.r99.r99_shop_api.module.expense.dto.request.ExpenseUpd
+import com.r99.r99_shop_api.module.expense.dto.response.ExpenseRe
+sponse;
+import com.r99.r99_shop_api.module.expense.entity.ExpenseCategory
+;
+Status;
+… +125 lines
+
+⏺ Write(src/main/java/com/r99/r99_shop_api/module/expense/controller/ExpenseCategoryController.java)
+Wrote 61 lines to src/main/java/com/r99/r99_shop_api/module/expense/controller/ExpenseCategoryController.java
+package com.r99.r99_shop_api.module.expense.controller;
+import com.r99.r99_shop_api.common.response.ApiResponse;
+import com.r99.r99_shop_api.common.response.PagedResponse;
+import com.r99.r99_shop_api.common.util.PageableUtil;
+egoryCreateRequest;
+import com.r99.r99_shop_api.module.expense.dto.request.ExpenseCat
+import com.r99.r99_shop_api.module.expense.dto.response.ExpenseCa
+tegoryResponse;
+import com.r99.r99_shop_api.module.expense.service.ExpenseCategor
+import jakarta.validation.Valid;
+… +64 lines
+
+⏺ Write(src/main/java/com/r99/r99_shop_api/module/expense/controller/ExpenseController.java)
+Wrote 70 lines to src/main/java/com/r99/r99_shop_api/module/expense/controller/ExpenseController.java
+package com.r99.r99_shop_api.module.expense.controller;
+import com.r99.r99_shop_api.common.response.ApiResponse;
+import com.r99.r99_shop_api.common.response.PagedResponse;
+import com.r99.r99_shop_api.common.util.PageableUtil;
+ateRequest;
+import com.r99.r99_shop_api.module.expense.dto.request.ExpenseUpd
+import com.r99.r99_shop_api.module.expense.dto.response.ExpenseRe
+sponse;
+import com.r99.r99_shop_api.module.expense.entity.PaymentMethod;
+;
+… +73 lines
+
+Now let me check that ProductRepository has the findByUuidAndDeletedAtIsNull method we're calling from PurchaseServiceImpl:
+
+  Searched for 1 pattern
+
+Good. Now let me do a quick build check to verify everything compiles:
+
+  Ran 1 shell command
+
+Clean compile — zero errors. Let me now verify the structure of everything
+created:
+
+  Searched for 1 pattern
+
+All 43 files created, ze complete summary:
+
+---
+What was implemented
+
+Migrations
+
+┌──────┬───────────────────────────────────────────────────────────┐
+│ File │                              │
+├──────┼───────────────────────────────────────────────────────────┤
+│ V27  │ suppliers table active names │
+├──────┼───────────────────────────────────────────────────────────┤
+│ V28  │ purchase_orderss             │
+├──────┼───────────────────────────────────────────────────────────┤
+│ V29  │ expense_categor              │
+└──────┴───────────────────────────────────────────────────────────┘
+
+Supplier Module
+
+- CRUD: POST/GET/GET{uuid}/PUT/DELETE /api/v1/suppliers
+- List supports search (on) + status filter
+- GET /api/v1/suppliers/{uuid}/purchases — purchase history for a supplier
+- Blocks duplicate activ
+
+Purchase Module
+
+- POST /api/v1/purchasestotals server-side)
+- PUT /api/v1/purchases/{uuid} — edit (DRAFT only)
+- POST /api/v1/purchasesERED
+- POST /api/v1/purchases/{uuid}/receive — partial/full receiving with
+pessimistic lock, auto-sED, increasesstock_levels, creates stock_movements with reason=PURCHASE
+- POST /api/v1/purchasesD/PARTIALLY_RECEIVED only(already-received stock stays)
+- Order number format: P
+
+Expense Module
+
+- POST/GET/GET{uuid}/PUTories
+- POST/GET/GET{uuid}/PUT/DELETE /api/v1/expenses
+- List expenses supportsate_from, date_to, search
+- Payment methods: CASH, BANK_TRANSFER, CARD, OTHER
+- Validates category is se
+
+✻ Sautéed for 7m 30s
+
+❯ plz give me as a full prorntend intergreation
+
+## Backend Integration:  Management & ExpenseManagement
+
+Three new modules are now available in the backend. All responses follow the
+standard wrapper:
+{
+  "success": true,
+  "message": "Success",
+  "data": { ... }
+}
+
+All request and response fields use snake_case.
+
+---
+
+## 1. SUPPLIER MANAGEMENT
+
+### Endpoints
+
+GET    /api/v1/suppliers                  — list suppliers
+GET    /api/v1/suppliersdetail
+POST   /api/v1/suppliers                  — create supplier
+PUT    /api/v1/supplierspplier
+DELETE /api/v1/suppliers/{uuid}           — soft delete supplier
+GET    /api/v1/suppliershistory for a supplier
+
+### List Query Params
+?page=0&size=20&search=&status=ACTIVE
+
+search → searches across name, phone, email, contact_person
+status → ACTIVE | INACTI
+
+### Create / Update Requ
+{
+  "name": "ABC Wholesale 150
+  "phone": "012345678",              // optional, max 30
+  "email": "abc@supplierid email
+  "address": "Phnom Penh",           // optional
+  "contact_person": "Mr. 150
+}
+
+PUT also accepts:
+{
+  "status": "INACTIVE"               // to deactivate a supplier
+}
+
+### Supplier Response
+{
+  "id": 1,
+  "uuid": "...",
+  "name": "ABC Wholesale
+  "phone": "012345678",
+  "email": "abc@supplier
+  "address": "Phnom Penh",
+  "contact_person": "Mr.
+  "status": "ACTIVE",
+  "created_at": "...",
+  "updated_at": "..."
+}
+
+### Supplier Status
+ACTIVE   → supplier is available for purchase orders
+INACTIVE → supplier is dd for new purchases
+
+### UI Notes
+- Name must be unique among active suppliers (backend will return 400 if
+duplicate)
+- Show status as a badge/chip (green = ACTIVE, grey = INACTIVE)
+- Supplier purchase histhat supplier's purchaseorders
+
+---
+
+## 2. PURCHASE MANAGEMENT
+
+### Endpoints
+
+GET  /api/v1/purchases                    — list all purchases
+GET  /api/v1/purchases/{detail with items
+POST /api/v1/purchases                    — create purchase (status = DRAFT)
+PUT  /api/v1/purchases/{rchase (DRAFT only)
+POST /api/v1/purchases/{uuid}/confirm     — confirm purchase (DRAFT → ORDERED),
+no body
+POST /api/v1/purchases/{uuid}/receive     — receive items (partial or full)
+POST /api/v1/purchases/{rchase, no body
+
+### List Query Params
+?page=0&size=20&status=DRAFT
+
+status → DRAFT | ORDERED | PARTIALLY_RECEIVED | RECEIVED | CANCELLED (omit for
+all)
+
+### Create Purchase Requ
+{
+  "supplier_uuid": "uuid
+  "items": [
+    {
+      "product_uuid": "uuid",
+      "quantity": 100,
+      "cost_price": 5.00,
+      "discount_amount": 0
+    }
+  ],
+  "discount_amount": 10.00,      // optional, order-level discount
+  "tax_amount": 0,
+  "shipping_cost": 5.00,         // optional
+  "note": "August stock"
+}
+
+Backend calculates all totals — never trust frontend totals.
+
+### Receive Items Request (POST /api/v1/purchases/{uuid}/receive)
+{
+  "items": [
+    {
+      "purchase_item_uuid": "uuid",
+      "received_quantity
+    }
+  ],
+  "note": "First delivery"        // optional
+}
+
+Partial receiving is supltiple times until allitems are fully received.
+Backend will reject if r ordered quantity.
+
+### Purchase Response
+{
+  "id": 1,
+  "uuid": "...",
+  "order_number": "PO-20
+  "status": "DRAFT",
+  "supplier_uuid": "..."
+  "supplier_name": "ABC Wholesale",
+  "subtotal": 500.00,
+  "discount_amount": 10.00,
+  "tax_amount": 0.00,
+  "shipping_cost": 5.00,
+  "total_amount": 495.00
+  "items": [
+    {
+      "uuid": "...",
+      "product_uuid": ".
+      "product_name": "Nike Air Max Black M",
+      "product_code": "P
+      "quantity": 100,
+      "received_quantity
+      "remaining_quantity": 100,
+      "cost_price": 5.00
+      "discount_amount": 0.00,
+      "subtotal": 500.00
+    }
+  ],
+  "note": "August stock",
+  "ordered_at": null,
+  "created_at": "...",
+  "updated_at": "..."
+}
+
+### Purchase Status Flow
+DRAFT → ORDERED → PARTIA
+                                     ↘ (all received)
+
+DRAFT              → can edit, confirm, cancel
+ORDERED            → can
+PARTIALLY_RECEIVED → can receive more, cancel (received stock stays in
+inventory)
+RECEIVED           → read-only, cannot cancel
+CANCELLED          → rea
+
+### Inventory Behavior
+- DRAFT / ORDERED     → no stock change
+- Receiving items     → uantity per item
+- Cancellation        → no stock reversal (already received stock stays)
+
+### UI Notes
+- On purchase list, show + status + total_amount + created_at
+- On purchase detail, sh/ received_quantity /remaining_quantity columns
+- "Confirm" button visib
+- "Receive" button visible only when status = ORDERED or PARTIALLY_RECEIVED
+- "Cancel" button visiblD, or PARTIALLY_RECEIVED
+- When receiving, show a form per item with a quantity input (max =
+remaining_quantity)
+- Show a progress indicator per item: received 60/100
+
+---
+
+## 3. EXPENSE MANAGEMENT
+
+### Expense Category Endpoints
+
+GET    /api/v1/expense-categories           — list categories (paginated)
+GET    /api/v1/expense-cy detail
+POST   /api/v1/expense-categories           — create category
+PUT    /api/v1/expense-ccategory
+DELETE /api/v1/expense-categories/{uuid}    — soft delete category
+
+### Expense Category Request
+{
+  "name": "Electricity",       // required, max 100, must be unique
+  "description": "..."
+}
+
+PUT also accepts:
+{
+  "status": "INACTIVE"
+}
+
+### Expense Category Res
+{
+  "id": 1,
+  "uuid": "...",
+  "name": "Electricity",
+  "description": "...",
+  "status": "ACTIVE",
+  "created_at": "...",
+  "updated_at": "..."
+}
+
+---
+
+### Expense Endpoints
+
+GET    /api/v1/expenses           — list expenses (with filters)
+GET    /api/v1/expenses/
+POST   /api/v1/expenses           — create expense
+PUT    /api/v1/expenses/
+DELETE /api/v1/expenses/{uuid}    — soft delete expense
+
+### List Query Params
+?page=0&size=20&categoryate_from=2026-08-01&date_to=2026-08-31&search=
+
+category       → filter by expense category uuid
+payment_method → CASH |
+date_from      → ISO date (2026-08-01)
+date_to        → ISO dat
+search         → searches description and reference_number
+
+### Create Expense Request
+{
+  "category_uuid": "uuid",         // required — must be ACTIVE category
+  "amount": 500.00,     be > 0
+  "description": "August rent",    // optional
+  "expense_date": "2026-ate
+  "payment_method": "BANK_TRANSFER", // optional: CASH | BANK_TRANSFER | CARD |
+OTHER
+  "reference_number": "TXN-0012"  // optional
+}
+
+### Expense Response
+{
+  "id": 1,
+  "uuid": "...",
+  "category_uuid": "..."
+  "category_name": "Rent",
+  "amount": 500.00,
+  "description": "August rent",
+  "expense_date": "2026-
+  "payment_method": "BANK_TRANSFER",
+  "reference_number": "T
+  "created_at": "...",
+  "updated_at": "..."
+}
+
+### UI Notes
+- Category dropdown shounse-categories and filterto status = ACTIVE only
+- Date range filter shouom / date_to)
+- payment_method is optional — show as dropdown with a "None" option
+- Expenses are financialno hard delete
+- Show a summary total (sum of amount) filtered by the current date range if
+possible
+
+---
+
+## Common Error Response
+
+{
+  "success": false,
+  "message": "Supplier n
+  "data": null
+}
+
+HTTP 400 → validation ern
+HTTP 404 → not found (wrapped in the same format)
+
+---
+
+## Suggested UI Structure
+
+Sidebar:
+├── Suppliers
+│   ├── Supplier List
+│   └── (click supplier
+├── Purchases
+│   ├── Purchase List (f
+│   └── Purchase Detail (with items + receive action)
+└── Expenses
+    ├── Expense Categories
+    └── Expense List (fiment method)

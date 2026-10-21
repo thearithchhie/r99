@@ -2,6 +2,7 @@ export const ROUTES = {
   auth: {
     login: "/api/v1/auth/login",
     register: "/api/v1/auth/register",
+    currentUser: "/api/v1/auth/current-user",
   },
   users: {
     me: "/api/v1/users/me",
@@ -51,6 +52,8 @@ export const ROUTES = {
     detail: (uuid: string) => `/api/v1/customers/${uuid}`,
     update: (uuid: string) => `/api/v1/customers/${uuid}`,
     delete: (uuid: string) => `/api/v1/customers/${uuid}`,
+    orders: (uuid: string) => `/api/v1/customers/${uuid}/orders`,
+    deliveries: (uuid: string) => `/api/v1/customers/${uuid}/deliveries`,
   },
   drivers: {
     list: "/api/v1/drivers",
@@ -76,5 +79,36 @@ export const ROUTES = {
     generate: "/api/v1/payrolls/generate",
     detail: (uuid: string) => `/api/v1/payrolls/${uuid}`,
     markPaid: (uuid: string) => `/api/v1/payrolls/${uuid}/paid`,
+  },
+  suppliers: {
+    list: "/api/v1/suppliers",
+    create: "/api/v1/suppliers",
+    detail: (uuid: string) => `/api/v1/suppliers/${uuid}`,
+    update: (uuid: string) => `/api/v1/suppliers/${uuid}`,
+    delete: (uuid: string) => `/api/v1/suppliers/${uuid}`,
+    purchases: (uuid: string) => `/api/v1/suppliers/${uuid}/purchases`,
+  },
+  purchases: {
+    list: "/api/v1/purchases",
+    create: "/api/v1/purchases",
+    detail: (uuid: string) => `/api/v1/purchases/${uuid}`,
+    confirm: (uuid: string) => `/api/v1/purchases/${uuid}/confirm`,
+    receive: (uuid: string) => `/api/v1/purchases/${uuid}/receive`,
+    cancel: (uuid: string) => `/api/v1/purchases/${uuid}/cancel`,
+    arrivals: (uuid: string) => `/api/v1/purchases/${uuid}/arrivals`,
+  },
+  expenseCategories: {
+    list: "/api/v1/expense-categories",
+    create: "/api/v1/expense-categories",
+    detail: (uuid: string) => `/api/v1/expense-categories/${uuid}`,
+    update: (uuid: string) => `/api/v1/expense-categories/${uuid}`,
+    delete: (uuid: string) => `/api/v1/expense-categories/${uuid}`,
+  },
+  expenses: {
+    list: "/api/v1/expenses",
+    create: "/api/v1/expenses",
+    detail: (uuid: string) => `/api/v1/expenses/${uuid}`,
+    update: (uuid: string) => `/api/v1/expenses/${uuid}`,
+    delete: (uuid: string) => `/api/v1/expenses/${uuid}`,
   },
 } as const;

@@ -7,9 +7,13 @@ export const ADMIN_ROUTES = {
   login: "/admin/login",
   dashboard: "/admin",
 
-  orders: "/admin/orders",
+  orders: {
+    list: "/admin/orders",
+  },
   discounts: "/admin/discounts",
-  customers: "/admin/customers",
+  customers: {
+    list: "/admin/customers",
+  },
   reports: {
     list: "/admin/reports",
   },
@@ -45,4 +49,17 @@ export const ADMIN_ROUTES = {
   drivers: "/admin/drivers",
   payroll: "/admin/payroll",
   settings: "/admin/settings",
+
+  suppliers: {
+    list: "/admin/suppliers",
+  },
+  purchases: {
+    list: "/admin/purchases",
+    detail: (uuid: string) => `/admin/purchases/${uuid}`,
+  },
+  expenses: {
+    categories: "/admin/expense-categories",
+    list: "/admin/expenses",
+  },
+  printers: "/admin/printers",
 } as const;

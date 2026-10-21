@@ -1,6 +1,8 @@
 <template>
   <AdminLayout>
-    <div class="fade p-5 flex flex-col gap-4">
+    <ComingSoon feature="Promotional Deals" />
+
+    <div v-if="false" class="fade p-5 flex flex-col gap-4">
       <div class="kpi-grid grid grid-cols-3 gap-4">
         <Card v-for="k in kpiCards" :key="k.label">
           <CardContent class="pt-5">
@@ -105,6 +107,7 @@
 import { ref, computed, reactive } from 'vue'
 import { Plus, Copy, Pencil, Trash2, X } from '@lucide/vue'
 import AdminLayout from '@/components/admin/AdminLayout.vue'
+import ComingSoon from '@/components/admin/ComingSoon.vue'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

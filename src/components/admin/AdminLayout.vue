@@ -30,16 +30,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import { useRoute } from "vue-router";
 import AdminSidebar from "./AdminSidebar.vue";
 import AdminTopbar from "./AdminTopbar.vue";
 import AppDialog from "./AppDialog.vue";
 import { useUIStore } from "@/stores/ui";
+import { usePrintSocket } from "@/composables/usePrintSocket";
 
 const ui = useUIStore();
 const search = ref("");
 defineExpose({ search });
 
-watch(useRoute(), () => { ui.closeSidebar() })
+watch(useRoute(), () => { ui.closeSidebar() });
+
+const { connect, disconnect } = usePrintSocket();
+
+// Only connect WebSocket on the Mac where the print service is actually running.
+// localhost:3001 is only reachable on that specific machine, so phones and
+// non-print-station devices never open a WebSocket connection.
+onMounted(async () => {
+  try {
+    await fetch("http://localhost:3001/", { signal: AbortSignal.timeout(500) });
+    connect();
+  } catch {
+    // not a Mac print station — skip WebSocket
+  }
+});
+onUnmounted(disconnect);
 </script>

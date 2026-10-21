@@ -126,95 +126,26 @@
           >
             Preview
           </div>
-          <div class="inv-card khmer">
-            <!-- Page header row -->
-            <div class="inv-hrow">
-              <img :src="urlFb" width="18" height="18" />
-              <span>ឈ្មោះផេកៈ {{ form.pageName || "R99" }}</span>
-            </div>
-            <!-- Sender phone rows -->
-            <div class="inv-sender-label">
-              <img :src="urlPhone" width="18" height="18" />
-              <span>លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ លុយ</span>
-            </div>
-            <div class="inv-sender-phone">097 71 56 486</div>
-
-            <!-- Customer name -->
-            <div class="inv-sec-hdr">
-              <img :src="urlUser" width="18" height="18" />
-              <span>ឈ្មោះអតិថិជន</span>
-            </div>
-            <div class="inv-val">{{ form.recipientName || "-" }}</div>
-
-            <!-- Phone -->
-            <div class="inv-sec-hdr">
-              <img :src="urlPhone" width="18" height="18" />
-              <span>លេខទូរស័ព្ទអ្នកទទួល</span>
-            </div>
-            <template v-if="form.phones.length === 0">
-              <div class="inv-val inv-val-phone">-</div>
-            </template>
-            <div
-              v-for="(p, i) in form.phones"
-              :key="i"
-              class="inv-val inv-val-phone"
-            >
-              {{ p || "-" }}
-            </div>
-
-            <!-- Location -->
-            <div class="inv-sec-hdr">
-              <img :src="urlPin" width="18" height="18" />
-              <span>ទីតាំង</span>
-            </div>
-            <template v-if="form.locations.length === 0">
-              <div class="inv-val inv-val-loc">-</div>
-            </template>
-            <div
-              v-for="(l, i) in form.locations"
-              :key="i"
-              class="inv-val inv-val-loc"
-            >
-              {{ l || "-" }}
-            </div>
-
-            <!-- Delivery row -->
-            <div class="inv-drow">
-              <span class="inv-drow-left">
-                <img :src="urlTruck" width="16" height="16" />
-                <span>សេវាដឹក</span>
-              </span>
-              <span class="inv-drow-amt"
-                >តម្លៃ: {{ form.currency }}{{ form.totalPrice || "0" }}</span
-              >
-            </div>
-
-            <!-- Chips -->
-            <div class="inv-chips">
-              <div class="inv-chip">
-                <div class="inv-chk">{{ form.guestService ? "✓" : "" }}</div>
-                <span class="khmer">សេវា<br />ខាងភ្ញៀវ</span>
-              </div>
-              <div class="inv-chip">
-                <div class="inv-chk">{{ form.virak ? "✓" : "" }}</div>
-                <span>VAT</span>
-              </div>
-              <div class="inv-chip">
-                <div class="inv-chk">{{ form.jt ? "✓" : "" }}</div>
-                <span>J&amp;T</span>
-              </div>
-            </div>
-
-            <div class="inv-footer">សូមអរគុណសម្រាប់ការគាំទ្រ</div>
-          </div>
+          <InvCard
+            :page-name="form.pageName || 'R99'"
+            :recipient-name="form.recipientName"
+            :phones="form.phones"
+            :locations="form.locations"
+            :guest-service="form.guestService"
+            :virak="form.virak"
+            :jt="form.jt"
+            :currency="form.currency"
+            :total-price="form.totalPrice"
+          />
         </div>
       </div>
 
       <div class="flex justify-end gap-2 px-6 py-4 border-t">
         <Button variant="outline" @click="$emit('close')">Cancel</Button>
-        <Button @click="doPrint"
-          ><Printer :size="14" class="mr-1.5" />Print</Button
-        >
+        <Button variant="outline" @click="sendToMac">
+          <Monitor :size="14" class="mr-1.5" />Print on Mac
+        </Button>
+        <Button @click="doPrint"><Printer :size="14" class="mr-1.5" />Print here</Button>
       </div>
     </DialogContent>
   </Dialog>
@@ -222,18 +153,12 @@
 
 <script setup lang="ts">
 import { reactive, watch } from "vue";
-import { PRINT_STYLES } from "@/utils/printStyles";
-import IC_FB from "@/assets/icon/svg/fb.svg?raw";
-import IC_PHONE from "@/assets/icon/svg/phone.svg?raw";
-import IC_PIN from "@/assets/icon/svg/pin.svg?raw";
-import IC_TRUCK from "@/assets/icon/svg/truck.svg?raw";
-import IC_USER from "@/assets/icon/svg/user.svg?raw";
-import urlFb from "@/assets/icon/svg/fb.svg";
-import urlPhone from "@/assets/icon/svg/phone.svg";
-import urlPin from "@/assets/icon/svg/pin.svg";
-import urlTruck from "@/assets/icon/svg/truck.svg";
-import urlUser from "@/assets/icon/svg/user.svg";
-import { X, Printer } from "@lucide/vue";
+import { printHtml, getPrintStyles } from "@/utils/printStyles";
+import { type InvoiceJob } from "@/utils/printJobUrl";
+import { buildInvoiceCard } from "@/utils/printBuilders";
+import { sendPrintJob } from "@/composables/usePrintSocket";
+import { Monitor, X, Printer } from "@lucide/vue";
+import InvCard from "./InvCard.vue";
 import {
   Dialog,
   DialogContent,
@@ -261,6 +186,26 @@ const form = reactive({
   totalPrice: "",
 });
 
+function buildCurrentJob(): InvoiceJob {
+  const phones = form.phones.filter(Boolean);
+  const locations = form.locations.filter(Boolean);
+  return {
+    type: "invoice",
+    pageName: form.pageName || "R99",
+    recipientName: form.recipientName || "-",
+    phones: phones.length ? phones : ["-"],
+    locations: locations.length ? locations : ["-"],
+    guestService: form.guestService,
+    virak: form.virak,
+    jt: form.jt,
+    currency: form.currency,
+    totalPrice: form.totalPrice || "0",
+  };
+}
+
+// Pre-warm font cache when dialog opens
+watch(() => props.open, (open) => { if (open) getPrintStyles(); });
+
 watch(
   () => props.order,
   async (order) => {
@@ -281,7 +226,9 @@ watch(
       if (customer) {
         form.locations = customer.address ? [customer.address] : [""];
       }
-    } catch { /* silent — user can fill manually */ }
+    } catch {
+      /* silent — user can fill manually */
+    }
   },
   { immediate: true },
 );
@@ -299,181 +246,16 @@ function removeLocation(i: number) {
   form.locations.splice(i, 1);
 }
 
-type PrintData = {
-  pageName: string;
-  recipientName: string;
-  phones: string[];
-  locations: string[];
-  guestService: boolean;
-  virak: boolean;
-  jt: boolean;
-  currency: string;
-  totalPrice: string;
-};
-
-function doPrint() {
-  const phones = form.phones.filter(Boolean);
-  const locations = form.locations.filter(Boolean);
-  printWithIframe(
-    buildPrintHTML({
-      pageName: form.pageName || "R99",
-      recipientName: form.recipientName || "-",
-      phones: phones.length ? phones : ["-"],
-      locations: locations.length ? locations : ["-"],
-      guestService: form.guestService,
-      virak: form.virak,
-      jt: form.jt,
-      currency: form.currency,
-      totalPrice: form.totalPrice || "0",
-    }),
-  );
-}
-
-function printWithIframe(html: string) {
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText =
-    "position:fixed;left:-9999px;top:-9999px;width:58mm;height:102mm;border:0";
-  document.body.appendChild(iframe);
-
-  const win = iframe.contentWindow;
-  const doc = iframe.contentDocument;
-  if (!win || !doc) return;
-
-  doc.write(html.replace(/<script[\s\S]*?<\/script>/gi, ""));
-  doc.close();
-
-  doc.fonts.ready.then(() => {
-    win.print();
-    win.addEventListener("afterprint", () => iframe.remove(), { once: true });
-    setTimeout(() => iframe.remove(), 30000);
+async function doPrint() {
+  const job = buildCurrentJob();
+  await printHtml((styles) => {
+    const body = document.createElement("body");
+    body.appendChild(buildInvoiceCard(job));
+    return `<!DOCTYPE html><html lang="km"><head><meta charset="UTF-8"><title>Invoice</title><style>${styles}</style></head>${body.outerHTML}</html>`;
   });
 }
 
-// ─── DOM builder helpers ──────────────────────────────────────────────────────
-
-function el(tag: string, className?: string): HTMLElement {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  return node;
-}
-
-function text(tag: string, content: string, className?: string): HTMLElement {
-  const node = el(tag, className);
-  node.textContent = content;
-  return node;
-}
-
-function svgIcon(raw: string): Element {
-  const div = document.createElement("div");
-  div.innerHTML = raw;
-  const svg = div.firstElementChild!;
-  svg.setAttribute("width", "9pt");
-  svg.setAttribute("height", "9pt");
-  svg.setAttribute("fill", "currentColor");
-  svg.setAttribute("class", "icon");
-  return svg;
-}
-
-function iconRow(
-  className: string,
-  icon: Element,
-  content: string,
-): HTMLElement {
-  const div = el("div", className);
-  div.append(icon, document.createTextNode(content));
-  return div;
-}
-
-// ─── Invoice section builders ─────────────────────────────────────────────────
-
-function buildSectionHeader(title: string, icon: Element): HTMLElement {
-  const hdr = el("div", "sec-hdr");
-  hdr.append(icon, text("span", title));
-  return hdr;
-}
-
-function buildValueRows(values: string[], modifier?: string): DocumentFragment {
-  const frag = document.createDocumentFragment();
-  values.forEach((v) => {
-    frag.appendChild(
-      text("div", v, modifier ? `sec-val ${modifier}` : "sec-val"),
-    );
-  });
-  return frag;
-}
-
-function buildDeliveryRow(currency: string, totalPrice: string): HTMLElement {
-  const row = el("div", "drow");
-  const left = el("span", "drow-left");
-  left.append(svgIcon(IC_TRUCK), document.createTextNode(" សេវាដឹក"));
-  row.append(left, text("span", `តម្លៃ: ${currency}${totalPrice}`, "drow-amt"));
-  return row;
-}
-
-function buildChip(
-  label: string,
-  checked: boolean,
-  khmer = false,
-): HTMLElement {
-  const chip = el("div", "chip");
-  const chk = el("div", "chk");
-  if (checked) chk.textContent = "✓";
-
-  const span = el("span", khmer ? "klabel" : undefined);
-  const lines = label.split("\n");
-  lines.forEach((line, i) => {
-    if (i > 0) span.appendChild(document.createElement("br"));
-    span.appendChild(document.createTextNode(line));
-  });
-
-  chip.append(chk, span);
-  return chip;
-}
-
-function buildChips(d: PrintData): HTMLElement {
-  const chips = el("div", "chips");
-  chips.append(
-    buildChip("សេវា\nខាងភ្ញៀវ", d.guestService, true),
-    buildChip("VAT", d.virak),
-    buildChip("J&T", d.jt),
-  );
-  return chips;
-}
-
-function buildInvoiceCard(d: PrintData): HTMLElement {
-  const card = el("div", "card");
-  card.append(
-    iconRow("hrow", svgIcon(IC_FB), `ឈ្មោះផេកៈ ${d.pageName}`),
-    iconRow("sender-label", svgIcon(IC_PHONE), "លេខទូរស័ព្ទអ្នកផ្ញើរ ឬ វេរលុយ"),
-    text("div", "097 71 56 486", "sender-phone"),
-    buildSectionHeader("ឈ្មោះអតិថិជន", svgIcon(IC_USER)),
-    text("div", d.recipientName, "sec-val"),
-    buildSectionHeader("លេខទូរស័ព្ទអ្នកទទួល", svgIcon(IC_PHONE)),
-    buildValueRows(d.phones, "phone"),
-    buildSectionHeader("ទីតាំង", svgIcon(IC_PIN)),
-    buildValueRows(d.locations, "loc"),
-    buildDeliveryRow(d.currency, d.totalPrice),
-    buildChips(d),
-  );
-  card.appendChild(text("div", "សូមអរគុណសម្រាប់ការគាំទ្រ", "footer"));
-  return card;
-}
-
-// ─── Print document assembly ──────────────────────────────────────────────────
-
-function buildPrintHTML(d: PrintData): string {
-  const body = document.createElement("body");
-  body.appendChild(buildInvoiceCard(d));
-  return `<!DOCTYPE html>
-<html lang="km">
-<head>
-<meta charset="UTF-8">
-<title>Invoice</title>
-<style>${PRINT_STYLES}</style>
-</head>
-${body.outerHTML}
-</html>`;
+function sendToMac() {
+  sendPrintJob(buildCurrentJob());
 }
 </script>
-
-<style src="@/styles/print-invoice-dialog.css"></style>

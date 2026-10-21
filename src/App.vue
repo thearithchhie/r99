@@ -17,11 +17,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { Info, CheckCircle2, AlertTriangle, AlertCircle } from '@lucide/vue'
 import { useUIStore } from '@/stores/ui'
+import { syncCurrentUser } from '@/composables/useAuth'
 
 const ui = useUIStore()
+
+onMounted(() => { syncCurrentUser() })
 
 const TYPE_CONFIG = {
   info: {

@@ -5,6 +5,9 @@ import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   plugins: [tailwindcss(), vue()],
+  define: {
+    global: "globalThis",
+  },
   server: {
     allowedHosts: true,
     watch: {
@@ -14,6 +17,11 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+      },
+      '/ws': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        ws: true,
       },
       '/sheets-proxy': {
         target: 'https://docs.google.com',
