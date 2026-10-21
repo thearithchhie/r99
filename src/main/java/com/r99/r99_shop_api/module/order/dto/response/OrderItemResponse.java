@@ -6,11 +6,15 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Getter
 @Builder
-@JsonPropertyOrder({"product_id", "product_code", "product_name", "quantity", "unit_price", "unit_cost", "subtotal"})
+@JsonPropertyOrder({"product_uuid", "product_id", "product_code", "product_name", "quantity", "unit_price", "unit_cost", "subtotal"})
 public class OrderItemResponse {
+
+    @JsonProperty("product_uuid")
+    private UUID productUuid;
 
     @JsonProperty("product_id")
     private Long productId;

@@ -14,7 +14,7 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    boolean existsByCode(String code);
+    boolean existsByCodeAndVariantIdAndDeletedAtIsNull(String code, Long variantId);
 
     @EntityGraph(attributePaths = {"category", "line", "variant", "variant.model", "stockLevel"})
     Page<Product> findAllByDeletedAtIsNull(Pageable pageable);

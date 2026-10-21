@@ -13,9 +13,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/expense-categories")
@@ -25,6 +27,7 @@ public class ExpenseCategoryController {
     private final ExpenseCategoryService expenseCategoryService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE_CATEGORY + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<ExpenseCategoryResponse>>> list(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -33,11 +36,13 @@ public class ExpenseCategoryController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE_CATEGORY + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<ExpenseCategoryResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(expenseCategoryService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE_CATEGORY + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<ExpenseCategoryResponse>> create(
             @Valid @RequestBody ExpenseCategoryCreateRequest request
     ) {
@@ -46,6 +51,7 @@ public class ExpenseCategoryController {
     }
 
     @PutMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE_CATEGORY + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<ExpenseCategoryResponse>> update(
             @PathVariable UUID uuid,
             @Valid @RequestBody ExpenseCategoryUpdateRequest request
@@ -54,6 +60,7 @@ public class ExpenseCategoryController {
     }
 
     @DeleteMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE_CATEGORY + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         expenseCategoryService.delete(uuid);
         return ResponseEntity.noContent().build();

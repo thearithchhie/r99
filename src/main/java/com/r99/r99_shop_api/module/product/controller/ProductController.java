@@ -14,10 +14,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -27,6 +29,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<ProductResponse>>> list(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -35,19 +38,24 @@ public class ProductController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<List<ProductSearchResponse>>> search(
             @RequestParam(defaultValue = "") String q,
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(ApiResponse.success(productService.search(q, size)));
+        List<ProductSearchResponse> results = productService.search(q, size);
+        String message = results.isEmpty() ? "No products found" : "Success";
+        return ResponseEntity.ok(ApiResponse.success(results, message));
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<ProductResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(productService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<ProductResponse>> create(
             @Valid @RequestBody ProductCreateRequest request
     ) {
@@ -56,6 +64,7 @@ public class ProductController {
     }
 
     @PatchMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<ProductResponse>> update(
             @PathVariable UUID uuid,
             @Valid @RequestBody ProductUpdateRequest request
@@ -64,6 +73,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         productService.deleteOne(uuid);
         return ResponseEntity.noContent().build();

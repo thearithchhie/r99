@@ -13,7 +13,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/stock")
@@ -23,6 +25,7 @@ public class StockController {
     private final StockService stockService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.STOCK + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<StockLevelResponse>>> listLevels(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -31,6 +34,7 @@ public class StockController {
     }
 
     @GetMapping("/movements")
+    @PreAuthorize("@perm.can('" + Perm.Module.STOCK + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<StockMovementResponse>>> listMovements(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -39,6 +43,7 @@ public class StockController {
     }
 
     @PostMapping("/movements")
+    @PreAuthorize("@perm.can('" + Perm.Module.STOCK + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<StockMovementResponse>> addMovement(
             @Valid @RequestBody StockMovementRequest request
     ) {

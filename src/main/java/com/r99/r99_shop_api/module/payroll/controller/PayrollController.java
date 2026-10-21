@@ -10,9 +10,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/payrolls")
@@ -22,6 +24,7 @@ public class PayrollController {
     private final PayrollService payrollService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PAYROLL + "', '" + Perm.Action.READ + "')")
     public ApiResponse<PagedResponse<PayrollResponse>> list(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -29,17 +32,20 @@ public class PayrollController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PAYROLL + "', '" + Perm.Action.READ + "')")
     public ApiResponse<PayrollResponse> get(@PathVariable UUID uuid) {
         return ApiResponse.success(payrollService.findOne(uuid));
     }
 
     @PostMapping("/generate")
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("@perm.can('" + Perm.Module.PAYROLL + "', '" + Perm.Action.CREATE + "')")
     public ApiResponse<PayrollResponse> generate(@Valid @RequestBody PayrollCreateRequest request) {
         return ApiResponse.success(payrollService.generate(request));
     }
 
     @PatchMapping("/{uuid}/paid")
+    @PreAuthorize("@perm.can('" + Perm.Module.PAYROLL + "', '" + Perm.Action.UPDATE + "')")
     public ApiResponse<PayrollResponse> markPaid(@PathVariable UUID uuid) {
         return ApiResponse.success(payrollService.markPaid(uuid));
     }

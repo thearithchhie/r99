@@ -14,8 +14,13 @@ import com.r99.r99_shop_api.module.delivery.repository.DeliveryRepository;
 import com.r99.r99_shop_api.module.driver.entity.Driver;
 import com.r99.r99_shop_api.module.driver.repository.DriverRepository;
 import com.r99.r99_shop_api.module.order.entity.Order;
+import com.r99.r99_shop_api.module.order.entity.OrderItem;
 import com.r99.r99_shop_api.module.order.entity.OrderStatus;
 import com.r99.r99_shop_api.module.order.repository.OrderRepository;
+import com.r99.r99_shop_api.module.stock.entity.StockLevel;
+import com.r99.r99_shop_api.module.stock.entity.StockMovement;
+import com.r99.r99_shop_api.module.stock.repository.StockLevelRepository;
+import com.r99.r99_shop_api.module.stock.repository.StockMovementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +37,8 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final OrderRepository orderRepository;
     private final DriverRepository driverRepository;
     private final DeliveryCommissionRepository deliveryCommissionRepository;
+    private final StockLevelRepository stockLevelRepository;
+    private final StockMovementRepository stockMovementRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -84,6 +91,9 @@ public class DeliveryServiceImpl implements DeliveryService {
                 .note(request.getNote())
                 .build();
 
+        order.setStatus(OrderStatus.DELIVERING);
+        orderRepository.save(order);
+
         return toResponse(deliveryRepository.save(delivery));
     }
 
@@ -93,18 +103,61 @@ public class DeliveryServiceImpl implements DeliveryService {
         Delivery delivery = deliveryRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new AppException("Delivery not found"));
 
+        DeliveryStatus currentStatus = delivery.getStatus();
         DeliveryStatus newStatus = request.getStatus();
+
+        validateTransition(currentStatus, newStatus);
+
         delivery.setStatus(newStatus);
         if (request.getNote() != null) delivery.setNote(request.getNote());
 
+        Order order = delivery.getOrder();
+
         if (newStatus == DeliveryStatus.DELIVERED) {
             delivery.setDeliveredAt(Instant.now());
-            delivery.getOrder().setStatus(OrderStatus.DELIVERED);
-            orderRepository.save(delivery.getOrder());
+            order.setStatus(OrderStatus.DELIVERED);
+            orderRepository.save(order);
             createDriverCommission(delivery);
+        } else if (newStatus == DeliveryStatus.FAILED) {
+            restoreStockForOrder(order);
+            order.setStatus(OrderStatus.DELIVERY_FAILED);
+            orderRepository.save(order);
+        } else if (newStatus == DeliveryStatus.RETURNED) {
+            restoreStockForOrder(order);
+            order.setStatus(OrderStatus.RETURNED);
+            orderRepository.save(order);
         }
 
         return toResponse(deliveryRepository.save(delivery));
+    }
+
+    private void validateTransition(DeliveryStatus current, DeliveryStatus next) {
+        boolean valid = switch (current) {
+            case PENDING    -> next == DeliveryStatus.PICKING   || next == DeliveryStatus.FAILED;
+            case PICKING    -> next == DeliveryStatus.DELIVERING || next == DeliveryStatus.FAILED;
+            case DELIVERING -> next == DeliveryStatus.DELIVERED  || next == DeliveryStatus.FAILED;
+            case FAILED     -> next == DeliveryStatus.RETURNED   || next == DeliveryStatus.PICKING;
+            case DELIVERED, RETURNED -> false;
+        };
+        if (!valid) {
+            throw new AppException("Cannot transition delivery from " + current + " to " + next);
+        }
+    }
+
+    private void restoreStockForOrder(Order order) {
+        for (OrderItem item : order.getItems()) {
+            StockLevel level = stockLevelRepository.findByProductId(item.getProduct().getId())
+                    .orElseThrow(() -> new AppException("Stock level not found for product: " + item.getProduct().getCode()));
+            level.setQuantity(level.getQuantity() + item.getQuantity());
+            stockLevelRepository.save(level);
+
+            stockMovementRepository.save(StockMovement.builder()
+                    .product(item.getProduct())
+                    .delta(item.getQuantity())
+                    .reason("delivery_returned")
+                    .referenceId(order.getUuid().toString())
+                    .build());
+        }
     }
 
     private void createDriverCommission(Delivery delivery) {

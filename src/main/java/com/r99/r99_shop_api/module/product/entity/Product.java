@@ -26,7 +26,7 @@ public class Product extends AuditBase {
     @Column(nullable = false, unique = true)
     private UUID uuid = UUID.randomUUID();
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 50)
     private String code;
 
     @Column(nullable = false)

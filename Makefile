@@ -1,5 +1,5 @@
 start:
-	./mvnw spring-boot:run
+	./mvnw clean spring-boot:run
 
 # Docker
 minio-up:

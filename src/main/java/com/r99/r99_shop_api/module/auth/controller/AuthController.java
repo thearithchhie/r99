@@ -2,13 +2,16 @@ package com.r99.r99_shop_api.module.auth.controller;
 
 import com.r99.r99_shop_api.common.response.ApiResponse;
 import com.r99.r99_shop_api.module.auth.dto.AuthResponse;
+import com.r99.r99_shop_api.module.auth.dto.CurrentUserResponse;
 import com.r99.r99_shop_api.module.auth.dto.LoginRequest;
 import com.r99.r99_shop_api.module.auth.dto.RegisterRequest;
 import com.r99.r99_shop_api.module.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -25,5 +28,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(ApiResponse.success(authService.login(request)));
+    }
+
+    @GetMapping("/current-user")
+    public ResponseEntity<ApiResponse<CurrentUserResponse>> currentUser(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(authService.currentUser(authentication.getName())));
     }
 }

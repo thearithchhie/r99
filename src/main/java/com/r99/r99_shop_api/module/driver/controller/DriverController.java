@@ -12,9 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/drivers")
@@ -24,6 +26,7 @@ public class DriverController {
     private final DriverService driverService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.DRIVER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<DriverResponse>>> list(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -32,11 +35,13 @@ public class DriverController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.DRIVER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<DriverResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(driverService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.DRIVER + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<DriverResponse>> create(
             @Valid @RequestBody DriverCreateRequest request
     ) {
@@ -45,6 +50,7 @@ public class DriverController {
     }
 
     @DeleteMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.DRIVER + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         driverService.delete(uuid);
         return ResponseEntity.noContent().build();

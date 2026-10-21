@@ -15,10 +15,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/expenses")
@@ -28,6 +30,7 @@ public class ExpenseController {
     private final ExpenseService expenseService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<ExpenseResponse>>> list(
             @RequestParam(required = false) UUID category,
             @RequestParam(required = false) PaymentMethod payment_method,
@@ -42,11 +45,13 @@ public class ExpenseController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(expenseService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> create(
             @Valid @RequestBody ExpenseCreateRequest request
     ) {
@@ -56,6 +61,7 @@ public class ExpenseController {
 
     @PutMapping("/{uuid}")
     @PatchMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<ExpenseResponse>> update(
             @PathVariable UUID uuid,
             @Valid @RequestBody ExpenseUpdateRequest request
@@ -64,6 +70,7 @@ public class ExpenseController {
     }
 
     @DeleteMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.EXPENSE + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         expenseService.delete(uuid);
         return ResponseEntity.noContent().build();

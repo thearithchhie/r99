@@ -11,10 +11,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/product-models")
@@ -24,16 +26,19 @@ public class ProductModelController {
     private final ProductModelService modelService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_MODEL + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<List<ProductModelResponse>>> list() {
         return ResponseEntity.ok(ApiResponse.success(modelService.findAll()));
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_MODEL + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<ProductModelDetailResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(modelService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_MODEL + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<ProductModelResponse>> create(
             @Valid @RequestBody ProductModelCreateRequest request
     ) {
@@ -42,6 +47,7 @@ public class ProductModelController {
     }
 
     @GetMapping("/{modelId}/variants")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_MODEL + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<List<ModelVariantResponse>>> listVariants(
             @PathVariable Long modelId
     ) {
@@ -49,6 +55,7 @@ public class ProductModelController {
     }
 
     @PostMapping("/{modelId}/variants")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_MODEL + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<ModelVariantResponse>> createVariant(
             @PathVariable Long modelId,
             @Valid @RequestBody ModelVariantCreateRequest request

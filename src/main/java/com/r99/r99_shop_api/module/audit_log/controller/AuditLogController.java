@@ -12,7 +12,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/audit-logs")
@@ -22,6 +24,7 @@ public class AuditLogController {
     private final AuditLogService auditLogService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.AUDIT_LOG + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<AuditLogResponse>>> list(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -29,6 +32,7 @@ public class AuditLogController {
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.AUDIT_LOG + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<Void>> create(@Valid @RequestBody AuditLogCreateRequest request) {
         auditLogService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(null));

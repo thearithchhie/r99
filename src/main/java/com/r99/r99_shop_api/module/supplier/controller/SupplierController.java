@@ -18,9 +18,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/suppliers")
@@ -31,6 +33,7 @@ public class SupplierController {
     private final PurchaseService purchaseService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.SUPPLIER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<SupplierResponse>>> list(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) SupplierStatus status,
@@ -41,11 +44,13 @@ public class SupplierController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.SUPPLIER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<SupplierResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(supplierService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.SUPPLIER + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<SupplierResponse>> create(
             @Valid @RequestBody SupplierCreateRequest request
     ) {
@@ -54,6 +59,7 @@ public class SupplierController {
     }
 
     @PutMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.SUPPLIER + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<SupplierResponse>> update(
             @PathVariable UUID uuid,
             @Valid @RequestBody SupplierUpdateRequest request
@@ -62,12 +68,14 @@ public class SupplierController {
     }
 
     @DeleteMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.SUPPLIER + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         supplierService.delete(uuid);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{uuid}/purchases")
+    @PreAuthorize("@perm.can('" + Perm.Module.SUPPLIER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<PurchaseResponse>>> purchases(
             @PathVariable UUID uuid,
             @RequestParam(defaultValue = "0") int page,

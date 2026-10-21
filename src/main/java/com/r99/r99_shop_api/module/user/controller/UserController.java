@@ -15,9 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -32,6 +34,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.USER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<UserResponse>>> list(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -39,16 +42,19 @@ public class UserController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.USER + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<UserResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(userService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.USER + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<UserResponse>> create(@Valid @RequestBody UserCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(userService.create(request)));
     }
 
     @PatchMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.USER + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<UserResponse>> update(
             @PathVariable UUID uuid,
             @Valid @RequestBody UserUpdateRequest request
@@ -57,6 +63,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.USER + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(@PathVariable UUID uuid) {
         userService.deleteOne(uuid);
         return ResponseEntity.noContent().build();

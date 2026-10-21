@@ -24,6 +24,9 @@ import com.r99.r99_shop_api.module.product.entity.Product;
 import com.r99.r99_shop_api.module.product.repository.ProductRepository;
 import com.r99.r99_shop_api.module.stock.entity.StockLevel;
 import com.r99.r99_shop_api.module.stock.entity.StockMovement;
+import com.r99.r99_shop_api.module.delivery.entity.Delivery;
+import com.r99.r99_shop_api.module.delivery.entity.DeliveryStatus;
+import com.r99.r99_shop_api.module.delivery.repository.DeliveryRepository;
 import com.r99.r99_shop_api.module.stock.repository.StockLevelRepository;
 import com.r99.r99_shop_api.module.stock.repository.StockMovementRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +58,7 @@ public class OrderServiceImpl implements OrderService {
     private final StockLevelRepository                                        stockLevelRepository;
     private final StockMovementRepository                                     stockMovementRepository;
     private final StaffCommissionRepository                                   staffCommissionRepository;
+    private final DeliveryRepository                                          deliveryRepository;
     private final com.r99.r99_shop_api.module.auth.repository.UserRepository userRepository;
 
     @Override
@@ -157,6 +161,14 @@ public class OrderServiceImpl implements OrderService {
             restoreStock(order);
         }
 
+        if (newStatus == OrderStatus.RETURNED) {
+            deliveryRepository.findByOrderId(order.getId())
+                    .ifPresent(delivery -> {
+                        delivery.setStatus(DeliveryStatus.RETURNED);
+                        deliveryRepository.save(delivery);
+                    });
+        }
+
         return toResponse(orderRepository.save(order));
     }
 
@@ -165,6 +177,10 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse partialReturn(UUID uuid, OrderPartialReturnRequest request) {
         Order order = orderRepository.findByUuidAndDeletedAtIsNull(uuid)
                 .orElseThrow(() -> new AppException("Order not found"));
+
+        if (order.getStatus() != OrderStatus.DELIVERED && order.getStatus() != OrderStatus.PARTIALLY_RETURNED) {
+            throw new AppException("Partial return is only allowed for orders with status DELIVERED or PARTIALLY_RETURNED");
+        }
 
         Map<UUID, OrderItem> itemsByProductUuid = order.getItems().stream()
                 .collect(java.util.stream.Collectors.toMap(
@@ -288,6 +304,7 @@ public class OrderServiceImpl implements OrderService {
 
     private OrderResponse toResponse(Order o) {
         List<OrderItemResponse> items = o.getItems().stream().map(i -> OrderItemResponse.builder()
+                .productUuid(i.getProduct().getUuid())
                 .productId(i.getProduct().getId())
                 .productCode(i.getProduct().getCode())
                 .productName(i.getProduct().getName())

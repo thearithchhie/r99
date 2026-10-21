@@ -8,9 +8,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/product-categories")
@@ -20,11 +22,13 @@ public class ProductCategoryController {
     private final ProductCategoryService categoryService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_CATEGORY + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<List<ProductCategoryResponse>>> list() {
         return ResponseEntity.ok(ApiResponse.success(categoryService.findAll()));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT_CATEGORY + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<ProductCategoryResponse>> create(
             @Valid @RequestBody ProductCategoryCreateRequest request
     ) {

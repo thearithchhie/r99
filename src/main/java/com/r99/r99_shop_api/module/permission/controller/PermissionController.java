@@ -12,9 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/permissions")
@@ -24,6 +26,7 @@ public class PermissionController {
     private final PermissionService permissionService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PERMISSION + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<PermissionResponse>>> list(
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
     ) {
@@ -31,11 +34,13 @@ public class PermissionController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PERMISSION + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PermissionResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(permissionService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PERMISSION + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<PermissionResponse>> create(@Valid @RequestBody PermissionCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(permissionService.create(request)));
     }

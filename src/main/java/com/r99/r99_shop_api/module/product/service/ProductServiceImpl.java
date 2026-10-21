@@ -65,8 +65,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse create(ProductCreateRequest request) {
-        if (productRepository.existsByCode(request.getCode())) {
-            throw new AppException("Product code already exists");
+        if (productRepository.existsByCodeAndVariantIdAndDeletedAtIsNull(request.getCode(), request.getVariantId())) {
+            throw new AppException("Product code already exists for this variant");
         }
 
         ModelVariant variant = variantRepository.findById(request.getVariantId())

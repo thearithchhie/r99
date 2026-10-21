@@ -17,9 +17,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/purchases")
@@ -29,6 +31,7 @@ public class PurchaseController {
     private final PurchaseService purchaseService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PagedResponse<PurchaseResponse>>> list(
             @RequestParam(required = false) PurchaseStatus status,
             @PageableDefault(size = PageableUtil.DEFAULT_PAGE_SIZE) Pageable pageable
@@ -38,11 +41,13 @@ public class PurchaseController {
     }
 
     @GetMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> findOne(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(purchaseService.findOne(uuid)));
     }
 
     @PostMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> create(
             @Valid @RequestBody PurchaseCreateRequest request
     ) {
@@ -51,6 +56,7 @@ public class PurchaseController {
     }
 
     @PutMapping("/{uuid}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> update(
             @PathVariable UUID uuid,
             @Valid @RequestBody PurchaseCreateRequest request
@@ -59,11 +65,13 @@ public class PurchaseController {
     }
 
     @PostMapping("/{uuid}/confirm")
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> confirm(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(purchaseService.confirm(uuid)));
     }
 
     @PostMapping("/{uuid}/receive")
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> receive(
             @PathVariable UUID uuid,
             @Valid @RequestBody PurchaseReceiveRequest request
@@ -72,11 +80,13 @@ public class PurchaseController {
     }
 
     @PostMapping("/{uuid}/cancel")
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.UPDATE + "')")
     public ResponseEntity<ApiResponse<PurchaseResponse>> cancel(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(purchaseService.cancel(uuid)));
     }
 
     @GetMapping("/{uuid}/arrivals")
+    @PreAuthorize("@perm.can('" + Perm.Module.PURCHASE + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<List<PurchaseArrivalResponse>>> arrivals(@PathVariable UUID uuid) {
         return ResponseEntity.ok(ApiResponse.success(purchaseService.arrivals(uuid)));
     }

@@ -8,11 +8,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
+import com.r99.r99_shop_api.common.security.Perm;
 
 @RestController
 @RequestMapping("/api/v1/products/{uuid}/images")
@@ -22,6 +24,7 @@ public class ProductImageController {
     private final ProductImageService productImageService;
 
     @GetMapping
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.READ + "')")
     public ResponseEntity<ApiResponse<ProductWithImagesResponse>> list(
             @PathVariable UUID uuid
     ) {
@@ -29,6 +32,7 @@ public class ProductImageController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.CREATE + "')")
     public ResponseEntity<ApiResponse<List<ProductImageResponse>>> upload(
             @PathVariable UUID uuid,
             @RequestPart("files") List<MultipartFile> files
@@ -38,6 +42,7 @@ public class ProductImageController {
     }
 
     @DeleteMapping("/{imageId}")
+    @PreAuthorize("@perm.can('" + Perm.Module.PRODUCT + "', '" + Perm.Action.DELETE + "')")
     public ResponseEntity<Void> delete(
             @PathVariable UUID uuid,
             @PathVariable Long imageId
