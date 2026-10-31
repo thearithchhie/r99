@@ -97,7 +97,8 @@ class DeliverServiceValue {
 
 enum ShopType {
   r99(key: 'key_R99', value: 'R99'),
-  r99II(key: 'key_R99_II', value: 'R99-II');
+  r99II(key: 'key_R99_II', value: 'R99-II'),
+  wholeSale(key: 'key_whole_sale', value: 'បោះដុំ');
 
   const ShopType({required this.key, required this.value});
 
@@ -119,6 +120,14 @@ enum ShopType {
         normalized == 'r99 2' ||
         normalized == r99II.key.toLowerCase()) {
       return r99II;
+    }
+    if (normalized == 'whole-sale' ||
+        normalized == 'whole sale' ||
+        normalized == 'wholesale' ||
+        normalized == 'whole_sale' ||
+        normalized == 'បោះដុំ' ||
+        normalized == wholeSale.key.toLowerCase()) {
+      return wholeSale;
     }
     return null;
   }

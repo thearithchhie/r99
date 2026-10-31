@@ -180,6 +180,10 @@ struct MacOSPrintTemplate {
     if normalized == "r99-ii" || normalized == "r99 ii" || normalized == "r99 2" || normalized == "key_r99_ii" {
       return "R99-II"
     }
+    if normalized == "whole-sale" || normalized == "whole sale" || normalized == "wholesale" ||
+        normalized == "whole_sale" || normalized == "បោះដុំ" || normalized == "key_whole_sale" {
+      return "បោះដុំ"
+    }
     return nil
   }
 }

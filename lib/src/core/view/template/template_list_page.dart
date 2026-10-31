@@ -33,6 +33,7 @@ class _TemplateEntry {
 const _templates = [
   _TemplateEntry(name: 'R99 Label', shopType: ShopType.r99),
   _TemplateEntry(name: 'R99-II Label', shopType: ShopType.r99II),
+  _TemplateEntry(name: 'Whole-sale Label', shopType: ShopType.wholeSale),
 ];
 
 PrintTemplateData _buildPreview(ShopType shopType, _ServiceFilter filter) {
@@ -131,10 +132,7 @@ class _TemplateListPageState extends State<TemplateListPage> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10),
-                          child: Text(
-                            template.name,
-                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
+                          child: Text(template.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
                         ),
                         Center(child: PrintTemplateCard(data: preview)),
                       ],
